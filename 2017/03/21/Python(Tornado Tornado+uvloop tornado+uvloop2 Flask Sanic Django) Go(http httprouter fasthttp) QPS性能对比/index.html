@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <meta charset="utf-8">
+    
+    <title>Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比 | hello</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="在v2ex上发现了一个Python的新web框架, Sanic, 基于uvloop, 其在GitHub上的性能数据十分耀眼, 于是想跟其他用过的web框架对比一下性能, 跑个分嘛. ###测试环境:Python:3.6.0 Go:1.8.0i5-6600k@3.5GHZ 四核16GB ###测试脚本:app用tmux启动, 然后使用Apache bench测试, n=1000, c=100, 每个">
+<meta name="keywords">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比">
+<meta property="og:url" content="https://imhanjm.com/2017/03/21/Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比/index.html">
+<meta property="og:site_name" content="hello">
+<meta property="og:description" content="在v2ex上发现了一个Python的新web框架, Sanic, 基于uvloop, 其在GitHub上的性能数据十分耀眼, 于是想跟其他用过的web框架对比一下性能, 跑个分嘛. ###测试环境:Python:3.6.0 Go:1.8.0i5-6600k@3.5GHZ 四核16GB ###测试脚本:app用tmux启动, 然后使用Apache bench测试, n=1000, c=100, 每个">
+<meta property="og:updated_time" content="2017-04-22T15:25:16.451Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比">
+<meta name="twitter:description" content="在v2ex上发现了一个Python的新web框架, Sanic, 基于uvloop, 其在GitHub上的性能数据十分耀眼, 于是想跟其他用过的web框架对比一下性能, 跑个分嘛. ###测试环境:Python:3.6.0 Go:1.8.0i5-6600k@3.5GHZ 四核16GB ###测试脚本:app用tmux启动, 然后使用Apache bench测试, n=1000, c=100, 每个">
+    
+
+    
+        <link rel="alternate" href="/" title="hello" type="application/atom+xml" />
+    
+
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css">
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-97868201-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">hello</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">Home</a>
+                
+                    <a class="main-nav-link" href="/archives">Archives</a>
+                
+                    <a class="main-nav-link" href="/categories">Categories</a>
+                
+                    <a class="main-nav-link" href="/tags">Tags</a>
+                
+                    <a class="main-nav-link" href="/about">About</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png" />
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么..." />
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">Home</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">Archives</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">Categories</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">Tags</a></td>
+                
+                    <td><a class="main-nav-link" href="/about">About</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png" />
+            <h2 id="name">hanjm</h2>
+            <h3 id="title">Golang &amp; Python backend</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Shenzhen, China</span>
+            <a id="follow" target="_blank" href="https://github.com/hanjm/">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                3
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                0
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="http://github.com/hanjm/" target="_blank" title="github" class=tooltip>
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="twitter" class=tooltip>
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="facebook" class=tooltip>
+                            <i class="fa fa-facebook"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="dribbble" class=tooltip>
+                            <i class="fa fa-dribbble"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="rss" class=tooltip>
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2017/03/21/Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比/">
+            <time datetime="2017-03-21T00:00:00.000Z" itemprop="datePublished">2017-03-21</time>
+        </a>
+    </div>
+
+
+                        
+                        
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>在v2ex上发现了一个Python的新web框架, Sanic, 基于uvloop, 其在<a href="https://github.com/channelcat/sanic" target="_blank" rel="external">GitHub上的性能数据</a>十分耀眼, 于是想跟其他用过的web框架对比一下性能, 跑个分嘛.</p>
+<p>###测试环境:<br>Python:3.6.0 Go:1.8.0<br>i5-6600k@3.5GHZ 四核16GB</p>
+<p>###测试脚本:<br>app用tmux启动, 然后使用Apache bench测试, n=1000, c=100, 每个app测5次</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">for session in test_tornado test_tornadouv test_tornadouv2 test_flask test_sanic</div><div class="line">do</div><div class="line">tmux kill-session -t $session &gt; /dev/null 2&gt;&amp;1</div><div class="line">sleep 1</div><div class="line">tmux new -s $session -d "/root/.pyenv/versions/3.6.0/bin/python $session.py"</div><div class="line">done</div><div class="line"><span class="meta">#</span> django</div><div class="line">tmux kill-session -t test_django</div><div class="line">sleep 1</div><div class="line">tmux new -s test_django -d "/root/.pyenv/versions/3.6.0/bin/python test_django/manage.py runserver 127.0.0.1:8893"</div><div class="line"></div><div class="line">for session in test_go_http test_go_httprouter test_go_fasthttp</div><div class="line">do</div><div class="line">tmux kill-session -t $session</div><div class="line">tmux new -s $session -d "go run $session.go"</div><div class="line">done</div><div class="line"></div><div class="line"></div><div class="line">for ((i=0;i&lt;5;i++))</div><div class="line">do</div><div class="line">echo $i</div><div class="line">ab -n 1000 -c 100 http://127.0.0.1:8888/ 2&gt; /dev/null |grep "Requests per second" |awk '&#123;printf "tornado-epoll  :%s\n",$0&#125;'</div><div class="line">ab -n 1000 -c 100 http://127.0.0.1:8889/ 2&gt; /dev/null |grep "Requests per second" |awk '&#123;printf "tornado-uvloop :%s\n",$0&#125;'</div><div class="line">ab -n 1000 -c 100 http://127.0.0.1:8890/ 2&gt; /dev/null |grep "Requests per second" |awk '&#123;printf "tornado-uvloop2:%s\n",$0&#125;'</div><div class="line">ab -n 1000 -c 100 http://127.0.0.1:8891/ 2&gt; /dev/null |grep "Requests per second" |awk '&#123;printf "flask          :%s\n",$0&#125;'</div><div class="line">ab -n 1000 -c 100 http://127.0.0.1:8892/ 2&gt; /dev/null |grep "Requests per second" |awk '&#123;printf "sanic          :%s\n",$0&#125;'</div><div class="line">ab -n 1000 -c 10  http://127.0.0.1:8893/ 2&gt; /dev/null |grep "Requests per second" |awk '&#123;printf "django         :%s\n",$0&#125;' # django自带的wsgi server 无法处理concurrent 100</div><div class="line">ab -n 1000 -c 100 http://127.0.0.1:8894/ 2&gt; /dev/null |grep "Requests per second" |awk '&#123;printf "go_http        :%s\n",$0&#125;'</div><div class="line">ab -n 1000 -c 100 http://127.0.0.1:8895/ 2&gt; /dev/null |grep "Requests per second" |awk '&#123;printf "go_httprouter  :%s\n",$0&#125;'</div><div class="line">ab -n 1000 -c 100 http://127.0.0.1:8896/ 2&gt; /dev/null |grep "Requests per second" |awk '&#123;printf "go_fasthttp    :%s\n",$0&#125;'</div><div class="line">done</div></pre></td></tr></table></figure>
+<p>###测试结果:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div></pre></td><td class="code"><pre><div class="line">0</div><div class="line">tornado-epoll  :Requests per second:    1714.60 [#/sec] (mean)</div><div class="line">tornado-uvloop :Requests per second:    1988.30 [#/sec] (mean)</div><div class="line">tornado-uvloop2:Requests per second:    1977.77 [#/sec] (mean)</div><div class="line">flask          :Requests per second:    2167.29 [#/sec] (mean)</div><div class="line">sanic          :Requests per second:    14221.72 [#/sec] (mean)</div><div class="line">django         :Requests per second:    1157.64 [#/sec] (mean)</div><div class="line">go_http        :Requests per second:    13847.92 [#/sec] (mean)</div><div class="line">go_httprouter  :Requests per second:    14595.34 [#/sec] (mean)</div><div class="line">go_fasthttp    :Requests per second:    12730.74 [#/sec] (mean)</div><div class="line">1</div><div class="line">tornado-epoll  :Requests per second:    2011.02 [#/sec] (mean)</div><div class="line">tornado-uvloop :Requests per second:    1788.50 [#/sec] (mean)</div><div class="line">tornado-uvloop2:Requests per second:    1980.40 [#/sec] (mean)</div><div class="line">flask          :Requests per second:    2237.84 [#/sec] (mean)</div><div class="line">sanic          :Requests per second:    13614.70 [#/sec] (mean)</div><div class="line">django         :Requests per second:    1145.03 [#/sec] (mean)</div><div class="line">go_http        :Requests per second:    13811.01 [#/sec] (mean)</div><div class="line">go_httprouter  :Requests per second:    13441.94 [#/sec] (mean)</div><div class="line">go_fasthttp    :Requests per second:    12619.25 [#/sec] (mean)</div><div class="line">2</div><div class="line">tornado-epoll  :Requests per second:    2056.31 [#/sec] (mean)</div><div class="line">tornado-uvloop :Requests per second:    1831.49 [#/sec] (mean)</div><div class="line">tornado-uvloop2:Requests per second:    2015.39 [#/sec] (mean)</div><div class="line">flask          :Requests per second:    2124.87 [#/sec] (mean)</div><div class="line">sanic          :Requests per second:    12485.80 [#/sec] (mean)</div><div class="line">django         :Requests per second:    1160.55 [#/sec] (mean)</div><div class="line">go_http        :Requests per second:    14014.43 [#/sec] (mean)</div><div class="line">go_httprouter  :Requests per second:    13949.34 [#/sec] (mean)</div><div class="line">go_fasthttp    :Requests per second:    12419.12 [#/sec] (mean)</div><div class="line">3</div><div class="line">tornado-epoll  :Requests per second:    2017.32 [#/sec] (mean)</div><div class="line">tornado-uvloop :Requests per second:    1731.04 [#/sec] (mean)</div><div class="line">tornado-uvloop2:Requests per second:    2014.46 [#/sec] (mean)</div><div class="line">flask          :Requests per second:    2100.02 [#/sec] (mean)</div><div class="line">sanic          :Requests per second:    12459.04 [#/sec] (mean)</div><div class="line">django         :Requests per second:    1164.06 [#/sec] (mean)</div><div class="line">go_http        :Requests per second:    13239.77 [#/sec] (mean)</div><div class="line">go_httprouter  :Requests per second:    14127.49 [#/sec] (mean)</div><div class="line">go_fasthttp    :Requests per second:    12824.46 [#/sec] (mean)</div><div class="line">4</div><div class="line">tornado-epoll  :Requests per second:    1810.77 [#/sec] (mean)</div><div class="line">tornado-uvloop :Requests per second:    1975.12 [#/sec] (mean)</div><div class="line">tornado-uvloop2:Requests per second:    1962.81 [#/sec] (mean)</div><div class="line">flask          :Requests per second:    2234.08 [#/sec] (mean)</div><div class="line">sanic          :Requests per second:    13881.95 [#/sec] (mean)</div><div class="line">django         :Requests per second:    1154.90 [#/sec] (mean)</div><div class="line">go_http        :Requests per second:    14399.47 [#/sec] (mean)</div><div class="line">go_httprouter  :Requests per second:    13688.69 [#/sec] (mean)</div><div class="line">go_fasthttp    :Requests per second:    12672.99 [#/sec] (mean)</div></pre></td></tr></table></figure>
+<p>###结论:</p>
+<ol>
+<li>Sanic确实叼, 拉出Flask一大截. 由于这个测试只是简单返回”Hello, world”, Tornado的优势要在使用了aio,AsyncHTTPClient的时候才能发挥出来. 如果拿tornado当纯同步使用的话, 性能会比flask弱一点点.</li>
+<li>Django自带的wsgi server无法完成此任务.</li>
+<li>fasthttp表现的很奇怪, 可能是handler太简单的情况下sync/pool的代价超过了gc的影响, httprouter比http快一点.</li>
+</ol>
+<p>###测试代码:</p>
+<p>1.test_tornado.py Tornado 4.4.2</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> tornado.ioloop</div><div class="line"><span class="keyword">import</span> tornado.web</div><div class="line"></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">MainHandler</span><span class="params">(tornado.web.RequestHandler)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get</span><span class="params">(self)</span>:</span></div><div class="line">        self.write(<span class="string">"Hello, world"</span>)</div><div class="line"></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">make_app</span><span class="params">()</span>:</span></div><div class="line">    <span class="keyword">return</span> tornado.web.Application([</div><div class="line">        (<span class="string">r"/"</span>, MainHandler),</div><div class="line">    ])</div><div class="line"></div><div class="line"></div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</div><div class="line">    app = make_app()</div><div class="line">    app.listen(<span class="number">8888</span>)</div><div class="line">    tornado.ioloop.IOLoop.current().start()</div></pre></td></tr></table></figure>
+<p>2.test_tornadouv.py Tornado+uvloop(pip install tornadouvloop)</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> tornado.ioloop</div><div class="line"><span class="keyword">import</span> tornado.web</div><div class="line"><span class="keyword">from</span> tornadouvloop <span class="keyword">import</span> TornadoUvloop</div><div class="line"></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">MainHandler</span><span class="params">(tornado.web.RequestHandler)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get</span><span class="params">(self)</span>:</span></div><div class="line">        self.write(<span class="string">"Hello, world"</span>)</div><div class="line"></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">make_app</span><span class="params">()</span>:</span></div><div class="line">    <span class="keyword">return</span> tornado.web.Application([</div><div class="line">        (<span class="string">r"/"</span>, MainHandler),</div><div class="line">    ])</div><div class="line"></div><div class="line"></div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</div><div class="line">    app = make_app()</div><div class="line">    app.listen(<span class="number">8889</span>)</div><div class="line">    tornado.ioloop.IOLoop.configure(TornadoUvloop)</div><div class="line">    tornado.ioloop.IOLoop.current().start()</div></pre></td></tr></table></figure>
+<p>3.test_tornadouv2.py Tornado+uvloop2(pip install tornaduv)</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> tornado.ioloop</div><div class="line"><span class="keyword">import</span> tornado.web</div><div class="line"><span class="keyword">from</span> tornaduv <span class="keyword">import</span> UVLoop</div><div class="line"></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">MainHandler</span><span class="params">(tornado.web.RequestHandler)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get</span><span class="params">(self)</span>:</span></div><div class="line">        self.write(<span class="string">"Hello, world"</span>)</div><div class="line"></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">make_app</span><span class="params">()</span>:</span></div><div class="line">    <span class="keyword">return</span> tornado.web.Application([</div><div class="line">        (<span class="string">r"/"</span>, MainHandler),</div><div class="line">    ])</div><div class="line"></div><div class="line"></div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</div><div class="line">    app = make_app()</div><div class="line">    app.listen(<span class="number">8890</span>)</div><div class="line">    tornado.ioloop.IOLoop.configure(UVLoop)</div><div class="line">    tornado.ioloop.IOLoop.current().start()</div></pre></td></tr></table></figure>
+<p>4.test_flask.py Flask 0.12</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</div><div class="line"></div><div class="line">app = Flask(__name__)</div><div class="line"></div><div class="line"></div><div class="line"><span class="meta">@app.route("/")</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">hello</span><span class="params">()</span>:</span></div><div class="line">    <span class="keyword">return</span> <span class="string">"Hello, world"</span></div><div class="line"></div><div class="line"></div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</div><div class="line">    app.run(port=<span class="number">8891</span>)</div></pre></td></tr></table></figure>
+<p>5.test_sanic.py Sanic 0.4.1</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> sanic <span class="keyword">import</span> Sanic</div><div class="line"><span class="keyword">from</span> sanic.response <span class="keyword">import</span> HTTPResponse</div><div class="line"></div><div class="line">app = Sanic()</div><div class="line"></div><div class="line"></div><div class="line"><span class="meta">@app.route("/")</span></div><div class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">(request)</span>:</span></div><div class="line">    <span class="keyword">return</span> HTTPResponse(<span class="string">"Hello, world"</span>)</div><div class="line"></div><div class="line"></div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</div><div class="line">    app.run(port=<span class="number">8892</span>)</div></pre></td></tr></table></figure>
+<p>6.test_django.py Django</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"># views.py</div><div class="line">from django.http import HttpResponse</div><div class="line"></div><div class="line"></div><div class="line">def hello(request):</div><div class="line">    return HttpResponse(&quot;Hello, world&quot;)</div></pre></td></tr></table></figure>
+<p>7.test_go_http.go Go http</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> main</div><div class="line"></div><div class="line"><span class="keyword">import</span> (</div><div class="line">	<span class="string">"net/http"</span></div><div class="line">	<span class="string">"runtime"</span></div><div class="line">)</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</div><div class="line">	runtime.GOMAXPROCS(runtime.NumCPU())</div><div class="line">	http.HandleFunc(<span class="string">"/"</span>, <span class="function"><span class="keyword">func</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</div><div class="line">		w.Write([]<span class="keyword">byte</span>(<span class="string">"Hello, world"</span>))</div><div class="line">	&#125;)</div><div class="line">	http.ListenAndServe(<span class="string">"127.0.0.1:8894"</span>, <span class="literal">nil</span>)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>8.test_go_httprouter.go GO httprouter</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> main</div><div class="line"></div><div class="line"><span class="keyword">import</span> (</div><div class="line">	<span class="string">"net/http"</span></div><div class="line">	<span class="string">"github.com/julienschmidt/httprouter"</span></div><div class="line">	<span class="string">"runtime"</span></div><div class="line">)</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</div><div class="line">	runtime.GOMAXPROCS(runtime.NumCPU())</div><div class="line">	router := httprouter.New()</div><div class="line">	router.HandlerFunc(<span class="string">"GET"</span>, <span class="string">"/"</span>, <span class="function"><span class="keyword">func</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</div><div class="line">		w.Write([]<span class="keyword">byte</span>(<span class="string">"Hello, world"</span>))</div><div class="line">	&#125;)</div><div class="line">	http.ListenAndServe(<span class="string">"127.0.0.1:8895"</span>, router)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>9.test_go_fasthttp.go Go fasthttp</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> main</div><div class="line"></div><div class="line"><span class="keyword">import</span> (</div><div class="line">	<span class="string">"github.com/valyala/fasthttp"</span></div><div class="line">	<span class="string">"runtime"</span></div><div class="line">)</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</div><div class="line">	runtime.GOMAXPROCS(runtime.NumCPU())</div><div class="line">	requestHandler := <span class="function"><span class="keyword">func</span><span class="params">(ctx *fasthttp.RequestCtx)</span></span> &#123;</div><div class="line">		ctx.Write([]<span class="keyword">byte</span>(<span class="string">"Hello, world"</span>))</div><div class="line">	&#125;</div><div class="line">	fasthttp.ListenAndServe(<span class="string">"127.0.0.1:8896"</span>, requestHandler)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="https://imhanjm.com/2017/03/21/Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比/" data-id="cj1tf371z0000hxpv58cevmmb" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+        <a href="https://imhanjm.com/2017/03/21/Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2017/03/21/Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比/">评论</a>
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2016/12/31/Go快速笔记/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    Go快速笔记
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2017/04/20/Nginx HTTP2编译安装/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">Nginx HTTP/2 编译安装</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
+</section>
+            
+                <aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="">
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2017/04/20/Nginx HTTP2编译安装/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2017/04/20/Nginx HTTP2编译安装/" class="title">Nginx HTTP/2 编译安装</a></p>
+                            <p class="item-date"><time datetime="2017-04-20T00:00:00.000Z" itemprop="datePublished">2017-04-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2017/03/21/Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2017/03/21/Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比/" class="title">Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比</a></p>
+                            <p class="item-date"><time datetime="2017-03-21T00:00:00.000Z" itemprop="datePublished">2017-03-21</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2016/12/31/Go快速笔记/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2016/12/31/Go快速笔记/" class="title">Go快速笔记</a></p>
+                            <p class="item-date"><time datetime="2016-12-31T00:00:00.000Z" itemprop="datePublished">2016-12-31</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    
+        
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://hexo.io">Hexo</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2017 hello<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+    <script>
+    var disqus_config = function () {
+        
+            this.page.url = 'https://imhanjm.com/2017/03/21/Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比/';
+        
+        this.page.identifier = 'Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比';
+    };
+    (function() { 
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'hanjmblog' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>
