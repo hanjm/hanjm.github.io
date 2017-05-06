@@ -14,7 +14,7 @@
 <meta property="og:description" content="LaunchRocket. 系统偏好设置中的用户与群组可以添加登录项脚本, 但对于需要root权限启动的应用无解, 脚本会卡在输入密码. LaunchRocket能优雅解决. GitHub地址https://github.com/jimbojsb/launchrocket  Snip. Windows下有Winsnap、FastStone、Snipaste等此等优秀的截图软件, 相比之下, Ma">
 <meta property="og:image" content="https://raw.githubusercontent.com/jimbojsb/launchrocket/master/screenshots/LaunchRocket.png">
 <meta property="og:image" content="https://camo.githubusercontent.com/672f09c820c53a876e044e158cfd477791f4e249/68747470733a2f2f692e696d6775722e636f6d2f575961323535372e676966">
-<meta property="og:updated_time" content="2017-05-06T05:39:03.000Z">
+<meta property="og:updated_time" content="2017-05-06T05:41:57.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MacOS下酷工具收集(持续)">
 <meta name="twitter:description" content="LaunchRocket. 系统偏好设置中的用户与群组可以添加登录项脚本, 但对于需要root权限启动的应用无解, 脚本会卡在输入密码. LaunchRocket能优雅解决. GitHub地址https://github.com/jimbojsb/launchrocket  Snip. Windows下有Winsnap、FastStone、Snipaste等此等优秀的截图软件, 相比之下, Ma">
@@ -270,14 +270,14 @@ ga('send', 'pageview');
 <li>Homebrew-Cask. <code>brew install</code>不能安装chrome Macdown这样的GUI app, Homebrew-Cask扩展了brew, GitHub地址<a href="https://github.com/caskroom/homebrew-cask" target="_blank" rel="external">https://github.com/caskroom/homebrew-cask</a> <img src="https://camo.githubusercontent.com/672f09c820c53a876e044e158cfd477791f4e249/68747470733a2f2f692e696d6775722e636f6d2f575961323535372e676966" alt="Homebrew-Cask"></li>
 <li><p>privoxy. <code>brew pip npm install、docker pull</code>总是慢如蜗牛?  privoxy能将shadowsocks的socks代理(127.0.0.1:1080)转换为http/https代理, 有个奇特的地方是把它把文档写在配置文件的注释里, config文件有2271行, 初让人以为配置起来会巨复杂, 实际上基本的功能两行配置即可. <code>listen-address配置为0.0.0.0:8118</code>, 局域网内其他设备也可以走此代理<ip>:8118. 官网<a href="https://www.privoxy.org/" target="_blank" rel="external">https://www.privoxy.org/</a></ip></p>
  <figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">listen-address  0.0.0.0:8118</div><div class="line">forward-socks5 / localhost:1080 .</div></pre></td></tr></table></figure>
+<p> 然后在.zshrc或.bashrc中加入一下命令就可以通过<code>proxy</code> <code>dproxy</code>来切换是否在本终端下使用代理了.</p>
+ <figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">function proxy()&#123;</div><div class="line">    export http_proxy=http://127.0.0.1:8118</div><div class="line">    export https_proxy=https://127.0.0.1:8118</div><div class="line">&#125;</div><div class="line">function dproxy()&#123;</div><div class="line">    unset http_proxy</div><div class="line">    unset https_proxy</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 </li>
-</ol>
-<p>然后在.zshrc或.bashrc中加入一下命令就可以通过<code>proxy</code> <code>dproxy</code>来切换是否在本终端下使用代理了.</p>
-<pre><code><figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">function proxy()&#123;</div><div class="line">    export http_proxy=http://127.0.0.1:8118</div><div class="line">    export https_proxy=https://127.0.0.1:8118</div><div class="line">&#125;</div><div class="line">function dproxy()&#123;</div><div class="line">    unset http_proxy</div><div class="line">    unset https_proxy</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-</code></pre><ol>
-<li>kcptun. bandwagon上的shadowsocks越来越慢, 不用kcptun加速没法正常使用, 只能不太厚道地超量发包了. GitHub地址<a href="https://github.com/xtaci/kcptun" target="_blank" rel="external">https://github.com/xtaci/kcptun</a></li>
+<li><p>kcptun. bandwagon上的shadowsocks越来越慢, 不用kcptun加速没法正常使用, 只能不太厚道地超量发包了. GitHub地址<a href="https://github.com/xtaci/kcptun" target="_blank" rel="external">https://github.com/xtaci/kcptun</a></p>
+</li>
 <li>oh-my-zsh的z命令. 手动输入一个很长的路径名不停地tab很麻烦, 配置了oh-my-zsh的话可以启用z命令(<code>edit: ~/.zshrc line: plugins=(git python z tmux)</code>), <code>z 文件夹名</code> 就可以跳转到常用目录中最符合输入文件夹名的文件夹中, 非常方便, GitHub地址<a href="https://github.com/robbyrussell/oh-my-zsh" target="_blank" rel="external">https://github.com/robbyrussell/oh-my-zsh</a></li>
-<li>aria2. 非常厉害的下载器, <code>brew install aria2</code>即可. GitHub地址:<a href="https://github.com/aria2/aria2" target="_blank" rel="external">https://github.com/aria2/aria2</a> GUI Client:<a href="https://github.com/yangshun1029/aria2gui" target="_blank" rel="external">https://github.com/yangshun1029/aria2gui</a><br>10.BaiduExporter. 百度网盘文件导出到aria2下载, GitHub地址<a href="https://github.com/acgotaku/BaiduExporter" target="_blank" rel="external">https://github.com/acgotaku/BaiduExporter</a></li>
+<li>aria2. 非常厉害的下载器, <code>brew install aria2</code>即可. GitHub地址:<a href="https://github.com/aria2/aria2" target="_blank" rel="external">https://github.com/aria2/aria2</a> GUI Client:<a href="https://github.com/yangshun1029/aria2gui" target="_blank" rel="external">https://github.com/yangshun1029/aria2gui</a></li>
+<li>BaiduExporter. 百度网盘文件导出到aria2下载, GitHub地址<a href="https://github.com/acgotaku/BaiduExporter" target="_blank" rel="external">https://github.com/acgotaku/BaiduExporter</a></li>
 <li>Chrome插件加白描述文件. 有时需要安装一些在商店下架了的扩展, 比如BaiduExporter, 在扩展页面安装后重启chrome会提示此扩展程序并非来自chrome商店,启用开关灰色无法启用, 可以下载此描述文件将特定扩展id加入白名单. <a href="https://hencolle.com/2016/10/16/baidu_exporter/" target="_blank" rel="external">https://hencolle.com/2016/10/16/baidu_exporter/</a></li>
 <li>坚果云.同步配置文件,pdf书非常方便.</li>
 <li>Monaco字体. 非常舒服的等宽代码字体 <a href="https://github.com/hanjm/codeFont" target="_blank" rel="external">https://github.com/hanjm/codeFont</a></li>
@@ -292,7 +292,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2017/05/06/MacOS下酷工具收集(持续)/" data-id="cj2cubg2v000cjebz6c9or6ll" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2017/05/06/MacOS下酷工具收集(持续)/" data-id="cj2cue2t5000ckjbzo1v5tfw5" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
