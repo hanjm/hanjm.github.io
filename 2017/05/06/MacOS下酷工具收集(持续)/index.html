@@ -14,7 +14,7 @@
 <meta property="og:description" content="LaunchRocket. 系统偏好设置中的用户与群组可以添加登录项脚本, 但对于需要root权限启动的应用无解, 脚本会卡在输入密码. LaunchRocket能优雅解决.(当然, 还有一种魔法方法: 用docker加--restart always的container或docker swarm service 跑, docker启动时会自动启动这些container/service) Git">
 <meta property="og:image" content="https://raw.githubusercontent.com/jimbojsb/launchrocket/master/screenshots/LaunchRocket.png">
 <meta property="og:image" content="https://camo.githubusercontent.com/672f09c820c53a876e044e158cfd477791f4e249/68747470733a2f2f692e696d6775722e636f6d2f575961323535372e676966">
-<meta property="og:updated_time" content="2017-05-10T08:38:24.000Z">
+<meta property="og:updated_time" content="2017-05-11T12:03:30.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MacOS下酷工具收集(持续)">
 <meta name="twitter:description" content="LaunchRocket. 系统偏好设置中的用户与群组可以添加登录项脚本, 但对于需要root权限启动的应用无解, 脚本会卡在输入密码. LaunchRocket能优雅解决.(当然, 还有一种魔法方法: 用docker加--restart always的container或docker swarm service 跑, docker启动时会自动启动这些container/service) Git">
@@ -269,9 +269,9 @@ ga('send', 'pageview');
 <li>Homebrew. yum/dnf之于centOS, apt之于Ubuntu, pacman之于ArchLinux, brew之于macOS, <code>brew install</code>简直不能太爽. 官网<a href="https://brew.sh/" target="_blank" rel="external">https://brew.sh/</a></li>
 <li>Homebrew-Cask. <code>brew install</code>不能安装chrome Macdown这样的GUI app, Homebrew-Cask扩展了brew, GitHub地址<a href="https://github.com/caskroom/homebrew-cask" target="_blank" rel="external">https://github.com/caskroom/homebrew-cask</a> <img src="https://camo.githubusercontent.com/672f09c820c53a876e044e158cfd477791f4e249/68747470733a2f2f692e696d6775722e636f6d2f575961323535372e676966" alt="Homebrew-Cask"></li>
 <li><p>privoxy. <code>brew pip npm install、docker pull</code>总是慢如蜗牛?  privoxy能将shadowsocks的socks代理(127.0.0.1:1080)转换为http/https代理, 有个奇特的地方是把它把文档写在配置文件的注释里, config文件有2271行, 初让人以为配置起来会巨复杂, 实际上基本的功能两行配置即可. <code>listen-address配置为0.0.0.0:8118</code>, 局域网内其他设备也可以走此代理<ip>:8118. 官网<a href="https://www.privoxy.org/" target="_blank" rel="external">https://www.privoxy.org/</a></ip></p>
- <figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">listen-address  0.0.0.0:8118</div><div class="line">forward-socks5 / localhost:1080 .</div></pre></td></tr></table></figure>
+ <figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">listen-address  0.0.0.0:8118</div><div class="line">forward-socks5 / localhost:1080 .</div></pre></td></tr></table></figure>
 <p> 然后在.zshrc或.bashrc中加入一下命令就可以通过<code>proxy</code> <code>dproxy</code>来切换是否在本终端下使用代理了.</p>
- <figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">function proxy()&#123;</div><div class="line">    export http_proxy=http://127.0.0.1:8118</div><div class="line">    export https_proxy=https://127.0.0.1:8118</div><div class="line">&#125;</div><div class="line">function dproxy()&#123;</div><div class="line">    unset http_proxy</div><div class="line">    unset https_proxy</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+ <figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">function proxy()&#123;</div><div class="line">    export http_proxy=http://127.0.0.1:8118</div><div class="line">    export https_proxy=https://127.0.0.1:8118</div><div class="line">    export HTTP_PROXY=http://127.0.0.1:8118</div><div class="line">    export HTTPS_PROXY=https://127.0.0.1:8118</div><div class="line">&#125;</div><div class="line">function dproxy()&#123;</div><div class="line">    unset http_proxy</div><div class="line">    unset https_proxy</div><div class="line">    unset HTTP_PROXY</div><div class="line">    unset HTTPS_PROXY</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 </li>
 <li><p>kcptun. bandwagon上的shadowsocks越来越慢, 不用kcptun加速没法正常使用, 只能不太厚道地超量发包了. GitHub地址<a href="https://github.com/xtaci/kcptun" target="_blank" rel="external">https://github.com/xtaci/kcptun</a></p>
 </li>
@@ -292,7 +292,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2017/05/06/MacOS下酷工具收集(持续)/" data-id="cj2j3fgkj000i1bbzgwrbdfvl" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2017/05/06/MacOS下酷工具收集(持续)/" data-id="cj2kcylq2000favbz0y8jxwkj" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -612,6 +612,10 @@ ga('send', 'pageview');
                 
                     <li>
                         <a href="https://weny.name/about/">Weny</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://v2fw.com/">v2fw</a>
                     </li>
                 
             </ul>
