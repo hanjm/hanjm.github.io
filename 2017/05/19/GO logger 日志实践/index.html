@@ -12,7 +12,7 @@
 <meta property="og:url" content="https://imhanjm.com/2017/05/19/GO logger 日志实践/index.html">
 <meta property="og:site_name" content="hello">
 <meta property="og:description" content="分析一下用过的打印日志的log包 Go标准库自带log, 这个log的func比较少, 没有区分level, 但足够简单, 有prefix功能, 可以设置flag来控制时间格式, caller的文件名和行数, 其他标注库如 net/http database/sql 等也用了此包. 对自带的log进行包装, 加入level, 颜色. 如ngaut/log, 这个log star数并不多, 还是从最">
-<meta property="og:updated_time" content="2017-05-19T15:55:55.000Z">
+<meta property="og:updated_time" content="2017-05-19T15:56:12.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="GO Logger 日志实践">
 <meta name="twitter:description" content="分析一下用过的打印日志的log包 Go标准库自带log, 这个log的func比较少, 没有区分level, 但足够简单, 有prefix功能, 可以设置flag来控制时间格式, caller的文件名和行数, 其他标注库如 net/http database/sql 等也用了此包. 对自带的log进行包装, 加入level, 颜色. 如ngaut/log, 这个log star数并不多, 还是从最">
@@ -263,7 +263,7 @@ ga('send', 'pageview');
 <li>Go标准库自带log, 这个log的func比较少, 没有区分level, 但足够简单, 有prefix功能, 可以设置flag来控制时间格式, caller的文件名和行数, 其他标注库如 net/http database/sql 等也用了此包.</li>
 <li>对自带的log进行包装, 加入level, 颜色. 如<a href="https://github.com/ngaut/log" target="_blank" rel="external">ngaut/log</a>, 这个log star数并不多, 还是从最近很火的一个项目<a href="https://github.com/pingcap/tidb" target="_blank" rel="external">pingcap/tidb</a>里看到的, 有点小清新的感觉, 但这个log可能只是为tidb使用的, 缺少自带log的一些方法, 导致没法使用在一些可以定制logger的第三方库如gorm中. 于是我fork了一下<a href="https://github.com/hanjm/log" target="_blank" rel="external">https://github.com/hanjm/log</a>, 增加了一些方法.</li>
 </ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">logger.NewNormalLogger() use useful flag: Ldate|Ltime|Lshortfile</div><div class="line">logger.NewCustomLogger() can set flag, level, prefix, writer in one function</div><div class="line">logger.SetFlags() can set logger's flag</div><div class="line">logger.SetPrefix() can set logger's prefix</div><div class="line">logger.Print() alias logger.Info()</div><div class="line">logger.Printf() alias logger.Infof()</div></pre></td></tr></table></figure>
+<figure class="highlight go"><table><tr><td class="code"><pre><div class="line">logger.NewNormalLogger() use useful flag: Ldate|Ltime|Lshortfile</div><div class="line">logger.NewCustomLogger() can set flag, level, prefix, writer in one function</div><div class="line">logger.SetFlags() can set logger<span class="string">'s flag</span></div><div class="line">logger.SetPrefix() can set logger's prefix</div><div class="line">logger.Print() alias logger.Info()</div><div class="line">logger.Printf() alias logger.Infof()</div></pre></td></tr></table></figure>
 <ol>
 <li>完全自己实现的log, 结构化输出, 通常是key=value或json, 有名的有<a href="https://github.com/sirupsen/logrus" target="_blank" rel="external">logrus</a>, <a href="https://github.com/uber-go/zap" target="_blank" rel="external">zap</a>等. 第一次看到logrus感觉美极了, 于是大量使用, 直到在关注tidb的时候收到带日志的issues邮件, 里面的日志带了caller, 感觉很有用, 于是去搜logrus的issue看有没有这个功能, 搜到了一个issue<a href="https://github.com/sirupsen/logrus/issues/63" target="_blank" rel="external">https://github.com/sirupsen/logrus/issues/63</a>, 讨论了三年这个功能还没加上, 只好放弃美丽的logrus, 找到了替代品zap, zap的设计非常好, 定制性强. log是经常调用的代码, 每次调用不可避免地要进行内存分配, 分配次数和每次分配的内存大小将影响性能. 对log内容的处理也是一个涉及到性能的点, 像log.Printf参数是interface{}, logrus的field是map[stirng]interface{}, 打印interface{}只能靠reflect, Go是静态强类型语言, 用反射的开销比较大, 所以zap使用了手动指定类型的方式, 从zap提供的benchmark上开看, 性能提升还是蛮大的, 虽然相比logrus使用起来更麻烦, 但为了性能, 还是值得的.</li>
 </ol>
@@ -284,7 +284,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2017/05/19/GO logger 日志实践/" data-id="cj2w11q3e000l2sbz38g5mwq4" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2017/05/19/GO logger 日志实践/" data-id="cj2w125gw000m3jbzk1irwp0y" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
