@@ -169,7 +169,7 @@ ga('send', 'pageview');
         </div>
         <div class="article-info profile-block">
             <div class="article-info-block">
-                8
+                9
                 <span>文章</span>
             </div>
             <div class="article-info-block">
@@ -275,7 +275,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2017/04/24/Go-strings.TrimLeft-strings.TrimPrefix/" data-id="cj2yjk8cn000azxbz5zuewktj" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2017/04/24/Go-strings.TrimLeft-strings.TrimPrefix/" data-id="cj3il2f4o0008cqbz63i7w1w2" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -353,7 +353,7 @@ ga('send', 'pageview');
 
 
 
-    <article id="post-Nginx HTTP2编译安装" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-深入理解Go runtime" class="article article-type-post" itemscope itemprop="blogPost">
     <div class="article-inner">
         
         
@@ -361,7 +361,7 @@ ga('send', 'pageview');
                 
     
         <h1 itemprop="name">
-            <a class="article-title" href="/2017/04/20/Nginx HTTP2编译安装/">Nginx HTTP/2 编译安装</a>
+            <a class="article-title" href="/2017/04/23/深入理解Go runtime/">深入理解Go Runtime</a>
         </h1>
     
 
@@ -370,8 +370,8 @@ ga('send', 'pageview');
                         
     <div class="article-date">
         <i class="fa fa-calendar"></i>
-        <a href="/2017/04/20/Nginx HTTP2编译安装/">
-            <time datetime="2017-04-19T16:00:00.000Z" itemprop="datePublished">2017-04-20</time>
+        <a href="/2017/04/23/深入理解Go runtime/">
+            <time datetime="2017-04-22T16:00:00.000Z" itemprop="datePublished">2017-04-23</time>
         </a>
     </div>
 
@@ -380,7 +380,7 @@ ga('send', 'pageview');
                         
     <div class="article-tag">
         <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/HTTP/">HTTP</a>, <a class="tag-link" href="/tags/Nginx/">Nginx</a>
+        <a class="tag-link" href="/tags/Go/">Go</a>
     </div>
 
                     </div>
@@ -391,24 +391,16 @@ ga('send', 'pageview');
         <div class="article-entry" itemprop="articleBody">
         
             
-            <p>yum apt等包管理系统安装的软件有时候比较旧, 导致一些莫名其妙的问题. 最近在给Nginx加HTTP/2模块中, 编译时加上了<code>--with-http_v2_module</code>参数, 但Chrome请求发现还是不是http2, 后面发现是OpenSSL版本太低. 踩过这一坑后, 感觉Linux下部分软件最好还是自己编译安装比较妥, 如果编译过程出错, 搜下错误信息, 一般是基础依赖没有安装, 很好解决.</p>
-<p>官方的源码编译指南<br><a href="https://nginx.org/en/docs/configure.html" target="_blank" rel="external">https://nginx.org/en/docs/configure.html</a><br><a href="https://nginx.org/en/docs/http/ngx_http_v2_module.html" target="_blank" rel="external">https://nginx.org/en/docs/http/ngx_http_v2_module.html</a> (这里写了需要OpenSSL1.0.2以上版本), 很多选项都有合适的默认值, 比如–prefix=/usr/local/nginx, 所以只需要指定自己需要的字段</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">--user=www-data // 习惯将web相关的服务以www-data用户运行, 如没有此用户可以创建一个也可不加此项按默认nobody用户</div><div class="line">--group=www-data</div><div class="line">--with-http_v2_module // 默认选项不带http2</div><div class="line">--with-http_ssl_module // 默认选项不带ssl, 上http2必须要上ssl的</div><div class="line">--with-stream // https://nginx.org/en/docs/stream/ngx_stream_core_module.html</div><div class="line">--with-pcre=./pcre-8.40 // 需要(version 4.4 — 8.40)的pcre,注意Nginx不支持pcre2</div><div class="line">--with-pcre-jit // 打开pcre JIT支持</div><div class="line">--with-zlib=./zlib-1.2.11 // 需要(version 1.1.3 — 1.2.11)的zlib以支持gzip</div></pre></td></tr></table></figure>
-<p>1.安装OpenSSL 1.0.2以上版本.<a href="https://github.com/openssl/openssl/releases" target="_blank" rel="external">https://github.com/openssl/openssl/releases</a></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">cd /usr/local</div><div class="line">wget https://github.com/openssl/openssl/archive/OpenSSL_1_1_0e.tar.gz</div><div class="line">tar -zxf OpenSSL_1_1_0e.tar.gz</div><div class="line">cd openssl-OpenSSL_1_1_0e</div><div class="line">./config shared –prefix=/usr/local –openssldir=/usr/local/ssl/ </div><div class="line">make &amp;&amp; make install</div></pre></td></tr></table></figure>
-<p>2.<a href="https://nginx.org/en/download.html" target="_blank" rel="external">官网下载Nginx包</a></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">cd /usr/local</div><div class="line">wget https://nginx.org/download/nginx-1.12.0.tar.gz</div><div class="line">tar -zxf nginx-1.12.0.tar.gz</div><div class="line">cd nginx-1.12.0</div></pre></td></tr></table></figure>
-<p>3.<a href="https://ftp.pcre.org/pub/pcre/" target="_blank" rel="external">官网下载pcre</a> (version 1.1.3 — 1.2.11)</p>
-<p>注意Nginx不支持pcre2,下载pcre最新版即可. 解压到Nginx解压的目录</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">wget https://ftp.pcre.org/pub/pcre/pcre-8.40.tar.gz</div><div class="line">tar -zxf pcre-8.40.tar.gz</div></pre></td></tr></table></figure>
-<p>4.<a href="http://zlib.net/" target="_blank" rel="external">官网下载zlib</a>(version 1.1.3 — 1.2.11)</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">wget http://zlib.net/zlib-1.2.11.tar.gz</div><div class="line">tar -zxf zlib-1.2.11.tar.gz</div></pre></td></tr></table></figure>
-<p>5.编译并安装</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">./configure \</div><div class="line">--user=www-data \</div><div class="line">--group=www-data \</div><div class="line">--with-http_v2_module \</div><div class="line">--with-http_ssl_module \</div><div class="line">--with-stream \</div><div class="line">--with-pcre=./pcre-8.40 --with-pcre-jit \</div><div class="line">--with-zlib=./zlib-1.2.11</div><div class="line">make &amp;&amp; make install</div></pre></td></tr></table></figure>
-<p>6.软链OpenSSL lib</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">ln -s /usr/local/lib64/libssl.so.1.1 /usr/lib64/libssl.so.1.1</div><div class="line">ln -s /usr/local/lib64/libcrypto.so.1.1 /usr/lib64/libcrypto.so.1.1</div></pre></td></tr></table></figure>
-<p>7.为了方便操作,软链/usr/local/nginx/sbin/nginx到/usr/local/bin</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">ln -s /usr/local/nginx/sbin/nginx /usr/local/bin</div></pre></td></tr></table></figure>
+            <h3 id="深入理解Goroutines调度"><a href="#深入理解Goroutines调度" class="headerlink" title="深入理解Goroutines调度"></a>深入理解Goroutines调度</h3><ol>
+<li><a href="https://povilasv.me/go-scheduler/" target="_blank" rel="external">GO SCHEDULER: MS, PS &amp; GS</a>  鸟窝的译文:<a href="http://colobu.com/2017/05/04/go-scheduler/" target="_blank" rel="external">http://colobu.com/2017/05/04/go-scheduler/</a></li>
+<li><a href="http://ga0.github.io/golang/2015/09/20/golang-runtime-scheduler.html" target="_blank" rel="external">Golang调度器源码分析</a></li>
+<li><p><a href="http://morsmachine.dk/go-scheduler" target="_blank" rel="external">http://morsmachine.dk/go-scheduler</a></p>
+</li>
+<li><p><a href="https://docs.google.com/document/d/1TTj4T2JO42uD5ID9e89oa0sLKhJYD0Y_kqxDv3I3XMw/edit" target="_blank" rel="external">https://docs.google.com/document/d/1TTj4T2JO42uD5ID9e89oa0sLKhJYD0Y_kqxDv3I3XMw/edit</a></p>
+</li>
+<li><a href="http://www.sizeofvoid.net/goroutine-under-the-hood/" target="_blank" rel="external">http://www.sizeofvoid.net/goroutine-under-the-hood/</a></li>
+</ol>
+
         
         </div>
         <footer class="article-footer">
@@ -418,7 +410,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2017/04/20/Nginx HTTP2编译安装/" data-id="cj2yjk8cl0008zxbzuhyreb7i" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2017/04/23/深入理解Go runtime/" data-id="cj3il2f4k0004cqbzf8lrqwy9" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -486,7 +478,7 @@ ga('send', 'pageview');
 
             
     
-        <a href="https://imhanjm.com/2017/04/20/Nginx HTTP2编译安装/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2017/04/20/Nginx HTTP2编译安装/">评论</a>
+        <a href="https://imhanjm.com/2017/04/23/深入理解Go runtime/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2017/04/23/深入理解Go runtime/">评论</a>
     
 
         </footer>
@@ -497,7 +489,7 @@ ga('send', 'pageview');
 
 
     <nav id="page-nav">
-        <a class="extend prev" rel="prev" href="/page/2/">&laquo; 上一页</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/4/">下一页 &raquo;</a>
+        <a class="extend prev" rel="prev" href="/page/2/">&laquo; 上一页</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/4/">下一页 &raquo;</a>
     </nav>
 </section>
             
@@ -531,25 +523,6 @@ ga('send', 'pageview');
                     <li>
                         
                         <div class="item-thumbnail">
-                            <a href="/2017/05/06/Linux cli下酷工具收集(持续)/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"></p>
-                            <p class="item-title"><a href="/2017/05/06/Linux cli下酷工具收集(持续)/" class="title">Linux Cli下酷工具收集(持续)</a></p>
-                            <p class="item-date"><time datetime="2017-05-05T16:00:00.000Z" itemprop="datePublished">2017-05-06</time></p>
-                        </div>
-                    </li>
-                
-                    <li>
-                        
-                        <div class="item-thumbnail">
                             <a href="/2017/05/06/MacOS下酷工具收集(持续)/" class="thumbnail">
     
     
@@ -562,6 +535,25 @@ ga('send', 'pageview');
                         <div class="item-inner">
                             <p class="item-category"></p>
                             <p class="item-title"><a href="/2017/05/06/MacOS下酷工具收集(持续)/" class="title">MacOS下酷工具收集(持续)</a></p>
+                            <p class="item-date"><time datetime="2017-05-05T16:00:00.000Z" itemprop="datePublished">2017-05-06</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2017/05/06/Linux cli下酷工具收集(持续)/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2017/05/06/Linux cli下酷工具收集(持续)/" class="title">Linux Cli下酷工具收集(持续)</a></p>
                             <p class="item-date"><time datetime="2017-05-05T16:00:00.000Z" itemprop="datePublished">2017-05-06</time></p>
                         </div>
                     </li>
@@ -615,7 +607,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">归档</h3>
         <div class="widget">
-            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">1</span></li></ul>
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -624,7 +616,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签</h3>
         <div class="widget">
-            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cool-tools/">Cool tools</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Macos/">Macos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/">Nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bench/">bench</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log/">log</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/连接池/">连接池</a><span class="tag-list-count">1</span></li></ul>
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cool-tools/">Cool tools</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Macos/">Macos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/">Nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bench/">bench</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log/">log</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/连接池/">连接池</a><span class="tag-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -666,6 +658,10 @@ ga('send', 'pageview');
                 
                     <li>
                         <a href="http://liyangliang.me/">liyangliang</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://www.ideawu.net/blog/">ideawu</a>
                     </li>
                 
                     <li>
