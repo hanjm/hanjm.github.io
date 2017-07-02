@@ -3,17 +3,19 @@
 <head>
     <meta charset="utf-8">
     
-    <title>归档 | hello</title>
+    <title>Go sync.Pool Slice Benchmark | hello</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <meta name="description" content="hanjm&apos;s blog">
-<meta property="og:type" content="website">
-<meta property="og:title" content="hello">
-<meta property="og:url" content="https://imhanjm.com/archives/index.html">
+    <meta name="description" content="纠结于[]struct还是[]*struct直接make([]struct,0) 后append 还是 用sync.Pool make([]struct,100) 写段代码跑个分, 结论是  []*struct的要比[]struct多n次取指针的内存分配, 所有更慢, 如果不用修改结构体元素内的值, 没有必要用指针切片 append[]*struct要比[]struct慢 sync.Pool效果明">
+<meta name="keywords" content="Go,benchmark">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Go sync.Pool Slice Benchmark">
+<meta property="og:url" content="https://imhanjm.com/2017/07/02/Go sync.Pool slice benchmark/index.html">
 <meta property="og:site_name" content="hello">
-<meta property="og:description" content="hanjm&apos;s blog">
+<meta property="og:description" content="纠结于[]struct还是[]*struct直接make([]struct,0) 后append 还是 用sync.Pool make([]struct,100) 写段代码跑个分, 结论是  []*struct的要比[]struct多n次取指针的内存分配, 所有更慢, 如果不用修改结构体元素内的值, 没有必要用指针切片 append[]*struct要比[]struct慢 sync.Pool效果明">
+<meta property="og:updated_time" content="2017-07-02T15:11:30.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="hello">
-<meta name="twitter:description" content="hanjm&apos;s blog">
+<meta name="twitter:title" content="Go sync.Pool Slice Benchmark">
+<meta name="twitter:description" content="纠结于[]struct还是[]*struct直接make([]struct,0) 后append 还是 用sync.Pool make([]struct,100) 写段代码跑个分, 结论是  []*struct的要比[]struct多n次取指针的内存分配, 所有更慢, 如果不用修改结构体元素内的值, 没有必要用指针切片 append[]*struct要比[]struct慢 sync.Pool效果明">
     
 
     
@@ -221,25 +223,21 @@ ga('send', 'pageview');
 </aside>
 
             
-            <section id="main"><div class="timeline timeline-wrap">
-    
-            <div class="timeline-row timeline-row-major">
-                <span class="node"><i class="fa fa-calendar"></i></span>
-                <h1 class="title">2017</h1>
-            </div>
+            <section id="main"><article id="post-Go sync.Pool slice benchmark" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
         
-        <div class="timeline-row">
-            <span class="node"></span>
-            <div class="content">
+        
+            <header class="article-header">
                 
     
-        <h1 itemprop="name">
-            <a class="timeline-article-title" href="/2017/07/02/Go sync.Pool slice benchmark/">Go sync.Pool Slice Benchmark</a>
+        <h1 class="article-title" itemprop="name">
+            Go sync.Pool Slice Benchmark
         </h1>
     
 
-                <div class="article-meta">
-                    
+                
+                    <div class="article-meta">
+                        
     <div class="article-date">
         <i class="fa fa-calendar"></i>
         <a href="/2017/07/02/Go sync.Pool slice benchmark/">
@@ -248,53 +246,146 @@ ga('send', 'pageview');
     </div>
 
 
-                    
-                    
+                        
+                        
     <div class="article-tag">
         <i class="fa fa-tag"></i>
         <a class="tag-link" href="/tags/Go/">Go</a>, <a class="tag-link" href="/tags/benchmark/">benchmark</a>
     </div>
 
-                </div>
-            </div>
-        </div>
-    
-        <div class="timeline-row">
-            <span class="node"></span>
-            <div class="content">
+                    </div>
                 
-    
-        <h1 itemprop="name">
-            <a class="timeline-article-title" href="/2017/06/24/Go最佳实践/">Go最佳实践</a>
-        </h1>
-    
-
-                <div class="article-meta">
-                    
-    <div class="article-date">
-        <i class="fa fa-calendar"></i>
-        <a href="/2017/06/24/Go最佳实践/">
-            <time datetime="2017-06-23T16:00:00.000Z" itemprop="datePublished">2017-06-24</time>
-        </a>
-    </div>
-
-
-                    
-                    
-    <div class="article-tag">
-        <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/Go/">Go</a>
-    </div>
-
-                </div>
-            </div>
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>纠结于<code>[]struct</code>还是<code>[]*struct</code><br>直接<code>make([]struct,0)</code> 后append 还是 用<code>sync.Pool</code> <code>make([]struct,100)</code></p>
+<p>写段代码跑个分, 结论是</p>
+<ol>
+<li><code>[]*struct</code>的要比<code>[]struct</code>多n次取指针的内存分配, 所有更慢, 如果不用修改结构体元素内的值, 没有必要用指针切片</li>
+<li>append<code>[]*struct</code>要比<code>[]struct</code>慢</li>
+<li><code>sync.Pool</code>效果明显</li>
+</ol>
+<p>benchmark结果</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">BenchmarkStructSliceWithoutPool-8                 200000              5458 ns/op           16320 B/op          8 allocs/op</div><div class="line">BenchmarkStructPointerSliceWithoutPool-8          200000              6045 ns/op            8504 B/op        109 allocs/op</div><div class="line">BenchmarkStructSliceWithPool-8                   1000000              1287 ns/op              32 B/op          1 allocs/op</div><div class="line">BenchmarkStructPointerSliceWithPool-8             300000              4910 ns/op            6498 B/op        102 allocs/op</div></pre></td></tr></table></figure>
+<p>benchmark代码</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="keyword">package</span> main</div><div class="line"></div><div class="line"><span class="keyword">import</span> (</div><div class="line">	<span class="string">"sync"</span></div><div class="line">	<span class="string">"testing"</span></div><div class="line">)</div><div class="line"></div><div class="line"><span class="keyword">var</span> structSlicePool = sync.Pool&#123;</div><div class="line">	New: <span class="function"><span class="keyword">func</span><span class="params">()</span> <span class="title">interface</span></span>&#123;&#125; &#123;</div><div class="line">		<span class="keyword">return</span> <span class="built_in">make</span>([]Basic, <span class="number">100</span>)</div><div class="line">	&#125;,</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> structPointerSlicePool = sync.Pool&#123;</div><div class="line">	New: <span class="function"><span class="keyword">func</span><span class="params">()</span> <span class="title">interface</span></span>&#123;&#125; &#123;</div><div class="line">		<span class="keyword">return</span> <span class="built_in">make</span>([]*Basic, <span class="number">100</span>)</div><div class="line">	&#125;,</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">type</span> Basic <span class="keyword">struct</span> &#123;</div><div class="line">	Id, N1, N2, N3, N4, N5 <span class="keyword">int</span></div><div class="line">	Name                   <span class="keyword">string</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkStructSliceWithoutPool</span><span class="params">(b *testing.B)</span></span> &#123;</div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; b.N; i++ &#123;</div><div class="line">		<span class="keyword">var</span> list []Basic</div><div class="line">		<span class="keyword">for</span> j := <span class="number">0</span>; j &lt; <span class="number">101</span>; j++ &#123;</div><div class="line">			<span class="keyword">var</span> data = Basic&#123;Id: j, Name: <span class="string">"Name"</span>&#125;</div><div class="line">			list = <span class="built_in">append</span>(list, data)</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkStructPointerSliceWithoutPool</span><span class="params">(b *testing.B)</span></span> &#123;</div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; b.N; i++ &#123;</div><div class="line">		<span class="keyword">var</span> list []*Basic</div><div class="line">		<span class="keyword">for</span> j := <span class="number">0</span>; j &lt; <span class="number">101</span>; j++ &#123;</div><div class="line">			<span class="keyword">var</span> data = Basic&#123;Id: j, Name: <span class="string">"Name"</span>&#125;</div><div class="line">			list = <span class="built_in">append</span>(list, &amp;data)</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkStructSliceWithPool</span><span class="params">(b *testing.B)</span></span> &#123;</div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; b.N; i++ &#123;</div><div class="line">		list := structSlicePool.Get().([]Basic)</div><div class="line">		initLen := <span class="built_in">len</span>(list)</div><div class="line">		<span class="keyword">for</span> j := <span class="number">0</span>; j &lt; <span class="number">101</span>; j++ &#123;</div><div class="line">			<span class="keyword">var</span> data = Basic&#123;Id: j, Name: <span class="string">"Name"</span>&#125;</div><div class="line">			<span class="keyword">if</span> j &lt; initLen &#123;</div><div class="line">				list[j] = data</div><div class="line">			&#125; <span class="keyword">else</span> &#123;</div><div class="line">				list = <span class="built_in">append</span>(list, data)</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">		structSlicePool.Put(list)</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkStructPointerSliceWithPool</span><span class="params">(b *testing.B)</span></span> &#123;</div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; b.N; i++ &#123;</div><div class="line">		list := structPointerSlicePool.Get().([]*Basic)</div><div class="line">		initLen := <span class="built_in">len</span>(list)</div><div class="line">		<span class="keyword">for</span> j := <span class="number">0</span>; j &lt; <span class="number">101</span>; j++ &#123;</div><div class="line">			<span class="keyword">var</span> data = Basic&#123;Id: j, Name: <span class="string">"Name"</span>&#125;</div><div class="line">			<span class="keyword">if</span> j &lt; initLen &#123;</div><div class="line">				list[j] = &amp;data</div><div class="line">			&#125; <span class="keyword">else</span> &#123;</div><div class="line">				list = <span class="built_in">append</span>(list, &amp;data)</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">		structPointerSlicePool.Put(list)</div><div class="line">	&#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+        
         </div>
-    
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
 </div>
 
-    <nav id="page-nav">
-        <span class="page-number current">1</span><a class="page-number" href="/archives/page/2/">2</a><a class="page-number" href="/archives/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/archives/page/6/">6</a><a class="extend next" rel="next" href="/archives/page/2/">下一页 &raquo;</a>
-    </nav>
+    <a data-url="https://imhanjm.com/2017/07/02/Go sync.Pool slice benchmark/" data-id="cj4muy8nd000ozntyvq2zio8x" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+        <a href="https://imhanjm.com/2017/07/02/Go sync.Pool slice benchmark/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2017/07/02/Go sync.Pool slice benchmark/">评论</a>
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2017/06/24/Go最佳实践/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    Go最佳实践
+                
+            </div>
+        </a>
+    
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
 </section>
             
                 <aside id="sidebar">
@@ -583,11 +674,13 @@ ga('send', 'pageview');
     <script>
     var disqus_config = function () {
         
-        this.page.identifier = 'undefined';
+            this.page.url = 'https://imhanjm.com/2017/07/02/Go sync.Pool slice benchmark/';
+        
+        this.page.identifier = 'Go sync.Pool slice benchmark';
     };
     (function() { 
         var d = document, s = d.createElement('script');  
-        s.src = '//' + 'hanjmblog' + '.disqus.com/count.js';
+        s.src = '//' + 'hanjmblog' + '.disqus.com/embed.js';
         s.setAttribute('data-timestamp', +new Date());
         (d.head || d.body).appendChild(s);
     })();
