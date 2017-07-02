@@ -3,12 +3,12 @@
 <head>
     <meta charset="utf-8">
     
-    <title>hello</title>
+    <title>标签: 架构 | hello</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <meta name="description" content="hanjm&apos;s blog">
 <meta property="og:type" content="website">
 <meta property="og:title" content="hello">
-<meta property="og:url" content="https://imhanjm.com/page/3/index.html">
+<meta property="og:url" content="https://imhanjm.com/tags/架构/index.html">
 <meta property="og:site_name" content="hello">
 <meta property="og:description" content="hanjm&apos;s blog">
 <meta name="twitter:card" content="summary">
@@ -222,272 +222,44 @@ ga('send', 'pageview');
 
             
             <section id="main">
-    <article id="post-mysql连接池问题" class="article article-type-post" itemscope itemprop="blogPost">
-    <div class="article-inner">
-        
-        
-            <header class="article-header">
+<div class="timeline timeline-wrap">
+    <div class="timeline-row timeline-row-major">
+        <span class="node"><i class="fa fa-tag"></i></span>
+        <h1 class="title">#架构</h1>
+    </div>
+    
+        <div class="timeline-row">
+            <span class="node"></span>
+            <div class="content">
                 
     
         <h1 itemprop="name">
-            <a class="article-title" href="/2017/04/26/mysql连接池问题/">Mysql 连接池问题</a>
+            <a class="timeline-article-title" href="/2017/05/04/知名公司后端架构学习(持续)/">知名公司架构资料整理</a>
         </h1>
     
 
-                
-                    <div class="article-meta">
-                        
+                <div class="article-meta">
+                    
     <div class="article-date">
         <i class="fa fa-calendar"></i>
-        <a href="/2017/04/26/mysql连接池问题/">
-            <time datetime="2017-04-25T16:00:00.000Z" itemprop="datePublished">2017-04-26</time>
+        <a href="/2017/05/04/知名公司后端架构学习(持续)/">
+            <time datetime="2017-05-03T16:00:00.000Z" itemprop="datePublished">2017-05-04</time>
         </a>
     </div>
 
 
-                        
-                        
+                    
+                    
     <div class="article-tag">
         <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/Go/">Go</a>, <a class="tag-link" href="/tags/mysql/">mysql</a>, <a class="tag-link" href="/tags/连接池/">连接池</a>
+        <a class="tag-link" href="/tags/架构/">架构</a>
     </div>
 
-                    </div>
-                
-            </header>
-        
-        
-        <div class="article-entry" itemprop="articleBody">
-        
-            
-            <p>最近应用日志里发现了mysql偶尔会出现问题</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">[mysql] 2017/04/26 10:01:05 packets.go:130: write tcp 127.0.0.1:56346-&gt;127.0.0.1:3306: write: broken pipe</div><div class="line">[mysql] 2017/04/26 10:01:05 packets.go:130: write tcp 127.0.0.1:56346-&gt;127.0.0.1:3306: write: broken pipe</div><div class="line">[mysql] 2017/04/26 10:01:05 packets.go:130: write tcp 127.0.0.1:56350-&gt;127.0.0.1:3306: write: broken pipe</div><div class="line">[mysql] 2017/04/26 10:01:05 packets.go:130: write tcp 127.0.0.1:56350-&gt;127.0.0.1:3306: write: broken pipe</div></pre></td></tr></table></figure>
-<p>找GitHub issues, 提到了和mysql的wait_timeout变量有关系, <a href="https://github.com/go-sql-driver/mysql/issues/446" target="_blank" rel="external">https://github.com/go-sql-driver/mysql/issues/446</a>, 于是找MySQL文档<a href="https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#idm140549060476496" target="_blank" rel="external">https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#idm140549060476496</a>.</p>
-<p>相关说明如下:<br>The number of seconds the server waits for activity on a noninteractive connection before closing it.<br>On thread startup, the session wait_timeout value is initialized from the global wait_timeout value or from the global interactive_timeout value, depending on the type of client (as defined by the CLIENT_INTERACTIVE connect option to mysql_real_connect()). See also interactive_timeout.</p>
-<p>默认是28800s, 8小时.<br><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">mysql&gt; show variables like &apos;%wait_timeout%&apos;;                                                                                                                                                                                                                      </div><div class="line">+--------------------------+----------+</div><div class="line">| Variable_name            | Value    |</div><div class="line">+--------------------------+----------+</div><div class="line">| innodb_lock_wait_timeout | 50       |</div><div class="line">| lock_wait_timeout        | 31536000 |</div><div class="line">| wait_timeout             | 28800    |</div><div class="line">+--------------------------+----------+</div><div class="line">3 rows in set (0.00 sec)</div></pre></td></tr></table></figure></p>
-<p>解决办法:<br><figure class="highlight go"><table><tr><td class="code"><pre><div class="line">db.SetConnMaxLifetime(time.Hour*<span class="number">7</span>)</div></pre></td></tr></table></figure></p>
-
-        
+                </div>
+            </div>
         </div>
-        <footer class="article-footer">
-            <div class="share-container">
-
-
-
+    
 </div>
-
-    <a data-url="https://imhanjm.com/2017/04/26/mysql连接池问题/" data-id="cj4mtqxq0000fl9tyl6hi2av2" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
-<script>
-    (function ($) {
-        // Prevent duplicate binding
-        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
-            __SHARE_BUTTON_BINDED__ = true;
-        } else {
-            return;
-        }
-        $('body').on('click', function() {
-            $('.article-share-box.on').removeClass('on');
-        }).on('click', '.article-share-link', function(e) {
-            e.stopPropagation();
-
-            var $this = $(this),
-                url = $this.attr('data-url'),
-                encodedUrl = encodeURIComponent(url),
-                id = 'article-share-box-' + $this.attr('data-id'),
-                offset = $this.offset(),
-                box;
-
-            if ($('#' + id).length) {
-                box = $('#' + id);
-
-                if (box.hasClass('on')){
-                    box.removeClass('on');
-                    return;
-                }
-            } else {
-                var html = [
-                    '<div id="' + id + '" class="article-share-box">',
-                        '<input class="article-share-input" value="' + url + '">',
-                        '<div class="article-share-links">',
-                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
-                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
-                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
-                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
-                        '</div>',
-                    '</div>'
-                ].join('');
-
-              box = $(html);
-
-              $('body').append(box);
-            }
-
-            $('.article-share-box.on').hide();
-
-            box.css({
-                top: offset.top + 25,
-                left: offset.left
-            }).addClass('on');
-
-        }).on('click', '.article-share-box', function (e) {
-            e.stopPropagation();
-        }).on('click', '.article-share-box-input', function () {
-            $(this).select();
-        }).on('click', '.article-share-box-link', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
-        });
-    })(jQuery);
-</script>
-
-            
-    
-        <a href="https://imhanjm.com/2017/04/26/mysql连接池问题/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2017/04/26/mysql连接池问题/">评论</a>
-    
-
-        </footer>
-    </div>
-    
-</article>
-
-
-
-    <article id="post-Go-strings.TrimLeft-strings.TrimPrefix" class="article article-type-post" itemscope itemprop="blogPost">
-    <div class="article-inner">
-        
-        
-            <header class="article-header">
-                
-    
-        <h1 itemprop="name">
-            <a class="article-title" href="/2017/04/24/Go-strings.TrimLeft-strings.TrimPrefix/">Go strings.TrimLeft() strings.TrimPrefix().md</a>
-        </h1>
-    
-
-                
-                    <div class="article-meta">
-                        
-    <div class="article-date">
-        <i class="fa fa-calendar"></i>
-        <a href="/2017/04/24/Go-strings.TrimLeft-strings.TrimPrefix/">
-            <time datetime="2017-04-23T16:00:00.000Z" itemprop="datePublished">2017-04-24</time>
-        </a>
-    </div>
-
-
-                        
-                        
-    <div class="article-tag">
-        <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/Go/">Go</a>
-    </div>
-
-                    </div>
-                
-            </header>
-        
-        
-        <div class="article-entry" itemprop="articleBody">
-        
-            
-            <p>今天在调试时, 有个函数的返回的结果很奇怪, 和预期的输入差了一个字符, 而review代码时却没发现什么问题, 后面各种加<code>logger.Debugf()</code>才发现是<code>strings.TrimLeft()</code>这个函数表现得和自己的预期不一致, 从函数名上看这个是删除字符串左边的字符串, 但是传入一个带<code>:</code>的字符串去调用,发现:后面的字符也被Trim了, 于是去Github issues上搜了下这个问题<a href="https://github.com/golang/go/issues/19371" target="_blank" rel="external">https://github.com/golang/go/issues/19371</a>, 有人也感觉奇怪也反馈过, 解释是 <code>The second argument to Trim is a set of code points, not a prefix/suffix.</code> , 于是去翻了下文档, 确实是这样的.</p>
-<p><code>TrimLeft returns a slice of the string s with all leading Unicode code points contained in cutset removed.</code></p>
-<p>问题复现代码(<code>go 1.8</code>) <a href="https://play.golang.org/p/YtmVQIf2_i" target="_blank" rel="external">https://play.golang.org/p/YtmVQIf2_i</a>:</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="keyword">package</span> main</div><div class="line"></div><div class="line"><span class="keyword">import</span> (</div><div class="line">	<span class="string">"fmt"</span></div><div class="line">	<span class="string">"strings"</span></div><div class="line">)</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</div><div class="line">	str := <span class="string">"friends:d15fc7bb-1e67-11e7-b8a5-00163e008796"</span></div><div class="line">	prefix1 := <span class="string">"friends:"</span></div><div class="line">	prefix2 := <span class="string">"friends"</span></div><div class="line">	fmt.Printf(<span class="string">"%v\n"</span>, strings.TrimLeft(str, prefix1))</div><div class="line">	fmt.Printf(<span class="string">"%v\n"</span>, strings.TrimPrefix(str, prefix1))</div><div class="line">	fmt.Printf(<span class="string">"%v\n"</span>, strings.TrimLeft(str, prefix2))</div><div class="line">	fmt.Printf(<span class="string">"%v\n"</span>, strings.TrimPrefix(str, prefix2))</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>output:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">15fc7bb-1e67-11e7-b8a5-00163e008796</div><div class="line">d15fc7bb-1e67-11e7-b8a5-00163e008796</div><div class="line">:d15fc7bb-1e67-11e7-b8a5-00163e008796</div><div class="line">:d15fc7bb-1e67-11e7-b8a5-00163e008796</div></pre></td></tr></table></figure>
-        
-        </div>
-        <footer class="article-footer">
-            <div class="share-container">
-
-
-
-</div>
-
-    <a data-url="https://imhanjm.com/2017/04/24/Go-strings.TrimLeft-strings.TrimPrefix/" data-id="cj4mtqxpw000al9tyr39dxlvn" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
-<script>
-    (function ($) {
-        // Prevent duplicate binding
-        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
-            __SHARE_BUTTON_BINDED__ = true;
-        } else {
-            return;
-        }
-        $('body').on('click', function() {
-            $('.article-share-box.on').removeClass('on');
-        }).on('click', '.article-share-link', function(e) {
-            e.stopPropagation();
-
-            var $this = $(this),
-                url = $this.attr('data-url'),
-                encodedUrl = encodeURIComponent(url),
-                id = 'article-share-box-' + $this.attr('data-id'),
-                offset = $this.offset(),
-                box;
-
-            if ($('#' + id).length) {
-                box = $('#' + id);
-
-                if (box.hasClass('on')){
-                    box.removeClass('on');
-                    return;
-                }
-            } else {
-                var html = [
-                    '<div id="' + id + '" class="article-share-box">',
-                        '<input class="article-share-input" value="' + url + '">',
-                        '<div class="article-share-links">',
-                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
-                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
-                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
-                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
-                        '</div>',
-                    '</div>'
-                ].join('');
-
-              box = $(html);
-
-              $('body').append(box);
-            }
-
-            $('.article-share-box.on').hide();
-
-            box.css({
-                top: offset.top + 25,
-                left: offset.left
-            }).addClass('on');
-
-        }).on('click', '.article-share-box', function (e) {
-            e.stopPropagation();
-        }).on('click', '.article-share-box-input', function () {
-            $(this).select();
-        }).on('click', '.article-share-box-link', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
-        });
-    })(jQuery);
-</script>
-
-            
-    
-        <a href="https://imhanjm.com/2017/04/24/Go-strings.TrimLeft-strings.TrimPrefix/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2017/04/24/Go-strings.TrimLeft-strings.TrimPrefix/">评论</a>
-    
-
-        </footer>
-    </div>
-    
-</article>
-
-
-
-    <nav id="page-nav">
-        <a class="extend prev" rel="prev" href="/page/2/">&laquo; 上一页</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/4/">下一页 &raquo;</a>
-    </nav>
 </section>
             
                 <aside id="sidebar">
