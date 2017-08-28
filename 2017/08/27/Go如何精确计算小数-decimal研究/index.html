@@ -3,19 +3,19 @@
 <head>
     <meta charset="utf-8">
     
-    <title>DockerContainer下gdb无法正常工作的解决办法 | hello</title>
+    <title>Go如何精确计算小数-Decimal研究 | hello</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <meta name="description" content="昨天想在Mac上使用gdb调试一个Linux下编译的动态链接库, 以正常选项启动一个docker container, 运行gdb却发现如下错误提示. warning: Error disabling address space randomization: Operation not permittedCannot create process: Operation not permittedD">
-<meta name="keywords" content="Docker">
+    <meta name="description" content="##1 浮点数为什么不精确先看两个case // case1: 135.90*100 ====// float32var f1 float32 = 135.90fmt.Println(f1 * 100) // output:13589.999// float64var f2 float64 = 135.90fmt.Println(f2 * 100) // output:13590 浮点数在单精度下">
+<meta name="keywords" content="Go,decimal">
 <meta property="og:type" content="article">
-<meta property="og:title" content="DockerContainer下gdb无法正常工作的解决办法">
-<meta property="og:url" content="https://imhanjm.com/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/index.html">
+<meta property="og:title" content="Go如何精确计算小数-Decimal研究">
+<meta property="og:url" content="https://imhanjm.com/2017/08/27/Go如何精确计算小数-decimal研究/index.html">
 <meta property="og:site_name" content="hello">
-<meta property="og:description" content="昨天想在Mac上使用gdb调试一个Linux下编译的动态链接库, 以正常选项启动一个docker container, 运行gdb却发现如下错误提示. warning: Error disabling address space randomization: Operation not permittedCannot create process: Operation not permittedD">
-<meta property="og:updated_time" content="2017-08-20T15:59:04.000Z">
+<meta property="og:description" content="##1 浮点数为什么不精确先看两个case // case1: 135.90*100 ====// float32var f1 float32 = 135.90fmt.Println(f1 * 100) // output:13589.999// float64var f2 float64 = 135.90fmt.Println(f2 * 100) // output:13590 浮点数在单精度下">
+<meta property="og:updated_time" content="2017-08-27T07:24:56.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="DockerContainer下gdb无法正常工作的解决办法">
-<meta name="twitter:description" content="昨天想在Mac上使用gdb调试一个Linux下编译的动态链接库, 以正常选项启动一个docker container, 运行gdb却发现如下错误提示. warning: Error disabling address space randomization: Operation not permittedCannot create process: Operation not permittedD">
+<meta name="twitter:title" content="Go如何精确计算小数-Decimal研究">
+<meta name="twitter:description" content="##1 浮点数为什么不精确先看两个case // case1: 135.90*100 ====// float32var f1 float32 = 135.90fmt.Println(f1 * 100) // output:13589.999// float64var f2 float64 = 135.90fmt.Println(f2 * 100) // output:13590 浮点数在单精度下">
     
 
     
@@ -223,7 +223,7 @@ ga('send', 'pageview');
 </aside>
 
             
-            <section id="main"><article id="post-DockerContainer下gdb无法正常工作的解决办法" class="article article-type-post" itemscope itemprop="blogPost">
+            <section id="main"><article id="post-Go如何精确计算小数-decimal研究" class="article article-type-post" itemscope itemprop="blogPost">
     <div class="article-inner">
         
         
@@ -231,7 +231,7 @@ ga('send', 'pageview');
                 
     
         <h1 class="article-title" itemprop="name">
-            DockerContainer下gdb无法正常工作的解决办法
+            Go如何精确计算小数-Decimal研究
         </h1>
     
 
@@ -240,8 +240,8 @@ ga('send', 'pageview');
                         
     <div class="article-date">
         <i class="fa fa-calendar"></i>
-        <a href="/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/">
-            <time datetime="2017-08-19T16:00:00.000Z" itemprop="datePublished">2017-08-20</time>
+        <a href="/2017/08/27/Go如何精确计算小数-decimal研究/">
+            <time datetime="2017-08-26T16:00:00.000Z" itemprop="datePublished">2017-08-27</time>
         </a>
     </div>
 
@@ -250,7 +250,7 @@ ga('send', 'pageview');
                         
     <div class="article-tag">
         <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/Docker/">Docker</a>
+        <a class="tag-link" href="/tags/Go/">Go</a>, <a class="tag-link" href="/tags/decimal/">decimal</a>
     </div>
 
                     </div>
@@ -261,18 +261,30 @@ ga('send', 'pageview');
         <div class="article-entry" itemprop="articleBody">
         
             
-            <p>昨天想在Mac上使用gdb调试一个Linux下编译的动态链接库, 以正常选项启动一个docker container, 运行gdb却发现如下错误提示.</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">warning: Error disabling address space randomization: Operation not permitted</div><div class="line">Cannot create process: Operation not permitted</div><div class="line">During startup program exited with code 127.</div><div class="line">(gdb)</div></pre></td></tr></table></figure>
-<p>在google搜索结果里第6个才找到正确答案, <a href="https://www.google.com/search?safe=off&amp;q=docker+gdb+warning%3A+Error+disabling+address+space+randomization%3A+Operation+not+permitted+Cannot+create+process%3A+Operation+not+permitted+During+startup+program+exited+with+code+127&amp;oq=docker+gdb+warning%3A+Error+disabling+address+space+randomization%3A+Operation+not+permitted+Cannot+create+process%3A+Operation+not+permitted+During+startup+program+exited+with+code+127" target="_blank" rel="external">https://www.google.com/search?safe=off&amp;q=docker+gdb+warning%3A+Error+disabling+address+space+randomization%3A+Operation+not+permitted+Cannot+create+process%3A+Operation+not+permitted+During+startup+program+exited+with+code+127&amp;oq=docker+gdb+warning%3A+Error+disabling+address+space+randomization%3A+Operation+not+permitted+Cannot+create+process%3A+Operation+not+permitted+During+startup+program+exited+with+code+127</a>, 原来是docker run中的一个不太常用的选项, docker run –privileged, 加上即可.</p>
-<p>于是找官方文档查看此选项的解释, 了解到: 默认docker是以受限模式下运行container, 如不能在container中运行再运行一个docker, 不能访问宿主机上的真实设备, /dev/, gdb无法访问真实的内存设备.<br>&gt;</p>
+            <p>##1 浮点数为什么不精确<br>先看两个case</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">// case1: 135.90*100 ====</div><div class="line">// float32</div><div class="line">var f1 float32 = 135.90</div><div class="line">fmt.Println(f1 * 100) // output:13589.999</div><div class="line">// float64</div><div class="line">var f2 float64 = 135.90</div><div class="line">fmt.Println(f2 * 100) // output:13590</div></pre></td></tr></table></figure>
+<p>浮点数在单精度下, 135.9*100即出现了偏差, 双精度下结果正确.</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">// case2: 0.1 add 10 times ===</div><div class="line">// float32</div><div class="line">var f3 float32 = 0</div><div class="line">for i := 0; i &lt; 10; i++ &#123;</div><div class="line">	f3 += 0.1</div><div class="line">&#125;</div><div class="line">fmt.Println(f3) //output:1.0000001</div><div class="line"></div><div class="line">// float64</div><div class="line">var f4 float64 = 0</div><div class="line">for i := 0; i &lt; 10; i++ &#123;</div><div class="line">	f4 += 0.1</div><div class="line">&#125;</div><div class="line">fmt.Println(f4) //output:0.9999999999999999</div></pre></td></tr></table></figure>
+<p>0.1加10次, 这下无论是float32和float64都出现了偏差.</p>
+<p>为什么呢, Go和大多数语言一样, 使用标准的<a href="https://zh.wikipedia.org/wiki/IEEE_754" target="_blank" rel="external">IEEE754</a>表示浮点数, 0.1使用二进制表示结果是一个无限循环数, 只能舍入后表示, 累加10次之后就会出现偏差.</p>
+<p>##2 数据库是怎么做的<br>MySQL提供了decimal(p,d)/numberlic(p,d)类型的定点数表示法, 由p位数字(不包括符号、小数点)组成, 小数点后面有d位数字, 占p+2个字节, 计算性能会比double/float类型弱一些. </p>
+<p>##3 Go代码如何实现Decimal<br>在GitHub搜decimal, star数量比较多的是TiDB里的MyDecimal和ithub.com/shopspring/decimal的实现.</p>
+<ul>
+<li><p>shopspring的Decimal实现比较简单, 思路是使用十进制定点数表示法, 有多少位小数就小数点后移多少位, value保存移之后的整数, exp保存小数点后的数位个数, number=value*10^exp, 因为移小数点后的整数可能很大, 所以这里借用标准包里的math/big表示这个大整数. exp使用了int32, 所以这个包最多能表示小数点后有32个十进制数位的情况.</p>
+<p>  Decimal结构体的定义如下</p>
+  <figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">// Decimal represents a fixed-point decimal. It is immutable.</div><div class="line">// number = value * 10 ^ exp</div><div class="line">type Decimal struct &#123;</div><div class="line">	value *big.Int</div><div class="line"></div><div class="line">	// NOTE(vadim): this must be an int32, because we cast it to float64 during</div><div class="line">	// calculations. If exp is 64 bit, we might lose precision.</div><div class="line">	// If we cared about being able to represent every possible decimal, we</div><div class="line">	// could make exp a *big.Int but it would hurt performance and numbers</div><div class="line">	// like that are unrealistic.</div><div class="line">	exp int32</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+<li><p>TiDB里的MyDecimal定义位于<code>github.com/pingcap/tidb/util/types/mydecimal.go</code>, 实现比shopspring的Decimal复杂多了, 也更底层(不依赖math/big), 性能也更好(见下面的benchmark). 其思路是:<br>digitsInt保存数字的整数部分数字个数, digitsFrac保存数字的小数部分数字个数, resultFrac保存计算及序列化时保留至小数点后几位, negative标明数字是否为负数, wordBuf是一个定长的int32数组(长度为9), 数字去掉小数点的主体保存在这里, 一个int32有32个bit, 最大值为(<code>2**31-1</code>)2147483647(10个十进制数), 所以一个int32最多能表示9个十进制数位, 因此wordBuf 最多能容纳9*9个十进制数位.</p>
+  <figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">// MyDecimal represents a decimal value.</div><div class="line">type MyDecimal struct &#123;</div><div class="line">	digitsInt int8 // the number of *decimal* digits before the point.</div><div class="line"></div><div class="line">	digitsFrac int8 // the number of decimal digits after the point.</div><div class="line"></div><div class="line">	resultFrac int8 // result fraction digits.</div><div class="line"></div><div class="line">	negative bool</div><div class="line"></div><div class="line">	//  wordBuf is an array of int32 words.</div><div class="line">	// A word is an int32 value can hold 9 digits.(0 &lt;= word &lt; wordBase)</div><div class="line">	wordBuf [maxWordBufLen]int32</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>看看这两种decimal类型在文首的两个case下的结果, 同时跑个分.</p>
 <blockquote>
-<p>Runtime privilege and Linux capabilities</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">--cap-add: Add Linux capabilities</div><div class="line">--cap-drop: Drop Linux capabilities</div><div class="line">--privileged=false: Give extended privileges to this container</div><div class="line">--device=[]: Allows you to run devices inside the container without the --privileged flag.</div></pre></td></tr></table></figure>
-<p>By default, Docker containers are “unprivileged” and cannot, for example, run a Docker daemon inside a Docker container. This is because by default a container is not allowed to access any devices, but a “privileged” container is given access to all devices (see the documentation on cgroups devices).</p>
-<p>When the operator executes docker run –privileged, Docker will enable access to all devices on the host as well as set some configuration in AppArmor or SELinux to allow the container nearly all the same access to the host as processes running outside containers on the host. Additional information about running with –privileged is available on the Docker Blog.</p>
-<p>If you want to limit access to a specific device or devices you can use the –device flag. It allows you to specify one or more devices that will be accessible within the container.</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">&gt;$ docker run --device=/dev/snd:/dev/snd ...</div><div class="line">&gt;</div></pre></td></tr></table></figure>
+<p>main_test.go</p>
 </blockquote>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">package main</div><div class="line"></div><div class="line">import (</div><div class="line">	&quot;testing&quot;</div><div class="line">	&quot;github.com/shopspring/decimal&quot;</div><div class="line">	&quot;github.com/pingcap/tidb/util/types&quot;</div><div class="line">	&quot;log&quot;</div><div class="line">)</div><div class="line"></div><div class="line">var case1String = &quot;135.90&quot;</div><div class="line">var case1Bytes = []byte(case1String)</div><div class="line">var case2String = &quot;0&quot;</div><div class="line">var case2Bytes = []byte(&quot;0&quot;)</div><div class="line"></div><div class="line">func ShopspringDecimalCase1() decimal.Decimal &#123;</div><div class="line">	dec1, err := decimal.NewFromString(case1String)</div><div class="line">	if err != nil &#123;</div><div class="line">		log.Fatal(err)</div><div class="line">	&#125;</div><div class="line">	dec2 := decimal.NewFromFloat(100)</div><div class="line">	dec3 := dec1.Mul(dec2)</div><div class="line">	return dec3</div><div class="line">&#125;</div><div class="line"></div><div class="line">func TidbDecimalCase1() *types.MyDecimal &#123;</div><div class="line">	dec1 := new(types.MyDecimal)</div><div class="line">	err := dec1.FromString(case1Bytes)</div><div class="line">	if err != nil &#123;</div><div class="line">		log.Fatal(err)</div><div class="line">	&#125;</div><div class="line">	dec2 := new(types.MyDecimal).FromInt(100)</div><div class="line">	dec3 := new(types.MyDecimal)</div><div class="line">	err = types.DecimalMul(dec1, dec2, dec3)</div><div class="line">	if err != nil &#123;</div><div class="line">		log.Fatal(err)</div><div class="line">	&#125;</div><div class="line">	return dec3</div><div class="line">&#125;</div><div class="line"></div><div class="line">func ShopspringDecimalCase2() decimal.Decimal &#123;</div><div class="line">	dec1, err := decimal.NewFromString(case2String)</div><div class="line">	if err != nil &#123;</div><div class="line">		log.Fatal(err)</div><div class="line">	&#125;</div><div class="line">	dec2 := decimal.NewFromFloat(0.1)</div><div class="line">	for i := 0; i &lt; 10; i++ &#123;</div><div class="line">		dec1 = dec1.Add(dec2)</div><div class="line">	&#125;</div><div class="line">	return dec1</div><div class="line">&#125;</div><div class="line"></div><div class="line">func TidbDecimalCase2() *types.MyDecimal &#123;</div><div class="line">	dec1 := new(types.MyDecimal)</div><div class="line">	dec1.FromString(case2Bytes)</div><div class="line">	dec2 := new(types.MyDecimal)</div><div class="line">	dec2.FromFloat64(0.1)</div><div class="line">	for i := 0; i &lt; 10; i++ &#123;</div><div class="line">		types.DecimalAdd(dec1, dec2, dec1)</div><div class="line">	&#125;</div><div class="line">	return dec1</div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line">// case1: 135.90*100 ====</div><div class="line">func BenchmarkShopspringDecimalCase1(b *testing.B) &#123;</div><div class="line">	for i := 0; i &lt; b.N; i++ &#123;</div><div class="line">		ShopspringDecimalCase1()</div><div class="line">	&#125;</div><div class="line">	b.Log(ShopspringDecimalCase1()) // output: 13590</div><div class="line">&#125;</div><div class="line"></div><div class="line">func BenchmarkTidbDecimalCase1(b *testing.B) &#123;</div><div class="line">	for i := 0; i &lt; b.N; i++ &#123;</div><div class="line">		TidbDecimalCase1()</div><div class="line">	&#125;</div><div class="line">	b.Log(TidbDecimalCase1()) //  output: 13590.00</div><div class="line">&#125;</div><div class="line"></div><div class="line">// case2: 0.1 add 10 times ===</div><div class="line">func BenchmarkShopspringDecimalCase2(b *testing.B) &#123;</div><div class="line">	for i := 0; i &lt; b.N; i++ &#123;</div><div class="line">		ShopspringDecimalCase2()</div><div class="line">	&#125;</div><div class="line">	b.Log(ShopspringDecimalCase2()) //  output: 1</div><div class="line">&#125;</div><div class="line"></div><div class="line">func BenchmarkTidbDecimalCase2(b *testing.B) &#123;</div><div class="line">	for i := 0; i &lt; b.N; i++ &#123;</div><div class="line">		TidbDecimalCase2()</div><div class="line">	&#125;</div><div class="line">	b.Log(TidbDecimalCase2()) //  output: 1.0</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">BenchmarkShopspringDecimalCase1-8        2000000               664 ns/op             340 B/op         10 allocs/op</div><div class="line"></div><div class="line">BenchmarkTidbDecimalCase1-8             20000000                99.2 ns/op            48 B/op          1 allocs/op</div><div class="line"></div><div class="line">BenchmarkShopspringDecimalCase2-8         300000              5210 ns/op            4294 B/op        111 allocs/op</div><div class="line"></div><div class="line">BenchmarkTidbDecimalCase2-8              3000000               517 ns/op              83 B/op          3 allocs/op</div></pre></td></tr></table></figure>
+<p>可见两种实现在上面两个case下表示准确, TiDB的decimal实现的性能高于shopspring的实现, 堆内存分配次数也更少.</p>
 
         
         </div>
@@ -283,7 +295,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/" data-id="cj6vin543000v13ty7k2djxg0" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2017/08/27/Go如何精确计算小数-decimal研究/" data-id="cj6vin541000r13ty4xbq4dje" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -351,7 +363,7 @@ ga('send', 'pageview');
 
             
     
-        <a href="https://imhanjm.com/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/">评论</a>
+        <a href="https://imhanjm.com/2017/08/27/Go如何精确计算小数-decimal研究/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2017/08/27/Go如何精确计算小数-decimal研究/">评论</a>
     
 
         </footer>
@@ -360,20 +372,15 @@ ga('send', 'pageview');
         
 <nav id="article-nav">
     
-        <a href="/2017/07/02/Go sync.Pool slice benchmark/" id="article-nav-newer" class="article-nav-link-wrap">
+        <a href="/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/" id="article-nav-newer" class="article-nav-link-wrap">
             <strong class="article-nav-caption">上一篇</strong>
             <div class="article-nav-title">
                 
-                    Go sync.Pool Slice Benchmark
+                    DockerContainer下gdb无法正常工作的解决办法
                 
             </div>
         </a>
     
-    
-        <a href="/2017/08/27/Go如何精确计算小数-decimal研究/" id="article-nav-older" class="article-nav-link-wrap">
-            <strong class="article-nav-caption">下一篇</strong>
-            <div class="article-nav-title">Go如何精确计算小数-Decimal研究</div>
-        </a>
     
 </nav>
 
@@ -681,9 +688,9 @@ ga('send', 'pageview');
     <script>
     var disqus_config = function () {
         
-            this.page.url = 'https://imhanjm.com/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/';
+            this.page.url = 'https://imhanjm.com/2017/08/27/Go如何精确计算小数-decimal研究/';
         
-        this.page.identifier = 'DockerContainer下gdb无法正常工作的解决办法';
+        this.page.identifier = 'Go如何精确计算小数-decimal研究';
     };
     (function() { 
         var d = document, s = d.createElement('script');  

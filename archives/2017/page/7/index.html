@@ -3,19 +3,17 @@
 <head>
     <meta charset="utf-8">
     
-    <title>DockerContainer下gdb无法正常工作的解决办法 | hello</title>
+    <title>归档: 2017 | hello</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <meta name="description" content="昨天想在Mac上使用gdb调试一个Linux下编译的动态链接库, 以正常选项启动一个docker container, 运行gdb却发现如下错误提示. warning: Error disabling address space randomization: Operation not permittedCannot create process: Operation not permittedD">
-<meta name="keywords" content="Docker">
-<meta property="og:type" content="article">
-<meta property="og:title" content="DockerContainer下gdb无法正常工作的解决办法">
-<meta property="og:url" content="https://imhanjm.com/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/index.html">
+    <meta name="description" content="hanjm&apos;s blog">
+<meta property="og:type" content="website">
+<meta property="og:title" content="hello">
+<meta property="og:url" content="https://imhanjm.com/archives/2017/page/7/index.html">
 <meta property="og:site_name" content="hello">
-<meta property="og:description" content="昨天想在Mac上使用gdb调试一个Linux下编译的动态链接库, 以正常选项启动一个docker container, 运行gdb却发现如下错误提示. warning: Error disabling address space randomization: Operation not permittedCannot create process: Operation not permittedD">
-<meta property="og:updated_time" content="2017-08-20T15:59:04.000Z">
+<meta property="og:description" content="hanjm&apos;s blog">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="DockerContainer下gdb无法正常工作的解决办法">
-<meta name="twitter:description" content="昨天想在Mac上使用gdb调试一个Linux下编译的动态链接库, 以正常选项启动一个docker container, 运行gdb却发现如下错误提示. warning: Error disabling address space randomization: Operation not permittedCannot create process: Operation not permittedD">
+<meta name="twitter:title" content="hello">
+<meta name="twitter:description" content="hanjm&apos;s blog">
     
 
     
@@ -223,176 +221,49 @@ ga('send', 'pageview');
 </aside>
 
             
-            <section id="main"><article id="post-DockerContainer下gdb无法正常工作的解决办法" class="article article-type-post" itemscope itemprop="blogPost">
-    <div class="article-inner">
+            <section id="main"><div class="timeline timeline-wrap">
+    
+            <div class="timeline-row timeline-row-major">
+                <span class="node"><i class="fa fa-calendar"></i></span>
+                <h1 class="title">2017</h1>
+            </div>
         
-        
-            <header class="article-header">
+        <div class="timeline-row">
+            <span class="node"></span>
+            <div class="content">
                 
     
-        <h1 class="article-title" itemprop="name">
-            DockerContainer下gdb无法正常工作的解决办法
+        <h1 itemprop="name">
+            <a class="timeline-article-title" href="/2017/03/21/Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比/">Python(Tornado Tornado+uvloop Tornado+uvloop2 Flask Sanic Django) Go(http Httprouter Fasthttp) RPS性能对比</a>
         </h1>
     
 
-                
-                    <div class="article-meta">
-                        
+                <div class="article-meta">
+                    
     <div class="article-date">
         <i class="fa fa-calendar"></i>
-        <a href="/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/">
-            <time datetime="2017-08-19T16:00:00.000Z" itemprop="datePublished">2017-08-20</time>
+        <a href="/2017/03/21/Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比/">
+            <time datetime="2017-03-20T16:00:00.000Z" itemprop="datePublished">2017-03-21</time>
         </a>
     </div>
 
 
-                        
-                        
+                    
+                    
     <div class="article-tag">
         <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/Docker/">Docker</a>
+        <a class="tag-link" href="/tags/bench/">bench</a>
     </div>
 
-                    </div>
-                
-            </header>
-        
-        
-        <div class="article-entry" itemprop="articleBody">
-        
-            
-            <p>昨天想在Mac上使用gdb调试一个Linux下编译的动态链接库, 以正常选项启动一个docker container, 运行gdb却发现如下错误提示.</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">warning: Error disabling address space randomization: Operation not permitted</div><div class="line">Cannot create process: Operation not permitted</div><div class="line">During startup program exited with code 127.</div><div class="line">(gdb)</div></pre></td></tr></table></figure>
-<p>在google搜索结果里第6个才找到正确答案, <a href="https://www.google.com/search?safe=off&amp;q=docker+gdb+warning%3A+Error+disabling+address+space+randomization%3A+Operation+not+permitted+Cannot+create+process%3A+Operation+not+permitted+During+startup+program+exited+with+code+127&amp;oq=docker+gdb+warning%3A+Error+disabling+address+space+randomization%3A+Operation+not+permitted+Cannot+create+process%3A+Operation+not+permitted+During+startup+program+exited+with+code+127" target="_blank" rel="external">https://www.google.com/search?safe=off&amp;q=docker+gdb+warning%3A+Error+disabling+address+space+randomization%3A+Operation+not+permitted+Cannot+create+process%3A+Operation+not+permitted+During+startup+program+exited+with+code+127&amp;oq=docker+gdb+warning%3A+Error+disabling+address+space+randomization%3A+Operation+not+permitted+Cannot+create+process%3A+Operation+not+permitted+During+startup+program+exited+with+code+127</a>, 原来是docker run中的一个不太常用的选项, docker run –privileged, 加上即可.</p>
-<p>于是找官方文档查看此选项的解释, 了解到: 默认docker是以受限模式下运行container, 如不能在container中运行再运行一个docker, 不能访问宿主机上的真实设备, /dev/, gdb无法访问真实的内存设备.<br>&gt;</p>
-<blockquote>
-<p>Runtime privilege and Linux capabilities</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">--cap-add: Add Linux capabilities</div><div class="line">--cap-drop: Drop Linux capabilities</div><div class="line">--privileged=false: Give extended privileges to this container</div><div class="line">--device=[]: Allows you to run devices inside the container without the --privileged flag.</div></pre></td></tr></table></figure>
-<p>By default, Docker containers are “unprivileged” and cannot, for example, run a Docker daemon inside a Docker container. This is because by default a container is not allowed to access any devices, but a “privileged” container is given access to all devices (see the documentation on cgroups devices).</p>
-<p>When the operator executes docker run –privileged, Docker will enable access to all devices on the host as well as set some configuration in AppArmor or SELinux to allow the container nearly all the same access to the host as processes running outside containers on the host. Additional information about running with –privileged is available on the Docker Blog.</p>
-<p>If you want to limit access to a specific device or devices you can use the –device flag. It allows you to specify one or more devices that will be accessible within the container.</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">&gt;$ docker run --device=/dev/snd:/dev/snd ...</div><div class="line">&gt;</div></pre></td></tr></table></figure>
-</blockquote>
-
-        
+                </div>
+            </div>
         </div>
-        <footer class="article-footer">
-            <div class="share-container">
-
-
-
+    
 </div>
 
-    <a data-url="https://imhanjm.com/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/" data-id="cj6vin543000v13ty7k2djxg0" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
-<script>
-    (function ($) {
-        // Prevent duplicate binding
-        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
-            __SHARE_BUTTON_BINDED__ = true;
-        } else {
-            return;
-        }
-        $('body').on('click', function() {
-            $('.article-share-box.on').removeClass('on');
-        }).on('click', '.article-share-link', function(e) {
-            e.stopPropagation();
-
-            var $this = $(this),
-                url = $this.attr('data-url'),
-                encodedUrl = encodeURIComponent(url),
-                id = 'article-share-box-' + $this.attr('data-id'),
-                offset = $this.offset(),
-                box;
-
-            if ($('#' + id).length) {
-                box = $('#' + id);
-
-                if (box.hasClass('on')){
-                    box.removeClass('on');
-                    return;
-                }
-            } else {
-                var html = [
-                    '<div id="' + id + '" class="article-share-box">',
-                        '<input class="article-share-input" value="' + url + '">',
-                        '<div class="article-share-links">',
-                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
-                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
-                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
-                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
-                        '</div>',
-                    '</div>'
-                ].join('');
-
-              box = $(html);
-
-              $('body').append(box);
-            }
-
-            $('.article-share-box.on').hide();
-
-            box.css({
-                top: offset.top + 25,
-                left: offset.left
-            }).addClass('on');
-
-        }).on('click', '.article-share-box', function (e) {
-            e.stopPropagation();
-        }).on('click', '.article-share-box-input', function () {
-            $(this).select();
-        }).on('click', '.article-share-box-link', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
-        });
-    })(jQuery);
-</script>
-
-            
-    
-        <a href="https://imhanjm.com/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/">评论</a>
-    
-
-        </footer>
-    </div>
-    
-        
-<nav id="article-nav">
-    
-        <a href="/2017/07/02/Go sync.Pool slice benchmark/" id="article-nav-newer" class="article-nav-link-wrap">
-            <strong class="article-nav-caption">上一篇</strong>
-            <div class="article-nav-title">
-                
-                    Go sync.Pool Slice Benchmark
-                
-            </div>
-        </a>
-    
-    
-        <a href="/2017/08/27/Go如何精确计算小数-decimal研究/" id="article-nav-older" class="article-nav-link-wrap">
-            <strong class="article-nav-caption">下一篇</strong>
-            <div class="article-nav-title">Go如何精确计算小数-Decimal研究</div>
-        </a>
-    
-</nav>
-
-
-    
-</article>
-
-
-    
-    <section id="comments">
-    
-        
-    <div id="disqus_thread">
-        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-    </div>
-
-    
-    </section>
-
+    <nav id="page-nav">
+        <a class="extend prev" rel="prev" href="/archives/2017/page/6/">&laquo; 上一页</a><a class="page-number" href="/archives/2017/">1</a><span class="space">&hellip;</span><a class="page-number" href="/archives/2017/page/5/">5</a><a class="page-number" href="/archives/2017/page/6/">6</a><span class="page-number current">7</span>
+    </nav>
 </section>
             
                 <aside id="sidebar">
@@ -681,13 +552,11 @@ ga('send', 'pageview');
     <script>
     var disqus_config = function () {
         
-            this.page.url = 'https://imhanjm.com/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/';
-        
-        this.page.identifier = 'DockerContainer下gdb无法正常工作的解决办法';
+        this.page.identifier = 'undefined';
     };
     (function() { 
         var d = document, s = d.createElement('script');  
-        s.src = '//' + 'hanjmblog' + '.disqus.com/embed.js';
+        s.src = '//' + 'hanjmblog' + '.disqus.com/count.js';
         s.setAttribute('data-timestamp', +new Date());
         (d.head || d.body).appendChild(s);
     })();
