@@ -320,7 +320,8 @@ ga('send', 'pageview');
  <figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="comment">// 原版</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">GetBjTime</span><span class="params">()</span> <span class="title">time</span>.<span class="title">Time</span></span> &#123;</div><div class="line"><span class="comment">// 将服务器UTC转成北京时间</span></div><div class="line">uTime := time.Now().UTC()</div><div class="line">dur, _ := time.ParseDuration(<span class="string">"+8h"</span>)</div><div class="line"><span class="keyword">return</span> uTime.Add(dur)</div><div class="line">&#125;</div><div class="line"><span class="comment">// 改</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">GetBjTime</span><span class="params">()</span> <span class="title">time</span>.<span class="title">Time</span></span> &#123;</div><div class="line"><span class="comment">// 将服务器UTC转成北京时间</span></div><div class="line">uTime := time.Now()</div><div class="line"><span class="keyword">return</span> uTime.In(time.FixedZone(<span class="string">"CST"</span>, <span class="number">8</span>*<span class="number">60</span>*<span class="number">60</span>))</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 </li>
 </ol>
-<pre><code>同事用这个方法将得到的time.Time参与计算, 发现多了8个小时. 觉得有问题, 同事和我讨论了之后, 得出结论后就大意直接把原有函数改了, 我们都没有意识到这是个非常危险操作, 只所以危险是因为这个函数已经在很多服务的代码里用着. 之前用这个函数是因为老Java项目运行在时区为东八区的系统上, 大量代码使用东八区时间, 但数据库MySQL时区设置为UTC, go项目运行也在UTC时区. 也就是说, Java项目在把时区为UTC数据库当做是东八区来用, Java程序往里面写东八区的时间字符串, 到了MySQL中虽然字符串是一样的, 但其实是UTC的时间, go代码的mysql连接字符串中loc选项为空, 就会使用UTC时区去解析数据, 拿到的数据会多八个小时. 例如Java代码往mysql插入一条&quot;2017-10-29 22:00:00&quot;数据本意是东八区2017年10月29日22点, 但在MySQL看来, 这是UTC的2017年10月29日22点, 换算成东八区时间为2017年10月30日6点, 如果其它程序解析时认为时间数据是MySQL的UTC时区, 那么会得到一个错误的时间. 所以才会为GO中要往Java代码创建的表写入数据时用`time.Now().UTC().Add(time.Hour\*8)`直接相加八小时使得Java项目行为一致, 拿UTC数据库存东八区时间, 
+<pre><code>同事用这个方法将得到的time.Time参与计算, 发现多了8个小时. 觉得有问题, 同事和我讨论了之后, 得出结论后就大意直接把原有函数改了, 我们都没有意识到这是个非常危险操作, 只所以危险是因为这个函数已经在很多服务的代码里用着(不能乱动公共库!!!). 之前用这个函数是因为老Java项目运行在时区为东八区的系统上, 大量代码使用东八区时间, 但数据库MySQL时区设置为UTC, go项目运行也在UTC时区. 也就是说, Java项目在把时区为UTC数据库当做是东八区来用, Java程序往里面写东八区的时间字符串, 到了MySQL中虽然字符串是一样的, 但其实是UTC的时间, go代码的mysql连接字符串中loc选项为空, 就会使用UTC时区去解析数据, 拿到的数据会多八个小时. 例如Java代码往mysql插入一条&quot;2017-10-29 22:00:00&quot;数据本意是东八区2017年10月29日22点, 但在MySQL看来, 这是UTC的2017年10月29日22点, 换算成东八区时间为2017年10月30日6点, 如果其它程序解析时认为时间数据是MySQL的UTC时区, 那么会得到一个错误的时间. 所以才会为GO中要往Java代码创建的表写入数据时用`time.Now().UTC().Add(time.Hour\*8)`直接相加八小时使得Java项目行为一致, 拿UTC数据库存东八区时间. 
+
 后面想想, 面对这种数据库中有时区不一致数据的情况, 在没有办法统一UTC时区的情况下, 应当使用MySQL标准时间字符串而不是time.Time来传递以避免时区问题, 写入时参数传string类型的时间字符串, 解析时先拿到时间字符串, 然后根据自己的判断这是东八区的时间字符串还是UTC时间字符串进行time.Parse. 比如我想在MySQL中存东八区的2017年10月29日22点, 直接用字符串而不是time.Time转. 原版的`time.Now().UTC().Add(time.Hour\*8).Format(&quot;2006-01-02 15:04:05&quot;)`和修改的`time.Now().In(time.FixedZone(&quot;CST&quot;, 8*60*60))`的输出将是一样, 但后者是正确的东八区现在时间. 原版的GetBjTime()用GetBeijingNowTimeString更能体现本意. 
 </code></pre><h2 id="1-时间有关的标准"><a href="#1-时间有关的标准" class="headerlink" title="1. 时间有关的标准"></a>1. 时间有关的标准</h2><ul>
 <li><p><a href="https://zh.wikipedia.org/wiki/UTC" target="_blank" rel="external">UTC</a> </p>
@@ -352,7 +353,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2017/10/29/深入理解golang时间处理(time.Time)/" data-id="cj9cw5ekq0019on72f61lry5o" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2017/10/29/深入理解golang时间处理(time.Time)/" data-id="cj9cxsytb0019ap72ow3fxqii" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -502,7 +503,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2017/08/27/Go如何精确计算小数-decimal研究/" data-id="cj9cw5ekr001bon72ajigsa4h" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2017/08/27/Go如何精确计算小数-decimal研究/" data-id="cj9cxsytd001eap72nkdind0f" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
