@@ -12,7 +12,7 @@
 <meta property="og:url" content="https://imhanjm.com/2017/10/29/深入理解golang时间处理(time.Time)/index.html">
 <meta property="og:site_name" content="hello">
 <meta property="og:description" content="1. 前言时间包括时间值和时区, 没有包含时区信息的时间是不完整的、有歧义的. 和外界传递或解析时间数据时, 应当像HTTP协议或unix-timestamp那样, 使用没有时区歧义的格式, 如果使用某些没有包含时区的非标准的时间表示格式(如yyyy-mm-dd HH:MM:SS), 是有隐患的, 因为解析时会使用场景的默认设置, 如系统时区, 数据库默认时区可能引发事故. 确保服务器系统、数据库">
-<meta property="og:updated_time" content="2017-10-29T15:03:13.408Z">
+<meta property="og:updated_time" content="2017-10-29T15:09:01.230Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入理解GO时间处理(time.Time)">
 <meta name="twitter:description" content="1. 前言时间包括时间值和时区, 没有包含时区信息的时间是不完整的、有歧义的. 和外界传递或解析时间数据时, 应当像HTTP协议或unix-timestamp那样, 使用没有时区歧义的格式, 如果使用某些没有包含时区的非标准的时间表示格式(如yyyy-mm-dd HH:MM:SS), 是有隐患的, 因为解析时会使用场景的默认设置, 如系统时区, 数据库默认时区可能引发事故. 确保服务器系统、数据库">
@@ -315,10 +315,8 @@ ga('send', 'pageview');
 <h2 id="1-time时区处理不当案例"><a href="#1-time时区处理不当案例" class="headerlink" title="1. time时区处理不当案例"></a>1. time时区处理不当案例</h2><ol>
 <li><p>有个服务频繁使用最新汇率, 所以缓存了最新汇率对象, 汇率对象的过期时间设为第二天北京时间零点, 汇率过期则从数据库中去最新汇率, 设置过期时间的代码如下:</p>
  <figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> startTime <span class="keyword">string</span> = time.Now().UTC().Add(<span class="number">8</span> * 	time.Hour).Format(<span class="string">"2006-01-02"</span>)</div><div class="line">tm2, _ := time.Parse(<span class="string">"2006-01-02"</span>, startTime)</div><div class="line">lastTime = tm2.Unix() + <span class="number">24</span>*<span class="number">60</span>*<span class="number">60</span></div></pre></td></tr></table></figure>
+<p> 这段代码使用了time.Parse, 如果时间格式中没有指定时区, 那么会得到使用本地时区下的第二天零点, 服务器时区设置为UTC0, 于是汇率缓存在UTC零点即北京时间八点才更新.</p>
 </li>
-</ol>
-<pre><code>这段代码使用了time.Parse, 如果时间格式中没有指定时区, 那么会得到使用本地时区下的第二天零点, 服务器时区设置为UTC0, 于是汇率缓存在UTC零点即北京时间八点才更新.
-</code></pre><ol>
 <li><p>公共库中有一个GetBjTime()方法, 注释写着将服务器UTC转成北京时间, 代码如下:</p>
  <figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="comment">// 原版</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">GetBjTime</span><span class="params">()</span> <span class="title">time</span>.<span class="title">Time</span></span> &#123;</div><div class="line"><span class="comment">// 将服务器UTC转成北京时间</span></div><div class="line">uTime := time.Now().UTC()</div><div class="line">dur, _ := time.ParseDuration(<span class="string">"+8h"</span>)</div><div class="line"><span class="keyword">return</span> uTime.Add(dur)</div><div class="line">&#125;</div><div class="line"><span class="comment">// 改</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">GetBjTime</span><span class="params">()</span> <span class="title">time</span>.<span class="title">Time</span></span> &#123;</div><div class="line"><span class="comment">// 将服务器UTC转成北京时间</span></div><div class="line">uTime := time.Now()</div><div class="line"><span class="keyword">return</span> uTime.In(time.FixedZone(<span class="string">"CST"</span>, <span class="number">8</span>*<span class="number">60</span>*<span class="number">60</span>))</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 </li>
@@ -355,7 +353,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2017/10/29/深入理解golang时间处理(time.Time)/" data-id="cj9cvxv2g000smb72ty3ja4b0" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2017/10/29/深入理解golang时间处理(time.Time)/" data-id="cj9cw5ekq0019on72f61lry5o" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
