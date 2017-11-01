@@ -3,18 +3,18 @@
 <head>
     <meta charset="utf-8">
     
-    <title>Go如何精确计算小数-Decimal研究 | hello</title>
+    <title>Go如何精确计算小数-Decimal研究-Tidb MyDecimal问题 | hello</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <meta name="description" content="##1 浮点数为什么不精确先看两个case // case1: 135.90*100 ====// float32var f1 float32 = 135.90fmt.Println(f1 * 100) // output:13589.999// float64var f2 float64 = 135.90fmt.Println(f2 * 100) // output:13590 浮点数在单精度下">
 <meta name="keywords" content="Go,decimal">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Go如何精确计算小数-Decimal研究">
+<meta property="og:title" content="Go如何精确计算小数-Decimal研究-Tidb MyDecimal问题">
 <meta property="og:url" content="https://imhanjm.com/2017/08/27/Go如何精确计算小数-decimal研究/index.html">
 <meta property="og:site_name" content="hello">
 <meta property="og:description" content="##1 浮点数为什么不精确先看两个case // case1: 135.90*100 ====// float32var f1 float32 = 135.90fmt.Println(f1 * 100) // output:13589.999// float64var f2 float64 = 135.90fmt.Println(f2 * 100) // output:13590 浮点数在单精度下">
-<meta property="og:updated_time" content="2017-08-28T02:01:46.000Z">
+<meta property="og:updated_time" content="2017-11-01T14:03:59.660Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Go如何精确计算小数-Decimal研究">
+<meta name="twitter:title" content="Go如何精确计算小数-Decimal研究-Tidb MyDecimal问题">
 <meta name="twitter:description" content="##1 浮点数为什么不精确先看两个case // case1: 135.90*100 ====// float32var f1 float32 = 135.90fmt.Println(f1 * 100) // output:13589.999// float64var f2 float64 = 135.90fmt.Println(f2 * 100) // output:13590 浮点数在单精度下">
     
 
@@ -231,7 +231,7 @@ ga('send', 'pageview');
                 
     
         <h1 class="article-title" itemprop="name">
-            Go如何精确计算小数-Decimal研究
+            Go如何精确计算小数-Decimal研究-Tidb MyDecimal问题
         </h1>
     
 
@@ -267,8 +267,15 @@ ga('send', 'pageview');
 <figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="comment">// case2: 0.1 add 10 times ===</span></div><div class="line"><span class="comment">// float32</span></div><div class="line"><span class="keyword">var</span> f3 <span class="keyword">float32</span> = <span class="number">0</span></div><div class="line"><span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">10</span>; i++ &#123;</div><div class="line">	f3 += <span class="number">0.1</span></div><div class="line">&#125;</div><div class="line">fmt.Println(f3) <span class="comment">//output:1.0000001</span></div><div class="line"></div><div class="line"><span class="comment">// float64</span></div><div class="line"><span class="keyword">var</span> f4 <span class="keyword">float64</span> = <span class="number">0</span></div><div class="line"><span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">10</span>; i++ &#123;</div><div class="line">	f4 += <span class="number">0.1</span></div><div class="line">&#125;</div><div class="line">fmt.Println(f4) <span class="comment">//output:0.9999999999999999</span></div></pre></td></tr></table></figure>
 <p>0.1加10次, 这下无论是float32和float64都出现了偏差.</p>
 <p>为什么呢, Go和大多数语言一样, 使用标准的<a href="https://zh.wikipedia.org/wiki/IEEE_754" target="_blank" rel="external">IEEE754</a>表示浮点数, 0.1使用二进制表示结果是一个无限循环数, 只能舍入后表示, 累加10次之后就会出现偏差.</p>
+<p>此外, 还有几个隐藏的坑<a href="https://play.golang.org/p/bQPbirROmN" target="_blank" rel="external">https://play.golang.org/p/bQPbirROmN</a></p>
+<ol>
+<li>float32和float64直接互转会精度丢失, 四舍五入后错误.</li>
+<li>int64转float64在数值很大的时候出现偏差.</li>
+<li>合理但须注意, 两位小数乘100强转int, 比期望值少了1.<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">package main</div><div class="line"></div><div class="line">import (</div><div class="line">	&quot;fmt&quot;</div><div class="line">)</div><div class="line"></div><div class="line">func main() &#123;</div><div class="line">	// case: float32==&gt;float64</div><div class="line">	// 从数据库中取出80.45, 历史代码用float32接收</div><div class="line">	var a float32 = 80.45</div><div class="line">	var b float64</div><div class="line">	// 有些函数只能接收float64, 只能强转</div><div class="line">	b = float64(a)</div><div class="line">	// 打印出值, 强转后出现偏差</div><div class="line">	fmt.Println(a) //output:80.45</div><div class="line">	fmt.Println(b) //output:80.44999694824219</div><div class="line">	// ... 四舍五入保留小数点后1位, 期望80.5, 结果是80.4</div><div class="line"></div><div class="line">	// case: int64==&gt;float64</div><div class="line">	var c int64 = 987654321098765432</div><div class="line">	fmt.Printf(&quot;%.f\n&quot;, float64(c)) //output:987654321098765440</div><div class="line"></div><div class="line">	// case: int(float64(xx.xx*100))</div><div class="line">	var d float64 = 1129.6</div><div class="line">	var e int64 = int64(d * 100)</div><div class="line">	fmt.Println(e) //output:112959</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ol>
 <p>##2 数据库是怎么做的<br>MySQL提供了decimal(p,d)/numberlic(p,d)类型的定点数表示法, 由p位数字(不包括符号、小数点)组成, 小数点后面有d位数字, 占p+2个字节, 计算性能会比double/float类型弱一些. </p>
-<p>##3 Go代码如何实现Decimal<br>在GitHub搜decimal, star数量比较多的是TiDB里的MyDecimal和ithub.com/shopspring/decimal的实现.</p>
+<p>##3 Go代码如何实现Decimal<br>Java有成熟的标准库java.lang.BigDecimal,Python有标准库Decimal, 可惜GO没有. 在GitHub搜decimal, star数量比较多的是TiDB里的MyDecimal和ithub.com/shopspring/decimal的实现.</p>
 <ul>
 <li><p>shopspring的Decimal实现比较简单, 思路是使用十进制定点数表示法, 有多少位小数就小数点后移多少位, value保存移之后的整数, exp保存小数点后的数位个数, number=value*10^exp, 因为移小数点后的整数可能很大, 所以这里借用标准包里的math/big表示这个大整数. exp使用了int32, 所以这个包最多能表示小数点后有32个十进制数位的情况.</p>
 <p>  Decimal结构体的定义如下</p>
@@ -285,6 +292,14 @@ ga('send', 'pageview');
 <figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="keyword">package</span> main</div><div class="line"></div><div class="line"><span class="keyword">import</span> (</div><div class="line">	<span class="string">"testing"</span></div><div class="line">	<span class="string">"github.com/shopspring/decimal"</span></div><div class="line">	<span class="string">"github.com/pingcap/tidb/util/types"</span></div><div class="line">	<span class="string">"log"</span></div><div class="line">)</div><div class="line"></div><div class="line"><span class="keyword">var</span> case1String = <span class="string">"135.90"</span></div><div class="line"><span class="keyword">var</span> case1Bytes = []<span class="keyword">byte</span>(case1String)</div><div class="line"><span class="keyword">var</span> case2String = <span class="string">"0"</span></div><div class="line"><span class="keyword">var</span> case2Bytes = []<span class="keyword">byte</span>(<span class="string">"0"</span>)</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">ShopspringDecimalCase1</span><span class="params">()</span> <span class="title">decimal</span>.<span class="title">Decimal</span></span> &#123;</div><div class="line">	dec1, err := decimal.NewFromString(case1String)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		log.Fatal(err)</div><div class="line">	&#125;</div><div class="line">	dec2 := decimal.NewFromFloat(<span class="number">100</span>)</div><div class="line">	dec3 := dec1.Mul(dec2)</div><div class="line">	<span class="keyword">return</span> dec3</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">TidbDecimalCase1</span><span class="params">()</span> *<span class="title">types</span>.<span class="title">MyDecimal</span></span> &#123;</div><div class="line">	dec1 := <span class="built_in">new</span>(types.MyDecimal)</div><div class="line">	err := dec1.FromString(case1Bytes)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		log.Fatal(err)</div><div class="line">	&#125;</div><div class="line">	dec2 := <span class="built_in">new</span>(types.MyDecimal).FromInt(<span class="number">100</span>)</div><div class="line">	dec3 := <span class="built_in">new</span>(types.MyDecimal)</div><div class="line">	err = types.DecimalMul(dec1, dec2, dec3)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		log.Fatal(err)</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span> dec3</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">ShopspringDecimalCase2</span><span class="params">()</span> <span class="title">decimal</span>.<span class="title">Decimal</span></span> &#123;</div><div class="line">	dec1, err := decimal.NewFromString(case2String)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		log.Fatal(err)</div><div class="line">	&#125;</div><div class="line">	dec2 := decimal.NewFromFloat(<span class="number">0.1</span>)</div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">10</span>; i++ &#123;</div><div class="line">		dec1 = dec1.Add(dec2)</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span> dec1</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">TidbDecimalCase2</span><span class="params">()</span> *<span class="title">types</span>.<span class="title">MyDecimal</span></span> &#123;</div><div class="line">	dec1 := <span class="built_in">new</span>(types.MyDecimal)</div><div class="line">	dec1.FromString(case2Bytes)</div><div class="line">	dec2 := <span class="built_in">new</span>(types.MyDecimal)</div><div class="line">	dec2.FromFloat64(<span class="number">0.1</span>)</div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">10</span>; i++ &#123;</div><div class="line">		types.DecimalAdd(dec1, dec2, dec1)</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span> dec1</div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// case1: 135.90*100 ====</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkShopspringDecimalCase1</span><span class="params">(b *testing.B)</span></span> &#123;</div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; b.N; i++ &#123;</div><div class="line">		ShopspringDecimalCase1()</div><div class="line">	&#125;</div><div class="line">	b.Log(ShopspringDecimalCase1()) <span class="comment">// output: 13590</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkTidbDecimalCase1</span><span class="params">(b *testing.B)</span></span> &#123;</div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; b.N; i++ &#123;</div><div class="line">		TidbDecimalCase1()</div><div class="line">	&#125;</div><div class="line">	b.Log(TidbDecimalCase1()) <span class="comment">//  output: 13590.00</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// case2: 0.1 add 10 times ===</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkShopspringDecimalCase2</span><span class="params">(b *testing.B)</span></span> &#123;</div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; b.N; i++ &#123;</div><div class="line">		ShopspringDecimalCase2()</div><div class="line">	&#125;</div><div class="line">	b.Log(ShopspringDecimalCase2()) <span class="comment">//  output: 1</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkTidbDecimalCase2</span><span class="params">(b *testing.B)</span></span> &#123;</div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; b.N; i++ &#123;</div><div class="line">		TidbDecimalCase2()</div><div class="line">	&#125;</div><div class="line">	b.Log(TidbDecimalCase2()) <span class="comment">//  output: 1.0</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <figure class="highlight go"><table><tr><td class="code"><pre><div class="line">BenchmarkShopspringDecimalCase1<span class="number">-8</span>        <span class="number">2000000</span>               <span class="number">664</span> ns/op             <span class="number">340</span> B/op         <span class="number">10</span> allocs/op</div><div class="line"></div><div class="line">BenchmarkTidbDecimalCase1<span class="number">-8</span>             <span class="number">20000000</span>                <span class="number">99.2</span> ns/op            <span class="number">48</span> B/op          <span class="number">1</span> allocs/op</div><div class="line"></div><div class="line">BenchmarkShopspringDecimalCase2<span class="number">-8</span>         <span class="number">300000</span>              <span class="number">5210</span> ns/op            <span class="number">4294</span> B/op        <span class="number">111</span> allocs/op</div><div class="line"></div><div class="line">BenchmarkTidbDecimalCase2<span class="number">-8</span>              <span class="number">3000000</span>               <span class="number">517</span> ns/op              <span class="number">83</span> B/op          <span class="number">3</span> allocs/op</div></pre></td></tr></table></figure>
 <p>可见两种实现在上面两个case下表示准确, TiDB的decimal实现的性能高于shopspring的实现, 堆内存分配次数也更少.</p>
+<p>##4. MyDecimal的已知问题</p>
+<p>用了一段时间后, tidb.MyDecimal也有一些问题</p>
+<ol>
+<li>原版乘法有bug, 可以通过除数和被除数同时放大一定倍数临时修复, 更好的解决方法需要官方人员解决, 已提issue, 这个bug真是匪夷所思. <a href="https://github.com/pingcap/tidb/issues/4873" target="_blank" rel="external">https://github.com/pingcap/tidb/issues/4873</a></li>
+<li>原版除法有小问题, 行为不一致, 原版的from1和to不能为同一个指针, 但 Add Sub Div却可以. 可以通过copy参数修复.</li>
+<li>移位小坑, 右移属于扩大数值, 没有问题. 左移有问题, 注意1左移两位不会变成0.01, 所以shift不要传负数.</li>
+<li>round, 目前这个库的Round模式ModeHalfEven实际上是ModeHalfUp, 正常的四舍五入, 不是float的ModeHalfEven. 3.5=&gt;4, 4.5=&gt;5, 5.5=&gt;6, 注意后期是否有变更.</li>
+</ol>
 
         
         </div>
@@ -295,7 +310,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2017/08/27/Go如何精确计算小数-decimal研究/" data-id="cj9fmt1hq00257q72qv6u3mga" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2017/08/27/Go如何精确计算小数-decimal研究/" data-id="cj9h45zlw000r4772lwhgsy6l" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -448,7 +463,7 @@ ga('send', 'pageview');
                         
                         <div class="item-inner">
                             <p class="item-category"></p>
-                            <p class="item-title"><a href="/2017/08/27/Go如何精确计算小数-decimal研究/" class="title">Go如何精确计算小数-Decimal研究</a></p>
+                            <p class="item-title"><a href="/2017/08/27/Go如何精确计算小数-decimal研究/" class="title">Go如何精确计算小数-Decimal研究-Tidb MyDecimal问题</a></p>
                             <p class="item-date"><time datetime="2017-08-26T16:00:00.000Z" itemprop="datePublished">2017-08-27</time></p>
                         </div>
                     </li>
