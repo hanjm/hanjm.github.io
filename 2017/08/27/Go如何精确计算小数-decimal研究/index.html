@@ -12,7 +12,7 @@
 <meta property="og:url" content="https://imhanjm.com/2017/08/27/Go如何精确计算小数-decimal研究/index.html">
 <meta property="og:site_name" content="hello">
 <meta property="og:description" content="##1 浮点数为什么不精确先看两个case // case1: 135.90*100 ====// float32var f1 float32 = 135.90fmt.Println(f1 * 100) // output:13589.999// float64var f2 float64 = 135.90fmt.Println(f2 * 100) // output:13590 浮点数在单精度下">
-<meta property="og:updated_time" content="2017-11-01T14:03:59.660Z">
+<meta property="og:updated_time" content="2017-11-01T14:11:32.461Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Go如何精确计算小数-Decimal研究-Tidb MyDecimal问题">
 <meta name="twitter:description" content="##1 浮点数为什么不精确先看两个case // case1: 135.90*100 ====// float32var f1 float32 = 135.90fmt.Println(f1 * 100) // output:13589.999// float64var f2 float64 = 135.90fmt.Println(f2 * 100) // output:13590 浮点数在单精度下">
@@ -271,9 +271,9 @@ ga('send', 'pageview');
 <ol>
 <li>float32和float64直接互转会精度丢失, 四舍五入后错误.</li>
 <li>int64转float64在数值很大的时候出现偏差.</li>
-<li>合理但须注意, 两位小数乘100强转int, 比期望值少了1.<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">package main</div><div class="line"></div><div class="line">import (</div><div class="line">	&quot;fmt&quot;</div><div class="line">)</div><div class="line"></div><div class="line">func main() &#123;</div><div class="line">	// case: float32==&gt;float64</div><div class="line">	// 从数据库中取出80.45, 历史代码用float32接收</div><div class="line">	var a float32 = 80.45</div><div class="line">	var b float64</div><div class="line">	// 有些函数只能接收float64, 只能强转</div><div class="line">	b = float64(a)</div><div class="line">	// 打印出值, 强转后出现偏差</div><div class="line">	fmt.Println(a) //output:80.45</div><div class="line">	fmt.Println(b) //output:80.44999694824219</div><div class="line">	// ... 四舍五入保留小数点后1位, 期望80.5, 结果是80.4</div><div class="line"></div><div class="line">	// case: int64==&gt;float64</div><div class="line">	var c int64 = 987654321098765432</div><div class="line">	fmt.Printf(&quot;%.f\n&quot;, float64(c)) //output:987654321098765440</div><div class="line"></div><div class="line">	// case: int(float64(xx.xx*100))</div><div class="line">	var d float64 = 1129.6</div><div class="line">	var e int64 = int64(d * 100)</div><div class="line">	fmt.Println(e) //output:112959</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-</li>
+<li>合理但须注意: 两位小数乘100强转int, 比期望值少了1.</li>
 </ol>
+<figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="keyword">package</span> main</div><div class="line"></div><div class="line"><span class="keyword">import</span> (</div><div class="line">	<span class="string">"fmt"</span></div><div class="line">)</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</div><div class="line">	<span class="comment">// case: float32==&gt;float64</span></div><div class="line">	<span class="comment">// 从数据库中取出80.45, 历史代码用float32接收</span></div><div class="line">	<span class="keyword">var</span> a <span class="keyword">float32</span> = <span class="number">80.45</span></div><div class="line">	<span class="keyword">var</span> b <span class="keyword">float64</span></div><div class="line">	<span class="comment">// 有些函数只能接收float64, 只能强转</span></div><div class="line">	b = <span class="keyword">float64</span>(a)</div><div class="line">	<span class="comment">// 打印出值, 强转后出现偏差</span></div><div class="line">	fmt.Println(a) <span class="comment">//output:80.45</span></div><div class="line">	fmt.Println(b) <span class="comment">//output:80.44999694824219</span></div><div class="line">	<span class="comment">// ... 四舍五入保留小数点后1位, 期望80.5, 结果是80.4</span></div><div class="line"></div><div class="line">	<span class="comment">// case: int64==&gt;float64</span></div><div class="line">	<span class="keyword">var</span> c <span class="keyword">int64</span> = <span class="number">987654321098765432</span></div><div class="line">	fmt.Printf(<span class="string">"%.f\n"</span>, <span class="keyword">float64</span>(c)) <span class="comment">//output:987654321098765440</span></div><div class="line"></div><div class="line">	<span class="comment">// case: int(float64(xx.xx*100))</span></div><div class="line">	<span class="keyword">var</span> d <span class="keyword">float64</span> = <span class="number">1129.6</span></div><div class="line">	<span class="keyword">var</span> e <span class="keyword">int64</span> = <span class="keyword">int64</span>(d * <span class="number">100</span>)</div><div class="line">	fmt.Println(e) <span class="comment">//output:112959</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>##2 数据库是怎么做的<br>MySQL提供了decimal(p,d)/numberlic(p,d)类型的定点数表示法, 由p位数字(不包括符号、小数点)组成, 小数点后面有d位数字, 占p+2个字节, 计算性能会比double/float类型弱一些. </p>
 <p>##3 Go代码如何实现Decimal<br>Java有成熟的标准库java.lang.BigDecimal,Python有标准库Decimal, 可惜GO没有. 在GitHub搜decimal, star数量比较多的是TiDB里的MyDecimal和ithub.com/shopspring/decimal的实现.</p>
 <ul>
@@ -310,7 +310,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2017/08/27/Go如何精确计算小数-decimal研究/" data-id="cj9h45zlw000r4772lwhgsy6l" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2017/08/27/Go如何精确计算小数-decimal研究/" data-id="cj9l2gnfm000yai72ltd4vteg" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
