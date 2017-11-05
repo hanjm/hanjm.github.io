@@ -12,7 +12,7 @@
 <meta property="og:url" content="https://imhanjm.com/2017/08/27/Go如何精确计算小数-decimal研究/index.html">
 <meta property="og:site_name" content="hello">
 <meta property="og:description" content="##1 浮点数为什么不精确先看两个case // case1: 135.90*100 ====// float32var f1 float32 = 135.90fmt.Println(f1 * 100) // output:13589.999// float64var f2 float64 = 135.90fmt.Println(f2 * 100) // output:13590 浮点数在单精度下">
-<meta property="og:updated_time" content="2017-11-01T14:11:32.461Z">
+<meta property="og:updated_time" content="2017-11-05T06:17:23.303Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Go如何精确计算小数-Decimal研究-Tidb MyDecimal问题">
 <meta name="twitter:description" content="##1 浮点数为什么不精确先看两个case // case1: 135.90*100 ====// float32var f1 float32 = 135.90fmt.Println(f1 * 100) // output:13589.999// float64var f2 float64 = 135.90fmt.Println(f2 * 100) // output:13590 浮点数在单精度下">
@@ -295,8 +295,8 @@ ga('send', 'pageview');
 <p>##4. MyDecimal的已知问题</p>
 <p>用了一段时间后, tidb.MyDecimal也有一些问题</p>
 <ol>
-<li>原版乘法有bug, 可以通过除数和被除数同时放大一定倍数临时修复, 更好的解决方法需要官方人员解决, 已提issue, 这个bug真是匪夷所思. <a href="https://github.com/pingcap/tidb/issues/4873" target="_blank" rel="external">https://github.com/pingcap/tidb/issues/4873</a></li>
-<li>原版除法有小问题, 行为不一致, 原版的from1和to不能为同一个指针, 但 Add Sub Div却可以. 可以通过copy参数修复.</li>
+<li>原版除法有bug, 可以通过除数和被除数同时放大一定倍数临时修复, 更好的解决方法需要官方人员解决, 已提issue, 这个bug真是匪夷所思. <a href="https://github.com/pingcap/tidb/issues/4873" target="_blank" rel="external">https://github.com/pingcap/tidb/issues/4873</a>, 2017.11.3官方修复decimal除法问题:<a href="https://github.com/pingcap/tidb/pull/4995/files" target="_blank" rel="external">https://github.com/pingcap/tidb/pull/4995/files</a>.</li>
+<li>原版乘法有小问题, 行为不一致, 原版的from1和to不能为同一个指针, 但 Add Sub Div却可以. 可以通过copy参数修复.</li>
 <li>移位小坑, 右移属于扩大数值, 没有问题. 左移有问题, 注意1左移两位不会变成0.01, 所以shift不要传负数.</li>
 <li>round, 目前这个库的Round模式ModeHalfEven实际上是ModeHalfUp, 正常的四舍五入, 不是float的ModeHalfEven. 3.5=&gt;4, 4.5=&gt;5, 5.5=&gt;6, 注意后期是否有变更.</li>
 </ol>
@@ -310,7 +310,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2017/08/27/Go如何精确计算小数-decimal研究/" data-id="cj9l2gnfm000yai72ltd4vteg" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2017/08/27/Go如何精确计算小数-decimal研究/" data-id="cj9md8ufu000x6x72timhlr33" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
