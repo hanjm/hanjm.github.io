@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <meta charset="utf-8">
+    
+    <title>深入理解NATS &amp; NATS Streaming (踩坑记) | hello</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="简介NATS Server是一个高性能的, cloud native的, 基于发布订阅机制的消息系统, 没有消息持久化功能.NATS Streaming Server是基于NATS Server的, 增加消息持久化功能的消息系统. NATS Streaming 持久化特性踩坑记官网的文档并不详细, 很多重要的技术细节没说, 看了官网的文档之后发现用法很简单, 然后直接去写代码, 写publishe">
+<meta name="keywords" content="Go,NATS,NATS Streaming,消息队列">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解NATS & NATS Streaming (踩坑记)">
+<meta property="og:url" content="https://imhanjm.com/2018/02/17/深入理解NATS & NATS Streaming/index.html">
+<meta property="og:site_name" content="hello">
+<meta property="og:description" content="简介NATS Server是一个高性能的, cloud native的, 基于发布订阅机制的消息系统, 没有消息持久化功能.NATS Streaming Server是基于NATS Server的, 增加消息持久化功能的消息系统. NATS Streaming 持久化特性踩坑记官网的文档并不详细, 很多重要的技术细节没说, 看了官网的文档之后发现用法很简单, 然后直接去写代码, 写publishe">
+<meta property="og:updated_time" content="2018-02-17T16:04:33.739Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深入理解NATS & NATS Streaming (踩坑记)">
+<meta name="twitter:description" content="简介NATS Server是一个高性能的, cloud native的, 基于发布订阅机制的消息系统, 没有消息持久化功能.NATS Streaming Server是基于NATS Server的, 增加消息持久化功能的消息系统. NATS Streaming 持久化特性踩坑记官网的文档并不详细, 很多重要的技术细节没说, 看了官网的文档之后发现用法很简单, 然后直接去写代码, 写publishe">
+    
+
+    
+        <link rel="alternate" href="/" title="hello" type="application/atom+xml" />
+    
+
+    
+        <link rel="icon" href="/css/images/favicon.ico" />
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css">
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-97868201-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">hello</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">Home</a>
+                
+                    <a class="main-nav-link" href="/archives">Archives</a>
+                
+                    <a class="main-nav-link" href="/categories">Categories</a>
+                
+                    <a class="main-nav-link" href="/tags">Tags</a>
+                
+                    <a class="main-nav-link" href="/about">About</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png" />
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么..." />
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">Home</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">Archives</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">Categories</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">Tags</a></td>
+                
+                    <td><a class="main-nav-link" href="/about">About</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png" />
+            <h2 id="name">hanjm</h2>
+            <h3 id="title">Golang &amp; Python backend</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Shenzhen, China</span>
+            <a id="follow" target="_blank" href="https://github.com/hanjm/">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                16
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                18
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="http://github.com/hanjm/" target="_blank" title="github" class=tooltip>
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="twitter" class=tooltip>
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="facebook" class=tooltip>
+                            <i class="fa fa-facebook"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="dribbble" class=tooltip>
+                            <i class="fa fa-dribbble"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="rss" class=tooltip>
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-深入理解NATS &amp; NATS Streaming" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            深入理解NATS &amp; NATS Streaming (踩坑记)
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/02/17/深入理解NATS & NATS Streaming/">
+            <time datetime="2018-02-16T16:00:00.000Z" itemprop="datePublished">2018-02-17</time>
+        </a>
+    </div>
+
+
+                        
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/Go/">Go</a>, <a class="tag-link" href="/tags/NATS/">NATS</a>, <a class="tag-link" href="/tags/NATS-Streaming/">NATS Streaming</a>, <a class="tag-link" href="/tags/消息队列/">消息队列</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>NATS Server是一个高性能的, cloud native的, 基于发布订阅机制的消息系统, 没有消息持久化功能.<br>NATS Streaming Server是基于NATS Server的, 增加消息持久化功能的消息系统.</p>
+<h2 id="NATS-Streaming-持久化特性踩坑记"><a href="#NATS-Streaming-持久化特性踩坑记" class="headerlink" title="NATS Streaming 持久化特性踩坑记"></a>NATS Streaming 持久化特性踩坑记</h2><p>官网的文档并不详细, 很多重要的技术细节没说, 看了官网的文档之后发现用法很简单, 然后直接去写代码, 写publisher代码没什么问题, 写subscriber代码也能正常工作. 但是subscriber一重启, 重启后重启期间publisher发的消息不会继续收到, 说好的持久化呢? 我把官网的文档翻了遍也没找到答案. 最后在项目的readme.md中找到了答案: 要让subscriber重启后能继续收到重启期间发过来的消息且不重复消息, 必须在调用<code>Subscribe(subject string, cb MsgHandler, opts ...SubscriptionOption) (Subscription, error)</code>订阅时设置一样的durableName, 且重启后连接时<code>Connect(stanClusterID, clientID string, options ...Option) (Conn, error)</code>ClusterID、clientID不能变.</p>
+<p>要想理解NATS和NATS Streaming的特性, server和client的readme文档都需要仔细阅读, 特别是nats-streaming服务端的readme. 代码也值得阅读研究.</p>
+<ul>
+<li>gnatsd服务端 <a href="https://github.com/nats-io/gnatsd" target="_blank" rel="external">https://github.com/nats-io/gnatsd</a></li>
+<li>gnatsd客户端 <a href="https://github.com/nats-io/go-nats" target="_blank" rel="external">https://github.com/nats-io/go-nats</a></li>
+<li>nats-streaming服务端 <a href="https://github.com/nats-io/nats-streaming-server" target="_blank" rel="external">https://github.com/nats-io/nats-streaming-server</a></li>
+<li>nats-streaming客户端 <a href="https://github.com/nats-io/go-nats-streaming" target="_blank" rel="external">https://github.com/nats-io/go-nats-streaming</a></li>
+</ul>
+<h2 id="重要特性说明"><a href="#重要特性说明" class="headerlink" title="重要特性说明"></a>重要特性说明</h2><ol>
+<li>当subject没有被订阅时, 消息会被直接丢弃, 所以重启订阅者会丢消息, 解决办法: 要么开2个以上客户端实例, 组成队列订阅QueueSubscribe, 要么换NATS Streaming.</li>
+<li>clientID和durableName对于NATS Streaming非常重要. 要让subscriber重启后能继续收到重启期间发过来的消息且不重复消息, 必须在调用<code>Subscribe(subject string, cb MsgHandler, opts ...SubscriptionOption) (Subscription, error)</code>订阅时设置一样的durableName, 调用<code>Connect(stanClusterID, clientID string, options ...Option) (Conn, error)</code>连接时ClusterID、clientID不能变. 程序关闭时应该使用Close而不是Unsubscribe, Unsubscribe()会删除在server端删除该持久化订阅.<blockquote>
+<p>This client ID links a given connection to its published messages, subscriptions, especially durable subscriptions. Indeed, durable subscriptions are stored as a combination of the client ID and durable name.<br>If an application wishes to resume message consumption from where it previously stopped, it needs to create a durable subscription. It does so by providing a durable name, which is combined with the client ID provided when the client created its connection. The server then maintain the state for this subscription even after the client connection is closed.<br> Note: The starting position given by the client when restarting a durable subscription is ignored.<br> When the application wants to stop receiving messages on a durable subscription, it should close - but <em>not unsubscribe</em>- this subscription. If a given client library does not have the option to close a subscription, the application should close the connection instead.<br> When the application wants to delete the subscription, it must unsubscribe it. Once unsubscribed, the state is removed and it is then possible to re-use the durable name, but it will be considered a brand new durable subscription, with the start position being the one given by the client when creating the durable subscription.</p>
+</blockquote>
+</li>
+</ol>
+<h4 id=""><a href="#" class="headerlink" title=""></a><a href="https://github.com/nats-io/nats-streaming-server#queue-group" target="_blank" rel="external"></a></h4><ol>
+<li><p>NATS连接时可以设置客户端的名字, 这样在monitor界面中的/connz就能方便地看到各个客户端的统计数据.</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">// Options that can be passed to Connect.   // Name is an Option to set the client name. func Name(name string) Option &#123;</div><div class="line">   return func(o *Options) error &#123;</div><div class="line">      o.Name = name</div><div class="line">      return nil</div><div class="line">   &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">type ConnInfo struct &#123;</div><div class="line">	Cid            uint64    `json:&quot;cid&quot;`</div><div class="line">	IP             string    `json:&quot;ip&quot;`</div><div class="line">	Port           int       `json:&quot;port&quot;`</div><div class="line">	Start          time.Time `json:&quot;start&quot;`</div><div class="line">	LastActivity   time.Time `json:&quot;last_activity&quot;`</div><div class="line">	Uptime         string    `json:&quot;uptime&quot;`</div><div class="line">	Idle           string    `json:&quot;idle&quot;`</div><div class="line">	Pending        int       `json:&quot;pending_bytes&quot;`</div><div class="line">	InMsgs         int64     `json:&quot;in_msgs&quot;`</div><div class="line">	OutMsgs        int64     `json:&quot;out_msgs&quot;`</div><div class="line">	InBytes        int64     `json:&quot;in_bytes&quot;`</div><div class="line">	OutBytes       int64     `json:&quot;out_bytes&quot;`</div><div class="line">	NumSubs        uint32    `json:&quot;subscriptions&quot;`</div><div class="line">	Name           string    `json:&quot;name,omitempty&quot;`</div><div class="line">	Lang           string    `json:&quot;lang,omitempty&quot;`</div><div class="line">	Version        string    `json:&quot;version,omitempty&quot;`</div><div class="line">	TLSVersion     string    `json:&quot;tls_version,omitempty&quot;`</div><div class="line">	TLSCipher      string    `json:&quot;tls_cipher_suite,omitempty&quot;`</div><div class="line">	AuthorizedUser string    `json:&quot;authorized_user,omitempty&quot;`</div><div class="line">	Subs           []string  `json:&quot;subscriptions_list,omitempty&quot;`</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+<li><p>使用.来分隔subject的级别. NATS允许subject包含斜杠/符号, 但NATS Streaming不允许, 因为NATS Streaming持久化时会使用subject名字来作为文件夹名, </p>
+<ul>
+<li>NATS的subject可以为任意不为空的字符串, 具体的subject不能包含通配符’*’和’&gt;’.</li>
+<li>NATS Streaming的subject不能为空, 首尾不能为点’.’, 不能包含两个连续的点’.’, 由于暂时不支持通配符订阅功能, 所以不能包含’*’和’&gt;’.</li>
+</ul>
+</li>
+<li>NATS Streaming Server实际上是内嵌了一个NATS Server, 自己作为NATS的客户端. NATS Streaming的客户端实际上没有和NATS Streaming Server直接连接, 而是连接内嵌的NATS Server, NATS Streaming Server通过订阅客户端的心跳来知道NATS Streaming客户端连接有没有断开. 所以它强烈建议客户端退出程序时主动Close.</li>
+<li>NATS可以热重新加载配置, 发送SIGHUP信号或<code>gnatsd -sl reload</code>即可.</li>
+<li>开发环境可以加<code>-V</code>参数了解NATS, 生产环境就没必要了, 否则会把发过来的消息全打在日志里.</li>
+<li>你甚至可以用NATS的client包publish消息到NATS Streaming, NATS的client可以subscribe, 但NATS Streaming的client无法subscribe, 因为内部的subject变了. 最好不用混用, 容易出问题.</li>
+<li><p>NATS Streaming客户端连接时提供的ClusterID和服务端启动配置的ClusterID不一致时会报, 有人表示费解吐槽过, <a href="https://github.com/nats-io/nats-streaming-server/issues/309" target="_blank" rel="external">https://github.com/nats-io/nats-streaming-server/issues/309</a>, 但官方解释说没有问题, Timeout也说的通.</p>
+<blockquote>
+<p>If you provide a cluster ID not used by any of the servers in the network, no server will respond to the client, hence the timeout error message from the client library. If anything, this is an error message that needs to be updated in the client libraries, not in the server.</p>
+</blockquote>
+</li>
+<li><p>ChanSubscribe方式的客户端优雅关闭, 等待消息处理完成.</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">package main</div><div class="line"></div><div class="line">import (</div><div class="line">   &quot;fmt&quot;</div><div class="line"> &quot;os&quot; &quot;syscall&quot; &quot;os/signal&quot; &quot;github.com/nats-io/go-nats&quot; &quot;sync&quot; )</div><div class="line"></div><div class="line">func main() &#123;</div><div class="line">   n, err := nats.Connect(&quot;nats://127.0.0.1:7222&quot;,</div><div class="line">  nats.Name(&quot;test_client&quot;),</div><div class="line">  nats.UserInfo(&quot;&quot;, &quot;&quot;))</div><div class="line">   if err != nil &#123;</div><div class="line">      panic(err)</div><div class="line">   &#125;</div><div class="line">   subject := &quot;test&quot;</div><div class="line">  msgCh := make(chan *nats.Msg, nats.DefaultMaxChanLen)</div><div class="line">   _, err = n.ChanSubscribe(subject, msgCh)</div><div class="line">   if err != nil &#123;</div><div class="line">      panic(err)</div><div class="line">   &#125;</div><div class="line">   wg := sync.WaitGroup&#123;&#125;</div><div class="line">   for i := 0; i &lt; 2; i++ &#123;</div><div class="line">      wg.Add(1)</div><div class="line">      go func() &#123;</div><div class="line">         defer wg.Done()</div><div class="line">         // msg handler</div><div class="line">  for msg := range msgCh &#123;</div><div class="line">            fmt.Printf(&quot;%s\n&quot;, msg.Data)</div><div class="line">         &#125;</div><div class="line">      &#125;()</div><div class="line">   &#125;</div><div class="line">   quit := make(chan os.Signal)</div><div class="line">   signal.Notify(quit, syscall.SIGQUIT,</div><div class="line">  syscall.SIGTERM,</div><div class="line">  syscall.SIGINT,</div><div class="line">  syscall.SIGUSR1,</div><div class="line">  syscall.SIGUSR2)</div><div class="line">   select &#123;</div><div class="line">   case &lt;-quit:</div><div class="line">      defer wg.Wait()</div><div class="line">      // close msgCh and wait process ok</div><div class="line">      close(msgCh)</div><div class="line">      n.Flush()</div><div class="line">      n.Close()</div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<h2 id="NATS代码中的技巧"><a href="#NATS代码中的技巧" class="headerlink" title="NATS代码中的技巧"></a>NATS代码中的技巧</h2><ol>
+<li><p>很有用的Go风格的可选参数设计模式, 很多地方见过.</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">// Option is a function on the options for a connection. </div><div class="line">type Option func(*Options) error</div><div class="line"></div><div class="line">// Options can be used to create a customized connection. </div><div class="line">type Options struct &#123; </div><div class="line">  Url string   </div><div class="line"> ... </div><div class="line">  User string</div><div class="line">  Password string</div><div class="line">&#125;</div><div class="line">var DefaultOptions = Options&#123;</div><div class="line">   AllowReconnect:   true,</div><div class="line">  MaxReconnect:     DefaultMaxReconnect,</div><div class="line">  ReconnectWait:    DefaultReconnectWait,</div><div class="line">  Timeout:          DefaultTimeout,</div><div class="line">  PingInterval:     DefaultPingInterval,</div><div class="line">  MaxPingsOut:      DefaultMaxPingOut,</div><div class="line">  SubChanLen:       DefaultMaxChanLen,</div><div class="line">  ReconnectBufSize: DefaultReconnectBufSize,</div><div class="line">  Dialer: &amp;net.Dialer&#123;</div><div class="line">      Timeout: DefaultTimeout,</div><div class="line">  &#125;, &#125;</div><div class="line"></div><div class="line">// Connect will attempt to connect to the NATS system. </div><div class="line">// The url can contain username/password semantics. e.g. nats://derek:pass@localhost:4222 </div><div class="line">// Comma separated arrays are also supported, e.g. urlA, urlB. </div><div class="line">// Options start with the defaults but can be overridden. </div><div class="line">func Connect(url string, options ...Option) (*Conn, error) &#123;</div><div class="line">   opts := DefaultOptions</div><div class="line">   opts.Servers = processUrlString(url)</div><div class="line">   for _, opt := range options &#123;</div><div class="line">      if err := opt(&amp;opts); err != nil &#123;</div><div class="line">         return nil, err</div><div class="line">      &#125;</div><div class="line">   &#125;</div><div class="line">   return opts.Connect()</div><div class="line">&#125;</div><div class="line"></div><div class="line">// Options that can be passed to Connect.   // Name is an Option to set the client name. func Name(name string) Option &#123;</div><div class="line">   return func(o *Options) error &#123;</div><div class="line">      o.Name = name</div><div class="line">      return nil</div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+<li><p>使用ringBuffer限制消息数量</p>
+<blockquote>
+<pre><code>You can view a message log as a ring buffer. Messages are appended to the end of the log. If a limit is set globally for all channels, or specifically for this channel, when the limit is reached, older messages are removed to make room for the new ones.
+</code></pre></blockquote>
+</li>
+<li><p>用reflect来绑定任意类型的chan</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">chVal := reflect.ValueOf(channel)</div><div class="line">if chVal.Kind() != reflect.Chan &#123;</div><div class="line">   return ErrChanArg</div><div class="line">&#125;</div><div class="line">val, ok := chVal.Recv()</div><div class="line">if !ok &#123;</div><div class="line">   // Channel has most likely been closed.</div><div class="line">  return </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<h2 id="TODO-cluster研究"><a href="#TODO-cluster研究" class="headerlink" title="TODO cluster研究"></a>TODO cluster研究</h2>
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="https://imhanjm.com/2018/02/17/深入理解NATS & NATS Streaming/" data-id="cjdrk6qzr000yvk72iul64nw9" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+        <a href="https://imhanjm.com/2018/02/17/深入理解NATS & NATS Streaming/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2018/02/17/深入理解NATS &amp; NATS Streaming/">评论</a>
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2017/10/29/深入理解golang时间处理(time.Time)/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    深入理解GO时间处理(time.Time)
+                
+            </div>
+        </a>
+    
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
+</section>
+            
+                <aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="">
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2018/02/17/深入理解NATS & NATS Streaming/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2018/02/17/深入理解NATS & NATS Streaming/" class="title">深入理解NATS &amp; NATS Streaming (踩坑记)</a></p>
+                            <p class="item-date"><time datetime="2018-02-16T16:00:00.000Z" itemprop="datePublished">2018-02-17</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2017/10/29/深入理解golang时间处理(time.Time)/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2017/10/29/深入理解golang时间处理(time.Time)/" class="title">深入理解GO时间处理(time.Time)</a></p>
+                            <p class="item-date"><time datetime="2017-10-28T16:00:00.000Z" itemprop="datePublished">2017-10-29</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2017/08/27/Go如何精确计算小数-decimal研究/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2017/08/27/Go如何精确计算小数-decimal研究/" class="title">Go如何精确计算小数-Decimal研究-Tidb MyDecimal问题</a></p>
+                            <p class="item-date"><time datetime="2017-08-26T16:00:00.000Z" itemprop="datePublished">2017-08-27</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/" class="title">DockerContainer下gdb无法正常工作的解决办法</a></p>
+                            <p class="item-date"><time datetime="2017-08-19T16:00:00.000Z" itemprop="datePublished">2017-08-20</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2017/07/02/Go sync.Pool slice benchmark/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2017/07/02/Go sync.Pool slice benchmark/" class="title">Go sync.Pool Slice Benchmark</a></p>
+                            <p class="item-date"><time datetime="2017-07-01T16:00:00.000Z" itemprop="datePublished">2017-07-02</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cool-tools/">Cool tools</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Macos/">Macos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS/">NATS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS-Streaming/">NATS Streaming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/">Nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bench/">bench</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/decimal/">decimal</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log/">log</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/时间处理/">时间处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/架构/">架构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/连接池/">连接池</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Cool-tools/" style="font-size: 15px;">Cool tools</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Go/" style="font-size: 20px;">Go</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Macos/" style="font-size: 10px;">Macos</a> <a href="/tags/NATS/" style="font-size: 10px;">NATS</a> <a href="/tags/NATS-Streaming/" style="font-size: 10px;">NATS Streaming</a> <a href="/tags/Nginx/" style="font-size: 10px;">Nginx</a> <a href="/tags/bench/" style="font-size: 10px;">bench</a> <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a> <a href="/tags/decimal/" style="font-size: 10px;">decimal</a> <a href="/tags/log/" style="font-size: 10px;">log</a> <a href="/tags/mysql/" style="font-size: 10px;">mysql</a> <a href="/tags/时间处理/" style="font-size: 10px;">时间处理</a> <a href="/tags/架构/" style="font-size: 10px;">架构</a> <a href="/tags/消息队列/" style="font-size: 10px;">消息队列</a> <a href="/tags/连接池/" style="font-size: 10px;">连接池</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="">(一些有趣的博客)</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://taozj.org/201612/study-conclusion-stage.html">taozj</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://lanlingzi.cn/">lanlingzi</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://colobu.com/">鸟窝</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://cizixs.com/">cizixs</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://liaoph.com/">liaoph</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://liyangliang.me/">liyangliang</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://www.ideawu.net/blog/">ideawu</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://legendtkl.com/">legendtkl</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://blog.csdn.net/v_JULY_v">算法之道</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://surmon.me">surmon</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://shanshanpt.github.io/">shanshanpt</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://www.zddhub.com/">zddhub</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://luodw.cc/">luodw</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://zenlife.tk/index">TiDB</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://xiequan.info/">谢权SELF</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://www.songjiayang.com/">songjiayang</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://cjting.me/">cjting</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://kingname.info/">kingname</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://mritd.me/">漠然</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://blog.xiayf.cn/gitbook/tech-note">xiayf</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://www.40huo.cn/">40huo</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://www.nosuchfield.com/">nosuchfield</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://holys.im/">holys</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://icymind.com/">icymind</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://hackjutsu.com/">hackjutsu</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://xcatliu.com/">流浪小猫</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://xielong.me/">谢龙</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://github.com/jiajunhuang/blog/blob/master/README.md">Jiajun</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://weny.name/about/">Weny</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://v2fw.com/">v2fw</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2018 hanjm<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+    <script>
+    var disqus_config = function () {
+        
+            this.page.url = 'https://imhanjm.com/2018/02/17/深入理解NATS &amp; NATS Streaming/';
+        
+        this.page.identifier = '深入理解NATS &amp; NATS Streaming';
+    };
+    (function() { 
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'hanjmblog' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>
