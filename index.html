@@ -266,7 +266,7 @@ ga('send', 'pageview');
 <li>二是用 <code>fmt.Errorf(fmt string, args... interface{})</code> 增加一些上下文信息, 用文字的方式告诉调用方哪里出错了, 让调用方打错误日志出来;</li>
 <li>三是自定义 struct type , 实现 error 接口, 调用方用类型断言转成特定的 struct type , 拿到更结构化的错误信息.</li>
 </ul>
-<p>我最开始最常用的做法是, fmt.Errorf 是写上 此函数函数名、调用出错的函数名、参数是什么、err , 代码显得十分啰嗦, 而且通常打日志是在上层函数打的, 看到错误日志还需要用函数名去代码中搜索看看在哪里出错. 很多情况下我既想带上下文信息, 又想在上层调用方取得最里层出错的函数返回的error常量或自定义的 struct type, 最好还能自动带上行号函数名信息, 减少每次写 fmt.Errof 的手动写上函数名的痛苦. 于是开始在 github 找包, star 数最高的是 <code>pkg/errors</code> 、<code>juju/errors</code>.</p>
+<p>我最开始最常用的做法是, fmt.Errorf 时写上 此函数函数名、调用出错的函数名、参数是什么、err , 代码十分啰嗦, 而且通常打日志是在上层函数打的, 看到错误日志还需要用函数名去代码中搜索看看在哪里出错. 很多情况下我既想带上下文信息, 又想在上层调用方取得最里层出错的函数返回的error常量或自定义的 struct type, 最好还能自动带上行号函数名信息, 减少每次写 fmt.Errof 的手动写上函数名的痛苦. 于是开始在 github 找包, star 数最高的是 <code>pkg/errors</code> 、<code>juju/errors</code>.</p>
 <ul>
 <li><code>pkg/errors</code> 解决了一些问题, 核心函数是 Wrapf 和 Cause: Wrapf包装错误附加上下文信息并带上调用栈, 但是每次去包装错误的时候都去取一次调用栈, 完全没有必要啊, 因为最早出错的函数里就能拿到完整的调用栈的, 并且调用栈打出来的信息也不好看, 而且通常HTTP服务会用框架, 用了框架的话调用栈就会肿起来, 这些框架的固定调用栈信息打印出来毫无帮助. Cause 去递归拿到最里层的 error, 用于和error常量比较或类型断言成自定义 struct type.</li>
 </ul>
@@ -293,7 +293,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2018/07/08/Go代码如何优雅地错误处理(Error handling and Go 1)/" data-id="cjjcjgxi3000u0d0ojr9kyi2d" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2018/07/08/Go代码如何优雅地错误处理(Error handling and Go 1)/" data-id="cjjcjiykp00121c0o18n79ilm" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -471,7 +471,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2018/02/17/深入理解NATS & NATS Streaming/" data-id="cjjcjgxi900140d0ohp17yeh8" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2018/02/17/深入理解NATS & NATS Streaming/" data-id="cjjcjiykq00151c0o05n2c8wk" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
