@@ -169,11 +169,11 @@ ga('send', 'pageview');
         </div>
         <div class="article-info profile-block">
             <div class="article-info-block">
-                16
+                17
                 <span>文章</span>
             </div>
             <div class="article-info-block">
-                18
+                20
                 <span>标签</span>
             </div>
         </div>
@@ -222,6 +222,189 @@ ga('send', 'pageview');
 
             
             <section id="main">
+    <article id="post-Go最佳实践" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 itemprop="name">
+            <a class="article-title" href="/2017/06/24/Go最佳实践/">Go最佳实践</a>
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2017/06/24/Go最佳实践/">
+            <time datetime="2017-06-23T16:00:00.000Z" itemprop="datePublished">2017-06-24</time>
+        </a>
+    </div>
+
+
+                        
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/Go/">Go</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <h2 id="来自NSQ"><a href="#来自NSQ" class="headerlink" title="来自NSQ"></a>来自NSQ</h2><p>nsq的官方文档的Dsign中提到一个PPT<a href="https://speakerdeck.com/snakes/nsq-nyc-golang-meetup" target="_blank" rel="external">https://speakerdeck.com/snakes/nsq-nyc-golang-meetup</a>, 里面有这样一段话<br><img src="https://ws1.sinaimg.cn/large/cfe1407cgy1fgwq34bdnzj213y0pihcj.jpg" alt=""><br>总结一下.</p>
+<ol>
+<li>don’t be afraid of <strong>sync</strong> package<br>sync包里有</li>
+</ol>
+<ul>
+<li>sync.Mutex(互斥锁,一读一写)</li>
+<li>sync.RWMutex(读写锁,可以多读一写)</li>
+<li>sync.Pool(对象池, 合理利用可以减少内存分配, 降低GC压力, 稍后写一篇博客说说)</li>
+<li>sync.Once(并发控制. 适用于开几个goroutines去执行一个只执行一次的任务, 比如单例模式)</li>
+<li>sync.Cond(并发控制, cond.Wait()阻塞至其他goroutie运行到cond.Signal())</li>
+<li>sync.WaitGroup(并发控制. 通常用法 wg.Add增加任务数量 goroutie完成任务后执行wg.Done,任务数量减1 wg.Wait等待wg任务数量为0)</li>
+</ul>
+<ol>
+<li>goroutines are <strong>cheap</strong> not <strong>free</strong><br>这句话在其他地方也看过, <code>go func()</code>简单好用, 创建开销也很小, 但也是有开销的. 很多情况下开固定数量worker, 用channel传递数据, 效果会更好.<br>go-apns2中的example是个非常好的例子.<a href="https://github.com/sideshow/apns2/blob/master/_example/channel/main.go" target="_blank" rel="external">https://github.com/sideshow/apns2/blob/master/_example/channel/main.go</a></li>
+</ol>
+<p>注意一个问题, go里面一个goroutine panic了, 会导致进程退出, 所以<code>go func()</code>时第一行带上</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span>&#123;</div><div class="line">	<span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span>&#123;</div><div class="line">		<span class="keyword">if</span> err:=<span class="built_in">recover</span>(); err!=<span class="literal">nil</span>&#123;</div><div class="line">		&#125;</div><div class="line">	&#125;()</div><div class="line">&#125;()</div></pre></td></tr></table></figure>
+<p>是安全的做法, worker channel法时类似</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="keyword">package</span> main</div><div class="line"></div><div class="line"><span class="keyword">import</span> (</div><div class="line">	<span class="string">"fmt"</span></div><div class="line">	<span class="string">"log"</span></div><div class="line">	<span class="string">"time"</span></div><div class="line">)</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</div><div class="line">	ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">10</span>)</div><div class="line"></div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">2</span>; i++ &#123;</div><div class="line">		<span class="keyword">go</span> worker(ch, i)</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">3</span>; i++ &#123;</div><div class="line">		ch &lt;- i</div><div class="line">		ch &lt;- <span class="number">-1</span></div><div class="line">	&#125;</div><div class="line"></div><div class="line">	time.Sleep(time.Second * <span class="number">5</span>)</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">worker</span><span class="params">(ch &lt;-<span class="keyword">chan</span> <span class="keyword">int</span>, goId <span class="keyword">int</span>)</span></span> &#123;</div><div class="line">	<span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">(ch &lt;-<span class="keyword">chan</span> <span class="keyword">int</span>)</span></span> &#123;</div><div class="line">		<span class="keyword">if</span> err := <span class="built_in">recover</span>(); err != <span class="literal">nil</span> &#123;</div><div class="line">			log.Printf(<span class="string">"worker%d recover error:%s"</span>, goId, err)</div><div class="line">			<span class="keyword">go</span> worker(ch, goId)</div><div class="line">		&#125;</div><div class="line">	&#125;(ch)</div><div class="line">	log.Printf(<span class="string">"worker%d running"</span>, goId)</div><div class="line">	<span class="keyword">for</span> data := <span class="keyword">range</span> ch &#123;</div><div class="line">		log.Printf(<span class="string">"worker%d received data:%d"</span>, goId, data)</div><div class="line">		<span class="keyword">if</span> data == <span class="number">-1</span> &#123;</div><div class="line">			<span class="built_in">panic</span>(fmt.Errorf(<span class="string">"worker%d panic"</span>, goId))</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>fasthttp之所以快, 其中一个原因就是net/http是来一个连接就创建一个goroutie, 而fasthttp用了池复用了goroutines.</p>
+<ol>
+<li><p>watch your allocations (string() is costly, re-user buffers)<br>go里面 []byte和string互转是会发生复制的, 开销明显, 如果代码里频繁互转, 考虑使用bytes.buffer 和 sync.Pool</p>
+</li>
+<li><p>use anonymous structs for arbitrary JSON<br>在写http api时, parse body这种事情, 如果只是纯粹取body里的json数据, 没必要单独定义结构体, 在函数里定义一个匿名结构体就好. <code>var s struct { A int}</code></p>
+</li>
+<li><p>no built-in per-request HTTP timeouts<br>这是说要注意默认的httpClient没有超时</p>
+</li>
+<li><p>synchronizing goroutine exit is hard - log each cleanup step in long-running goroutines<br>同步化的goroutine一不小心就没有退出, 如果你写一个长期运行的服务, 用logger记录每一个goroutine的清理退出, 防止goroutine泄露</p>
+</li>
+<li><p>select skips nil channels </p>
+</li>
+</ol>
+<p>select语句是会跳过nil的channels的. 因为在Go里往已经close掉的channel里发送数据是会panic的, 可以利用select语句.<br>附: channel操作导致panic的情况有: 关闭一个nil的channel, 关闭一个已经关闭的channel( j,ok:= &lt;- ch, ok为false时代表ch已经关闭了), 往一个已经关闭的channel里发送数据(从已经关闭的channel里读数据是OK的, 如果这个channel是带缓冲的, 那么可以读到所有数据)</p>
+<h2 id="来自GO箴言"><a href="#来自GO箴言" class="headerlink" title="来自GO箴言"></a>来自GO箴言</h2><p>Python有<code>import this</code>的zen of Python, 想不到Go也有箴言<br><a href="https://speakerdeck.com/ajstarks/go-proverbs" target="_blank" rel="external">https://speakerdeck.com/ajstarks/go-proverbs</a><br><img src="https://ws1.sinaimg.cn/large/cfe1407cgy1fh5dfxouv0j212o0lsdop.jpg" alt=""></p>
+<ol>
+<li>在go里, goroutines之间通信不要用共享内存的方式实现, 应该用channel来实现</li>
+<li>并发不是并行</li>
+<li>channel是编排, mutexs是串行</li>
+<li>interface定义越多的方法, 抽象程度越低. Go提倡用接口组合的方式实现更大的接口</li>
+<li>零值, 猜测这里说的是struct{}吧, struct{}是一个不占内存的空结构体, 在用map实现set, channel发送无额外意义的signal时能降低内存分配</li>
+<li>提倡gofmt</li>
+<li>一点点复制比一点点依赖好. 官方包里有时能见到一些复制的代码, 这是为了不互相依赖</li>
+<li>syscall每个平台实现不一样, 要加build tags</li>
+<li>cgo每个平台的lib不一样, 要加build tags</li>
+<li>Cgo不是go</li>
+<li>unsafe包不提供保障</li>
+<li>简洁胜过高效</li>
+<li>error是值  可以用值的方式去处理错误: 传递, 比较</li>
+<li>不用仅检查错误, 要优雅地处理</li>
+<li>多花精力设计架构, 模块命名, 写详细的文档</li>
+<li>写良好的文档给用户</li>
+<li>对于普通错误, 应该用多值返回错误, 而不是手动panic</li>
+</ol>
+<h2 id="未知来源"><a href="#未知来源" class="headerlink" title="未知来源"></a>未知来源</h2><ol>
+<li>写可重复使用的函数, 接收接口类型, 返回具体类型</li>
+</ol>
+<h2 id="Golang-Github"><a href="#Golang-Github" class="headerlink" title="Golang Github"></a>Golang Github</h2><p><a href="https://github.com/golang/go/wiki/CodeReviewComments" target="_blank" rel="external">https://github.com/golang/go/wiki/CodeReviewComments</a></p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="https://imhanjm.com/2017/06/24/Go最佳实践/" data-id="cjjcj6k9d000fv70oe0e19971" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+        <a href="https://imhanjm.com/2017/06/24/Go最佳实践/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2017/06/24/Go最佳实践/">评论</a>
+    
+
+        </footer>
+    </div>
+    
+</article>
+
+
+
     <article id="post-Go logger 日志实践" class="article article-type-post" itemscope itemprop="blogPost">
     <div class="article-inner">
         
@@ -282,7 +465,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2017/05/19/Go logger 日志实践/" data-id="cjdvuenlf001awl72szcrozsw" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2017/05/19/Go logger 日志实践/" data-id="cjjcj6k9e000hv70oog3r75m2" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -360,146 +543,8 @@ ga('send', 'pageview');
 
 
 
-    <article id="post-Linux cli下酷工具收集(持续)" class="article article-type-post" itemscope itemprop="blogPost">
-    <div class="article-inner">
-        
-        
-            <header class="article-header">
-                
-    
-        <h1 itemprop="name">
-            <a class="article-title" href="/2017/05/06/Linux cli下酷工具收集(持续)/">Linux Cli下酷工具收集(持续)</a>
-        </h1>
-    
-
-                
-                    <div class="article-meta">
-                        
-    <div class="article-date">
-        <i class="fa fa-calendar"></i>
-        <a href="/2017/05/06/Linux cli下酷工具收集(持续)/">
-            <time datetime="2017-05-05T16:00:00.000Z" itemprop="datePublished">2017-05-06</time>
-        </a>
-    </div>
-
-
-                        
-                        
-    <div class="article-tag">
-        <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/Cool-tools/">Cool tools</a>, <a class="tag-link" href="/tags/Linux/">Linux</a>
-    </div>
-
-                    </div>
-                
-            </header>
-        
-        
-        <div class="article-entry" itemprop="articleBody">
-        
-            
-            <ol>
-<li>mycli. ipython之于Python, mycli之于mysql. 当然还有pgcli. Python写的工具. <img src="https://raw.githubusercontent.com/dbcli/mycli/master/screenshots/tables.png" alt="mycli"> Github地址:<a href="https://github.com/dbcli/mycli" target="_blank" rel="external">https://github.com/dbcli/mycli</a></li>
-<li>youtube-dl. youtube下载器, 能直接下载youtube视频列表. Python写的工具. </li>
-<li>oh-my-zsh的z命令. 手动输入一个很长的路径名不停地tab很麻烦, 配置了oh-my-zsh的话可以启用z命令(<code>edit: ~/.zshrc line: plugins=(git python z tmux)</code>), <code>z 文件夹名</code> 就可以跳转到常用目录中最符合输入文件夹名的文件夹中, 非常方便, GitHub地址<a href="https://github.com/robbyrussell/oh-my-zsh" target="_blank" rel="external">https://github.com/robbyrussell/oh-my-zsh</a></li>
-<li><p>privoxy. <code>brew pip npm install、docker pull</code>总是慢如蜗牛?  privoxy能将shadowsocks的socks代理(127.0.0.1:1080)转换为http/https代理, 有个奇特的地方是把它把文档写在配置文件的注释里, config文件有2271行, 初让人以为配置起来会巨复杂, 实际上基本的功能两行配置即可. <code>listen-address配置为0.0.0.0:8118</code>, 局域网内其他设备也可以走此代理<ip>:8118. 官网<a href="https://www.privoxy.org/" target="_blank" rel="external">https://www.privoxy.org/</a></ip></p>
- <figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">listen-address  0.0.0.0:8118</div><div class="line">forward-socks5 / localhost:1080 .</div></pre></td></tr></table></figure>
-<p> 然后在.zshrc或.bashrc中加入一下命令就可以通过<code>proxy</code> <code>dproxy</code>来切换是否在本终端下使用代理了.</p>
- <figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">function proxy()&#123;</div><div class="line">    export http_proxy=http://127.0.0.1:8118</div><div class="line">    export https_proxy=https://127.0.0.1:8118</div><div class="line">&#125;</div><div class="line">function dproxy()&#123;</div><div class="line">    unset http_proxy</div><div class="line">    unset https_proxy</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-</li>
-<li><p>kcptun. bandwagon上的shadowsocks越来越慢, 不用kcptun加速没法正常使用, 只能不太厚道地超量发包了. GitHub地址<a href="https://github.com/xtaci/kcptun" target="_blank" rel="external">https://github.com/xtaci/kcptun</a></p>
-</li>
-</ol>
-
-        
-        </div>
-        <footer class="article-footer">
-            <div class="share-container">
-
-
-
-</div>
-
-    <a data-url="https://imhanjm.com/2017/05/06/Linux cli下酷工具收集(持续)/" data-id="cjdvuenld0018wl72h52vk1e5" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
-<script>
-    (function ($) {
-        // Prevent duplicate binding
-        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
-            __SHARE_BUTTON_BINDED__ = true;
-        } else {
-            return;
-        }
-        $('body').on('click', function() {
-            $('.article-share-box.on').removeClass('on');
-        }).on('click', '.article-share-link', function(e) {
-            e.stopPropagation();
-
-            var $this = $(this),
-                url = $this.attr('data-url'),
-                encodedUrl = encodeURIComponent(url),
-                id = 'article-share-box-' + $this.attr('data-id'),
-                offset = $this.offset(),
-                box;
-
-            if ($('#' + id).length) {
-                box = $('#' + id);
-
-                if (box.hasClass('on')){
-                    box.removeClass('on');
-                    return;
-                }
-            } else {
-                var html = [
-                    '<div id="' + id + '" class="article-share-box">',
-                        '<input class="article-share-input" value="' + url + '">',
-                        '<div class="article-share-links">',
-                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
-                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
-                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
-                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
-                        '</div>',
-                    '</div>'
-                ].join('');
-
-              box = $(html);
-
-              $('body').append(box);
-            }
-
-            $('.article-share-box.on').hide();
-
-            box.css({
-                top: offset.top + 25,
-                left: offset.left
-            }).addClass('on');
-
-        }).on('click', '.article-share-box', function (e) {
-            e.stopPropagation();
-        }).on('click', '.article-share-box-input', function () {
-            $(this).select();
-        }).on('click', '.article-share-box-link', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
-        });
-    })(jQuery);
-</script>
-
-            
-    
-        <a href="https://imhanjm.com/2017/05/06/Linux cli下酷工具收集(持续)/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2017/05/06/Linux cli下酷工具收集(持续)/">评论</a>
-    
-
-        </footer>
-    </div>
-    
-</article>
-
-
-
     <nav id="page-nav">
-        <a class="extend prev" rel="prev" href="/page/3/">&laquo; 上一页</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/5/">下一页 &raquo;</a>
+        <a class="extend prev" rel="prev" href="/page/3/">&laquo; 上一页</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/5/">下一页 &raquo;</a>
     </nav>
 </section>
             
@@ -510,6 +555,25 @@ ga('send', 'pageview');
         <h3 class="widget-title">最新文章</h3>
         <div class="widget">
             <ul id="recent-post" class="">
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2018/07/08/Go代码如何优雅地错误处理(Error handling and Go 1)/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2018/07/08/Go代码如何优雅地错误处理(Error handling and Go 1)/" class="title">Go代码如何优雅地错误处理(Error Handling and Go 1)</a></p>
+                            <p class="item-date"><time datetime="2018-07-07T16:00:00.000Z" itemprop="datePublished">2018-07-08</time></p>
+                        </div>
+                    </li>
                 
                     <li>
                         
@@ -587,25 +651,6 @@ ga('send', 'pageview');
                         </div>
                     </li>
                 
-                    <li>
-                        
-                        <div class="item-thumbnail">
-                            <a href="/2017/07/02/Go sync.Pool slice benchmark/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"></p>
-                            <p class="item-title"><a href="/2017/07/02/Go sync.Pool slice benchmark/" class="title">Go sync.Pool Slice Benchmark</a></p>
-                            <p class="item-date"><time datetime="2017-07-01T16:00:00.000Z" itemprop="datePublished">2017-07-02</time></p>
-                        </div>
-                    </li>
-                
             </ul>
         </div>
     </div>
@@ -617,7 +662,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">归档</h3>
         <div class="widget">
-            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">1</span></li></ul>
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -626,7 +671,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签</h3>
         <div class="widget">
-            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cool-tools/">Cool tools</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Macos/">Macos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS/">NATS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS-Streaming/">NATS Streaming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/">Nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bench/">bench</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/decimal/">decimal</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log/">log</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/时间处理/">时间处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/架构/">架构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/连接池/">连接池</a><span class="tag-list-count">1</span></li></ul>
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cool-tools/">Cool tools</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Error-handling/">Error handling</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Macos/">Macos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS/">NATS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS-Streaming/">NATS Streaming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/">Nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bench/">bench</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/decimal/">decimal</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log/">log</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/时间处理/">时间处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/架构/">架构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/连接池/">连接池</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/错误处理/">错误处理</a><span class="tag-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -635,7 +680,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/Cool-tools/" style="font-size: 15px;">Cool tools</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Go/" style="font-size: 20px;">Go</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Macos/" style="font-size: 10px;">Macos</a> <a href="/tags/NATS/" style="font-size: 10px;">NATS</a> <a href="/tags/NATS-Streaming/" style="font-size: 10px;">NATS Streaming</a> <a href="/tags/Nginx/" style="font-size: 10px;">Nginx</a> <a href="/tags/bench/" style="font-size: 10px;">bench</a> <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a> <a href="/tags/decimal/" style="font-size: 10px;">decimal</a> <a href="/tags/log/" style="font-size: 10px;">log</a> <a href="/tags/mysql/" style="font-size: 10px;">mysql</a> <a href="/tags/时间处理/" style="font-size: 10px;">时间处理</a> <a href="/tags/架构/" style="font-size: 10px;">架构</a> <a href="/tags/消息队列/" style="font-size: 10px;">消息队列</a> <a href="/tags/连接池/" style="font-size: 10px;">连接池</a>
+            <a href="/tags/Cool-tools/" style="font-size: 15px;">Cool tools</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Error-handling/" style="font-size: 10px;">Error handling</a> <a href="/tags/Go/" style="font-size: 20px;">Go</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Macos/" style="font-size: 10px;">Macos</a> <a href="/tags/NATS/" style="font-size: 10px;">NATS</a> <a href="/tags/NATS-Streaming/" style="font-size: 10px;">NATS Streaming</a> <a href="/tags/Nginx/" style="font-size: 10px;">Nginx</a> <a href="/tags/bench/" style="font-size: 10px;">bench</a> <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a> <a href="/tags/decimal/" style="font-size: 10px;">decimal</a> <a href="/tags/log/" style="font-size: 10px;">log</a> <a href="/tags/mysql/" style="font-size: 10px;">mysql</a> <a href="/tags/时间处理/" style="font-size: 10px;">时间处理</a> <a href="/tags/架构/" style="font-size: 10px;">架构</a> <a href="/tags/消息队列/" style="font-size: 10px;">消息队列</a> <a href="/tags/连接池/" style="font-size: 10px;">连接池</a> <a href="/tags/错误处理/" style="font-size: 10px;">错误处理</a>
         </div>
     </div>
 
@@ -700,6 +745,10 @@ ga('send', 'pageview');
                 
                     <li>
                         <a href="http://luodw.cc/">luodw</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://xiaorui.cc/">xiaorui</a>
                     </li>
                 
                     <li>
