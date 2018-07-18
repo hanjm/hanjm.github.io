@@ -278,7 +278,7 @@ ga('send', 'pageview');
 <p>以上包不满足要求, 只能造轮子了. 两个思想. API要设计的简单, 调用栈要好看 <a href="https://github.com/hanjm/errors" target="_blank" rel="external">https://github.com/hanjm/errors</a></p>
 <ul>
 <li>API简单: 定义error常量只有 <code>errors.New</code> 函数, 兼容标准库的函数; 包装error的只有 <code>errors.Errorf</code> 函数, 只在最早出错的时候取调用栈, 调用方再包装时无需取调用栈, 此时只需要pc, 不需要这时就把文件名行号取出来; 取最里层的 error 只有 <code>errors.GetInnerMost</code>, 用于和 error 常量比较或类型断言成自定义 struct type分类处理.</li>
-<li>调用栈好看: 去掉标准包的调用栈, 去掉框架固定的调用栈信息(通常是github.com的包), 只保留业务逻辑的调用栈. 按[ 文件名:行号 函数名:message]分行格式化输出, 把调用栈和附加的message对应起来. (第一版格式是[文件名:行号 函数名:message], 没有空格, 后面有个同事说在Goland IDE里看panic信息时可以点击定位到源码, 你的包能不能加这个功能, 所以去研究了下, 写了几个print的demo试了下发现如果输出中的文件名前后带空格的话, intellij IDE会自动识别输出中的文件名变成超链接, 所以给 “文件名:行号” 前后加了空格, 就能在IDE中直接点击定位到源码对应的行, 非常地方便)</li>
+<li>调用栈好看: 去掉标准包的调用栈, 去掉框架固定的调用栈信息(通常是github.com的包), 只保留业务逻辑的调用栈. 按[ 文件名:行号 函数名:message]分行格式化输出, 把调用栈和附加的message对应起来. (第一版格式是[文件名:行号 函数名:message], 没有空格, 后面有个同事说在Goland IDE里看panic信息时可以点击定位到源码, 你的包能不能加这个功能, 所以去研究了下, 写了几个print的demo试了下发现如果输出中的文件名前后带空格的话, intellij IDE会自动识别输出中的文件名变成超链接, 所以给 “文件名:行号” 前后加了空格, 就能在IDE中直接点击定位到源码对应的行, 非常地方便, 感谢这位同事)</li>
 </ul>
 <p>在IDE中加个live template, 写errf回车就补全到<br><figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="keyword">if</span> err!=<span class="literal">nil</span> &#123;</div><div class="line">	err = errors.Errorf(err,<span class="string">"&#123;&#123;光标&#125;&#125;"</span>)</div><div class="line">	<span class="keyword">return</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
 <p>然后补充必要的注释和参数就行了, 在本地环境调试时看到错误日志点击就可以定位到源码, 在非本地环境跑看到错误日志相比之前也能更好地知道发生了什么, 复制文件名:行号到IDE中就能定位到源码, 大大减轻了错误处理的繁琐.</p>
@@ -292,7 +292,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2018/07/08/Go如何优雅地错误处理(Error handling and Go 1)/" data-id="cjjraf6qx0018rk0or1cln14u" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2018/07/08/Go如何优雅地错误处理(Error handling and Go 1)/" data-id="cjjrag3od000ys60o9ue5nimz" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -470,7 +470,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2018/02/17/深入理解NATS & NATS Streaming/" data-id="cjjraf6r0001frk0ongyc4bn6" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2018/02/17/深入理解NATS & NATS Streaming/" data-id="cjjrag3oe0010s60o8igefffn" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
