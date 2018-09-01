@@ -12,7 +12,7 @@
 <meta property="og:url" content="https://imhanjm.com/2018/02/17/深入理解NATS & NATS Streaming/index.html">
 <meta property="og:site_name" content="hello">
 <meta property="og:description" content="简介NATS Server是一个高性能的, cloud native的, 基于发布订阅机制的消息系统, 没有消息持久化功能.NATS Streaming Server是基于NATS Server的, 增加消息持久化功能的消息系统. NATS Streaming 持久化特性踩坑记官网的文档并不详细, 很多重要的技术细节没说, 看了官网的文档之后发现用法很简单, 然后直接去写代码, 写publishe">
-<meta property="og:updated_time" content="2018-02-17T16:04:33.000Z">
+<meta property="og:updated_time" content="2018-09-01T04:58:39.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入理解NATS & NATS Streaming (踩坑记)">
 <meta name="twitter:description" content="简介NATS Server是一个高性能的, cloud native的, 基于发布订阅机制的消息系统, 没有消息持久化功能.NATS Streaming Server是基于NATS Server的, 增加消息持久化功能的消息系统. NATS Streaming 持久化特性踩坑记官网的文档并不详细, 很多重要的技术细节没说, 看了官网的文档之后发现用法很简单, 然后直接去写代码, 写publishe">
@@ -310,10 +310,9 @@ ga('send', 'pageview');
 </code></pre></blockquote>
 </li>
 <li><p>用reflect来绑定任意类型的chan</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">chVal := reflect.ValueOf(channel)</div><div class="line">if chVal.Kind() != reflect.Chan &#123;</div><div class="line">   return ErrChanArg</div><div class="line">&#125;</div><div class="line">val, ok := chVal.Recv()</div><div class="line">if !ok &#123;</div><div class="line">   // Channel has most likely been closed.</div><div class="line">  return </div><div class="line">&#125;</div></pre></td></tr></table></figure>
-</li>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">chVal := reflect.ValueOf(channel)</div><div class="line">if chVal.Kind() != reflect.Chan &#123;</div><div class="line">   return ErrChanArg</div><div class="line">&#125;</div><div class="line">val, ok := chVal.Recv()</div><div class="line">if !ok &#123;</div><div class="line">   // Channel has most likely been closed.</div><div class="line">  return </div><div class="line">&#125;</div></pre></td></tr></table></figure></li>
 </ol>
-<h2 id="TODO-cluster研究"><a href="#TODO-cluster研究" class="headerlink" title="TODO cluster研究"></a>TODO cluster研究</h2>
+
         
         </div>
         <footer class="article-footer">
@@ -323,7 +322,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2018/02/17/深入理解NATS & NATS Streaming/" data-id="cjjrag3oe0010s60o8igefffn" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2018/02/17/深入理解NATS & NATS Streaming/" data-id="cjlizamas001ese0oj4b65w1m" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
