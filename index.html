@@ -230,7 +230,7 @@ ga('send', 'pageview');
                 
     
         <h1 itemprop="name">
-            <a class="article-title" href="/2018/11/29/go sql.Driver的mysql driver 中的一个有意思的行为/">Go sql.Driver的mysql Driver 中的一个有意思的行为.Md</a>
+            <a class="article-title" href="/2018/11/29/go sql.Driver的mysql driver 中的一个有意思的行为/">Go sql.Driver的mysql Driver 中的一个有意思的行为</a>
         </h1>
     
 
@@ -273,7 +273,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2018/11/29/go sql.Driver的mysql driver 中的一个有意思的行为/" data-id="cjppf55cm000yv00oumsamp45" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2018/11/29/go sql.Driver的mysql driver 中的一个有意思的行为/" data-id="cjpphqw3z0010ij0og61ize5d" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -399,19 +399,19 @@ ga('send', 'pageview');
 <p>influxdb同时提供了HTTP接口和UDP接口. UDP的好处在于减少了HTTP头部的开销, 性能更好</p>
 <h2 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h2><ol>
 <li><p>库</p>
- <figure class="highlight plain"><table><tr><td class="code"><pre><div class="line"># 创建数据库</div><div class="line">CREATE DATABASE &quot;db_name&quot;</div><div class="line"># 显示所有数据库</div><div class="line">SHOW DATABASES</div><div class="line"># 删除数据库</div><div class="line">DROP DATABASE &quot;db_name&quot;</div><div class="line"># 使用数据库</div><div class="line">USE mydb</div></pre></td></tr></table></figure>
+ <figure class="highlight shell"><table><tr><td class="code"><pre><div class="line"><span class="meta">#</span> 创建数据库</div><div class="line">CREATE DATABASE "db_name"</div><div class="line"><span class="meta">#</span> 显示所有数据库</div><div class="line">SHOW DATABASES</div><div class="line"><span class="meta">#</span> 删除数据库</div><div class="line">DROP DATABASE "db_name"</div><div class="line"><span class="meta">#</span> 使用数据库</div><div class="line">USE mydb</div></pre></td></tr></table></figure>
 </li>
 <li><p>表</p>
- <figure class="highlight plain"><table><tr><td class="code"><pre><div class="line"># 显示该数据库中的表</div><div class="line">SHOW MEASUREMENTS</div><div class="line"># 创建表, 插入数据时会自动创建</div><div class="line"># 删除表</div><div class="line">DROP MEASUREMENT &quot;measurementName&quot;</div></pre></td></tr></table></figure>
+ <figure class="highlight shell"><table><tr><td class="code"><pre><div class="line"><span class="meta">#</span> 显示该数据库中的表</div><div class="line">SHOW MEASUREMENTS</div><div class="line"><span class="meta">#</span> 创建表, 插入数据时会自动创建</div><div class="line"><span class="meta">#</span> 删除表</div><div class="line">DROP MEASUREMENT "measurementName"</div></pre></td></tr></table></figure>
 </li>
 <li><p>查看数据保留策略 retention polices</p>
- <figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">SHOW RETENTION POLICIES ON &quot;testDB&quot;</div></pre></td></tr></table></figure>
+ <figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">SHOW RETENTION POLICIES ON "testDB"</div></pre></td></tr></table></figure>
 </li>
 <li><p>创建新的Retention Policies并设置为默认值</p>
- <figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">	# DURATION 保留多少天</div><div class="line">	# REPLICATION 副本数</div><div class="line">CREATE RETENTION POLICY &quot;rp_name&quot; ON &quot;db_name&quot; DURATION 30d REPLICATION 1 DEFAULT</div></pre></td></tr></table></figure>
+ <figure class="highlight shell"><table><tr><td class="code"><pre><div class="line"><span class="meta">	#</span> DURATION 保留多少天</div><div class="line"><span class="meta">	#</span> REPLICATION 副本数</div><div class="line">CREATE RETENTION POLICY "rp_name" ON "db_name" DURATION 30d REPLICATION 1 DEFAULT</div></pre></td></tr></table></figure>
 </li>
 </ol>
-<h2 id="连续查询"><a href="#连续查询" class="headerlink" title="连续查询"></a>连续查询</h2><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line"># 创建一个连续查询, 每10秒计算一个接口响应耗时平均值到新表</div><div class="line">CREATE CONTINUOUS QUERY cq_http_handler_stats_duration ON statsdb BEGIN SELECT mean(&quot;duration&quot;) INTO http_handler_stats_average_duraion_10s FROM http_handler_stats GROUP BY time(10s) END</div><div class="line"></div><div class="line"># 如果成功创建, 那么过了第一个周期后, SHOW MEASUREMENTS 能看到多了一张表</div><div class="line"></div><div class="line"># 显示创建的连续查询</div><div class="line">SHOW CONTINUOUS QUERIES</div><div class="line"></div><div class="line"># 删除</div><div class="line">DROP CONTINUOUS QUERY cq_http_handler_stats_duration ON statsdb</div></pre></td></tr></table></figure>
+<h2 id="连续查询"><a href="#连续查询" class="headerlink" title="连续查询"></a>连续查询</h2><figure class="highlight shell"><table><tr><td class="code"><pre><div class="line"><span class="meta">#</span> 创建一个连续查询, 每10秒计算一个接口响应耗时平均值到新表</div><div class="line">CREATE CONTINUOUS QUERY cq_http_handler_stats_duration ON statsdb BEGIN SELECT mean("duration") INTO http_handler_stats_average_duraion_10s FROM http_handler_stats GROUP BY time(10s) END</div><div class="line"><span class="meta"></span></div><div class="line"># 如果成功创建, 那么过了第一个周期后, SHOW MEASUREMENTS 能看到多了一张表</div><div class="line"><span class="meta"></span></div><div class="line"># 显示创建的连续查询</div><div class="line">SHOW CONTINUOUS QUERIES</div><div class="line"><span class="meta"></span></div><div class="line"># 删除</div><div class="line">DROP CONTINUOUS QUERY cq_http_handler_stats_duration ON statsdb</div></pre></td></tr></table></figure>
 <h2 id="图表"><a href="#图表" class="headerlink" title="图表"></a>图表</h2><p>grafana 是 influxdb 的良好伴侣, 写个query语句就能得到很炫酷的图形. 比如接口请求量图表按handler_name, response_code, time(10s) group by就得到了.</p>
 
         
@@ -423,7 +423,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2018/11/18/学习influxdb/" data-id="cjppf55co0010v00ojosvsmym" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2018/11/18/学习influxdb/" data-id="cjpphqw3y000yij0ofmfwdyv8" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -528,7 +528,7 @@ ga('send', 'pageview');
                         
                         <div class="item-inner">
                             <p class="item-category"></p>
-                            <p class="item-title"><a href="/2018/11/29/go sql.Driver的mysql driver 中的一个有意思的行为/" class="title">Go sql.Driver的mysql Driver 中的一个有意思的行为.Md</a></p>
+                            <p class="item-title"><a href="/2018/11/29/go sql.Driver的mysql driver 中的一个有意思的行为/" class="title">Go sql.Driver的mysql Driver 中的一个有意思的行为</a></p>
                             <p class="item-date"><time datetime="2018-11-28T16:00:00.000Z" itemprop="datePublished">2018-11-29</time></p>
                         </div>
                     </li>
@@ -654,10 +654,6 @@ ga('send', 'pageview');
                     </li>
                 
                     <li>
-                        <a href="http://www.coldcofe.cn/">coldcofe</a>
-                    </li>
-                
-                    <li>
                         <a href="feilengcui008.github.io">feilengcui008</a>
                     </li>
                 
@@ -779,6 +775,10 @@ ga('send', 'pageview');
                 
                     <li>
                         <a href="https://weny.name/about/">Weny</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://www.coldcofe.cn/">coldcofe</a>
                     </li>
                 
                     <li>
