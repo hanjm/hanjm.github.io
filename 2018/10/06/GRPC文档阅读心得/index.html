@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <meta charset="utf-8">
+    
+    <title>GRPC文档阅读心得 | hello</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="主要是两个文档, grpc repo的文档 https://github.com/grpc/grpc/tree/master/doc , grpc-go repo的文档 https://github.com/grpc/grpc-go/tree/master/Documentation. grpc-go 文档 gRPC Server Reflection Tutorial在代码中import &amp;qu">
+<meta name="keywords" content="Go,GRPC,grpc-go">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GRPC文档阅读心得">
+<meta property="og:url" content="https://imhanjm.com/2018/10/06/GRPC文档阅读心得/index.html">
+<meta property="og:site_name" content="hello">
+<meta property="og:description" content="主要是两个文档, grpc repo的文档 https://github.com/grpc/grpc/tree/master/doc , grpc-go repo的文档 https://github.com/grpc/grpc-go/tree/master/Documentation. grpc-go 文档 gRPC Server Reflection Tutorial在代码中import &amp;qu">
+<meta property="og:updated_time" content="2018-10-07T15:34:41.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="GRPC文档阅读心得">
+<meta name="twitter:description" content="主要是两个文档, grpc repo的文档 https://github.com/grpc/grpc/tree/master/doc , grpc-go repo的文档 https://github.com/grpc/grpc-go/tree/master/Documentation. grpc-go 文档 gRPC Server Reflection Tutorial在代码中import &amp;qu">
+    
+
+    
+        <link rel="alternate" href="/" title="hello" type="application/atom+xml" />
+    
+
+    
+        <link rel="icon" href="/css/images/favicon.ico" />
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css">
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-97868201-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">hello</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">Home</a>
+                
+                    <a class="main-nav-link" href="/archives">Archives</a>
+                
+                    <a class="main-nav-link" href="/categories">Categories</a>
+                
+                    <a class="main-nav-link" href="/tags">Tags</a>
+                
+                    <a class="main-nav-link" href="/about">About</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/avatar.png" />
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么..." />
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">Home</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">Archives</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">Categories</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">Tags</a></td>
+                
+                    <td><a class="main-nav-link" href="/about">About</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/avatar.png" />
+            <h2 id="name">hanjm</h2>
+            <h3 id="title">Backend</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Shenzhen, China</span>
+            <a id="follow" target="_blank" href="https://github.com/hanjm/">关注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                20
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                23
+                <span>标签</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="http://github.com/hanjm/" target="_blank" title="github" class=tooltip>
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="twitter" class=tooltip>
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="facebook" class=tooltip>
+                            <i class="fa fa-facebook"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="dribbble" class=tooltip>
+                            <i class="fa fa-dribbble"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="rss" class=tooltip>
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-GRPC文档阅读心得" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            GRPC文档阅读心得
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/10/06/GRPC文档阅读心得/">
+            <time datetime="2018-10-05T16:00:00.000Z" itemprop="datePublished">2018-10-06</time>
+        </a>
+    </div>
+
+
+                        
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/GRPC/">GRPC</a>, <a class="tag-link" href="/tags/Go/">Go</a>, <a class="tag-link" href="/tags/grpc-go/">grpc-go</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>主要是两个文档, grpc repo的文档 <a href="https://github.com/grpc/grpc/tree/master/doc" target="_blank" rel="external">https://github.com/grpc/grpc/tree/master/doc</a> , grpc-go repo的文档 <a href="https://github.com/grpc/grpc-go/tree/master/Documentation" target="_blank" rel="external">https://github.com/grpc/grpc-go/tree/master/Documentation</a>.</p>
+<h1 id="grpc-go-文档"><a href="#grpc-go-文档" class="headerlink" title="grpc-go 文档"></a>grpc-go 文档</h1><hr>
+<h3 id="gRPC-Server-Reflection-Tutorial"><a href="#gRPC-Server-Reflection-Tutorial" class="headerlink" title="gRPC Server Reflection Tutorial"></a><a href="https://github.com/grpc/grpc-go/blob/master/Documentation/server-reflection-tutorial.md" target="_blank" rel="external">gRPC Server Reflection Tutorial</a></h3><p>在代码中<code>import &quot;google.golang.org/grpc/reflection&quot;</code>包, 然后加一行代码<code>reflection.Register(s)</code>, 就可以启用 server reflection. 就可以用grpc_cli去进行获得服务列表, 方法列表, message结构体定义了. reflection.Register(s)实际上是注册了一个特殊的service, 它能列出server中已注册的服务和方法等信息.</p>
+<h2 id="Compression"><a href="#Compression" class="headerlink" title="Compression"></a><a href="https://github.com/grpc/grpc-go/blob/master/Documentation/compression.md" target="_blank" rel="external">Compression</a></h2><p>用 <code>encoding.RegisterCompressor</code>方法取注册一个压缩器, 启用了压缩的话, 服务端和客户端双方都要进行同样的处理, 服务端在newServer时要带上compressor的serverOption, 客户端在dail的时候要带上WithDefaultCallOptions的DialOption, DialOption加上压缩解压的处理, 不然会得到一个 <code>Internal error</code>, 和HTTP方式一样, 压缩类型体现在content-type的header上.</p>
+<h2 id="Concurrency"><a href="#Concurrency" class="headerlink" title="Concurrency"></a><a href="https://github.com/grpc/grpc-go/blob/master/Documentation/concurrency.md" target="_blank" rel="external">Concurrency</a></h2><p>Dial得到的ClientConn是并发安全.<br>stream的读写不是并发安全的, sendMsg或RecvMsg不能在多个goroutine中并发地调用,但可以分别在两个goroutine中处理send和Recv.</p>
+<h2 id="Encoding"><a href="#Encoding" class="headerlink" title="Encoding"></a><a href="https://github.com/grpc/grpc-go/blob/master/Documentation/encoding.md" target="_blank" rel="external">Encoding</a></h2><h3 id="序列化反序列化"><a href="#序列化反序列化" class="headerlink" title="序列化反序列化"></a>序列化反序列化</h3><p>自定义消息编码解码, 注册一个实现 <code>Codec</code> 接口的对象即可, 然后在Dial或Call时带上<code>grpc.CallContentSubtype</code>这个CallOption, 这样就可以自动处理这个带这个content-type的请求. 默认为 proto</p>
+<h3 id="压缩解压缩"><a href="#压缩解压缩" class="headerlink" title="压缩解压缩"></a>压缩解压缩</h3><p>自定义压缩解压缩, 注册一个实现 <code>Compressor</code>接口的对象即可, 然后在Dial或Call时带上<code>grpc.UseCompressor</code>这个CallOption.</p>
+<h2 id="Mocking-Service-for-gRPC"><a href="#Mocking-Service-for-gRPC" class="headerlink" title="[Mocking Service for gRPC"></a>[Mocking Service for gRPC</h2><p>](<a href="https://github.com/grpc/grpc-go/blob/master/Documentation/gomock-example.md" target="_blank" rel="external">https://github.com/grpc/grpc-go/blob/master/Documentation/gomock-example.md</a>)</p>
+<p>主要讲如何在单元测试中mock, 用gomock命令行生成实现xx接口的代码, 没什么特别的</p>
+<h2 id="Authentication"><a href="#Authentication" class="headerlink" title="[Authentication"></a>[Authentication</h2><p>](<a href="https://github.com/grpc/grpc-go/blob/master/Documentation/grpc-auth-support.md" target="_blank" rel="external">https://github.com/grpc/grpc-go/blob/master/Documentation/grpc-auth-support.md</a>)</p>
+<p>主要讲如何进行身份验证, 没什么特别的</p>
+<h2 id="Metadata"><a href="#Metadata" class="headerlink" title="Metadata"></a><a href="https://github.com/grpc/grpc-go/blob/master/Documentation/grpc-metadata.md" target="_blank" rel="external">Metadata</a></h2><p>metadata类似HTTP1中的header, 数据结构都是一样的<code>type MD map[string][]string</code>,<br>key都是大小写不敏感的, 但实现规范和HTTP1不一样, HTTP1是按单词之间用连字符”-“分隔, 每个单词第一个字母大写这样的规范来的, 处理起来消耗更大, 而metadata是全转为小写, 实际使用过程中, 提前规范化key能提高不必要的<code>strings.ToLower</code>调用.<br>用-bin结尾的来传递二进制数据.</p>
+<p>服务端handler用<code>metadata.FromIncomingContext(ctx)</code>拿到metadata, 客户端用<code>metadata.AppendToOutgoingContext</code>来附加kv到ctx中.</p>
+<p>如果服务端handler又想附加一些信息返回client, 那么就要通过header和trailer传递, 类似responseHeader.<br><figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *server)</span> <span class="title">SomeRPC</span><span class="params">(ctx context.Context, in *pb.someRequest)</span> <span class="params">(*pb.someResponse, error)</span></span> &#123;</div><div class="line">    <span class="comment">// create and send header</span></div><div class="line">    header := metadata.Pairs(<span class="string">"header-key"</span>, <span class="string">"val"</span>)</div><div class="line">    grpc.SendHeader(ctx, header)</div><div class="line">    <span class="comment">// create and set trailer</span></div><div class="line">    trailer := metadata.Pairs(<span class="string">"trailer-key"</span>, <span class="string">"val"</span>)</div><div class="line">    grpc.SetTrailer(ctx, trailer)</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>然后客户端在调用的时候传要保存的header和trailler的指针到CallOption中, 调用完后指针指向的metadata map就有数据了, 坦率地讲, 我觉得这样处理很麻烦.<br><figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> header, trailer metadata.MD <span class="comment">// variable to store header and trailer</span></div><div class="line">r, err := client.SomeRPC(</div><div class="line">    ctx,</div><div class="line">    someRequest,</div><div class="line">    grpc.Header(&amp;header),    <span class="comment">// will retrieve header</span></div><div class="line">    grpc.Trailer(&amp;trailer),  <span class="comment">// will retrieve trailer</span></div><div class="line">)</div><div class="line"></div><div class="line"><span class="comment">// do something with header and trailer</span></div></pre></td></tr></table></figure></p>
+<h2 id="Keepalive"><a href="#Keepalive" class="headerlink" title="Keepalive"></a><a href="https://github.com/grpc/grpc-go/blob/master/Documentation/keepalive.md" target="_blank" rel="external">Keepalive</a></h2><p>gRPC会定时发http2 ping帧来判断连接是否挂掉, 如果ping没有在一定时期内ack, 那么连接会被close.</p>
+<h2 id="Log-Levels"><a href="#Log-Levels" class="headerlink" title="Log Levels"></a><a href="https://github.com/grpc/grpc-go/blob/master/Documentation/log_levels.md" target="_blank" rel="external">Log Levels</a></h2><p>grpc-go包默认用gpclog包打日志, grpclog包默认是用多个*log.Logger来实现日志级别, 默认输出到stderr, 对于生产环境, 肯定要集成到自己的日志流里去, 接口是个好东西, grpclog包允许setLog, 实现grpclog.LoggerV2接口即可.</p>
+<h3 id="info日志包括"><a href="#info日志包括" class="headerlink" title="info日志包括:"></a>info日志包括:</h3><p>grpclog里的info是为了debug</p>
+<ul>
+<li>DNS 收到了更新</li>
+<li>负载均衡器 更新了选择的目标</li>
+<li>重要的grpc 状态变更<h3 id="warn日志包括"><a href="#warn日志包括" class="headerlink" title="warn日志包括:"></a>warn日志包括:</h3>warning日志是出现了一些错误, 但还不至于panic.</li>
+<li>DNS无法解析给定的target</li>
+<li>连接server时出错</li>
+<li>连接丢失或中断<h3 id="error日志包括"><a href="#error日志包括" class="headerlink" title="error日志包括:"></a>error日志包括:</h3>grpc内部有些error不是用户发起的函数调用, 所以无法返回error给调用者, 只能内部自己打error日志</li>
+<li>函数签名没有error, 但调用方传了个错误的参数过来.  </li>
+<li>内部错误.<h3 id="Fatal日志"><a href="#Fatal日志" class="headerlink" title="Fatal日志:"></a>Fatal日志:</h3>fatal日志是出现了不可恢复的内部错误, 要panic.</li>
+</ul>
+<h1 id="grpc-文档"><a href="#grpc-文档" class="headerlink" title="grpc 文档"></a>grpc 文档</h1><hr>
+<p>之前一直有个误区, 多个连接比单个连接要快, 看了 <a href="https://github.com/grpc/grpc-go/issues/1512" target="_blank" rel="external">grpc-go issues1</a>、<a href="https://github.com/grpc/grpc-go/issues/682" target="_blank" rel="external">grpc-go issues2</a> 以及 <a href="https://developers.google.com/web/fundamentals/performance/http2/?hl=zh-cn" target="_blank" rel="external">HTTP2文档</a> 才发现, 由于HTTP2有多路复用的特性, 对于同一个sever, 只需要维护一个连接就好了, 没有必要用多个连接去并行复用数据流. 连接数量减少对提升 HTTPS 部署的性能来说是一项特别重要的功能：可以减少开销较大的 TLS 连接数、提升会话重用率，以及从整体上减少所需的客户端和服务器资源。</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="https://imhanjm.com/2018/10/06/GRPC文档阅读心得/" data-id="cjppf55cl000xv00okymi91h4" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+        <a href="https://imhanjm.com/2018/10/06/GRPC文档阅读心得/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2018/10/06/GRPC文档阅读心得/">评论</a>
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2018/07/08/Go如何优雅地错误处理(Error handling and Go 1)/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    Go如何优雅地错误处理(Error Handling and Go 1)
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2018/11/18/学习influxdb/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">学习Influxdb</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
+</section>
+            
+                <aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="">
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2018/11/29/go sql.Driver的mysql driver 中的一个有意思的行为/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2018/11/29/go sql.Driver的mysql driver 中的一个有意思的行为/" class="title">Go sql.Driver的mysql Driver 中的一个有意思的行为.Md</a></p>
+                            <p class="item-date"><time datetime="2018-11-28T16:00:00.000Z" itemprop="datePublished">2018-11-29</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2018/11/18/学习influxdb/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2018/11/18/学习influxdb/" class="title">学习Influxdb</a></p>
+                            <p class="item-date"><time datetime="2018-11-17T16:00:00.000Z" itemprop="datePublished">2018-11-18</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2018/10/06/GRPC文档阅读心得/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2018/10/06/GRPC文档阅读心得/" class="title">GRPC文档阅读心得</a></p>
+                            <p class="item-date"><time datetime="2018-10-05T16:00:00.000Z" itemprop="datePublished">2018-10-06</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2018/07/08/Go如何优雅地错误处理(Error handling and Go 1)/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2018/07/08/Go如何优雅地错误处理(Error handling and Go 1)/" class="title">Go如何优雅地错误处理(Error Handling and Go 1)</a></p>
+                            <p class="item-date"><time datetime="2018-07-07T16:00:00.000Z" itemprop="datePublished">2018-07-08</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2018/02/17/深入理解NATS & NATS Streaming/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2018/02/17/深入理解NATS & NATS Streaming/" class="title">深入理解NATS &amp; NATS Streaming (踩坑记)</a></p>
+                            <p class="item-date"><time datetime="2018-02-16T16:00:00.000Z" itemprop="datePublished">2018-02-17</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cool-tools/">Cool tools</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Error-handling/">Error handling</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRPC/">GRPC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Macos/">Macos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS/">NATS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS-Streaming/">NATS Streaming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/">Nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bench/">bench</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/decimal/">decimal</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grpc-go/">grpc-go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/influxdb/">influxdb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log/">log</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/时间处理/">时间处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/架构/">架构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/连接池/">连接池</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/错误处理/">错误处理</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Cool-tools/" style="font-size: 15px;">Cool tools</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Error-handling/" style="font-size: 10px;">Error handling</a> <a href="/tags/GRPC/" style="font-size: 10px;">GRPC</a> <a href="/tags/Go/" style="font-size: 20px;">Go</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Macos/" style="font-size: 10px;">Macos</a> <a href="/tags/NATS/" style="font-size: 10px;">NATS</a> <a href="/tags/NATS-Streaming/" style="font-size: 10px;">NATS Streaming</a> <a href="/tags/Nginx/" style="font-size: 10px;">Nginx</a> <a href="/tags/bench/" style="font-size: 10px;">bench</a> <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a> <a href="/tags/decimal/" style="font-size: 10px;">decimal</a> <a href="/tags/grpc-go/" style="font-size: 10px;">grpc-go</a> <a href="/tags/influxdb/" style="font-size: 10px;">influxdb</a> <a href="/tags/log/" style="font-size: 10px;">log</a> <a href="/tags/mysql/" style="font-size: 15px;">mysql</a> <a href="/tags/时间处理/" style="font-size: 10px;">时间处理</a> <a href="/tags/架构/" style="font-size: 10px;">架构</a> <a href="/tags/消息队列/" style="font-size: 10px;">消息队列</a> <a href="/tags/连接池/" style="font-size: 10px;">连接池</a> <a href="/tags/错误处理/" style="font-size: 10px;">错误处理</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="">(一些有趣的博客)</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://www.coldcofe.cn/">coldcofe</a>
+                    </li>
+                
+                    <li>
+                        <a href="feilengcui008.github.io">feilengcui008</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://taozj.org/201612/study-conclusion-stage.html">taozj</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://lanlingzi.cn/">lanlingzi</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://colobu.com/">鸟窝</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://cizixs.com/">cizixs</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://liaoph.com/">liaoph</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://liyangliang.me/">liyangliang</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://www.ideawu.net/blog/">ideawu</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://legendtkl.com/">legendtkl</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://blog.csdn.net/v_JULY_v">算法之道</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://surmon.me">surmon</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://shanshanpt.github.io/">shanshanpt</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://www.zddhub.com/">zddhub</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://luodw.cc/">luodw</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://xiaorui.cc/">xiaorui</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://zenlife.tk/index">TiDB</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://xiequan.info/">谢权SELF</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://www.songjiayang.com/">songjiayang</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://cjting.me/">cjting</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://kingname.info/">kingname</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://mritd.me/">漠然</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://blog.xiayf.cn/gitbook/tech-note">xiayf</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://www.40huo.cn/">40huo</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://www.nosuchfield.com/">nosuchfield</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://holys.im/">holys</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://icymind.com/">icymind</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://hackjutsu.com/">hackjutsu</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://xcatliu.com/">流浪小猫</a>
+                    </li>
+                
+                    <li>
+                        <a href="http://xielong.me/">谢龙</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://github.com/jiajunhuang/blog/blob/master/README.md">Jiajun</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://weny.name/about/">Weny</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://v2fw.com/">v2fw</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2018 hanjm<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+    <script>
+    var disqus_config = function () {
+        
+            this.page.url = 'https://imhanjm.com/2018/10/06/GRPC文档阅读心得/';
+        
+        this.page.identifier = 'GRPC文档阅读心得';
+    };
+    (function() { 
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'hanjmblog' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

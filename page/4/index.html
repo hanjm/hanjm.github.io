@@ -169,11 +169,11 @@ ga('send', 'pageview');
         </div>
         <div class="article-info profile-block">
             <div class="article-info-block">
-                17
+                20
                 <span>文章</span>
             </div>
             <div class="article-info-block">
-                20
+                23
                 <span>标签</span>
             </div>
         </div>
@@ -222,7 +222,7 @@ ga('send', 'pageview');
 
             
             <section id="main">
-    <article id="post-Go最佳实践" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Go如何精确计算小数-decimal研究" class="article article-type-post" itemscope itemprop="blogPost">
     <div class="article-inner">
         
         
@@ -230,7 +230,7 @@ ga('send', 'pageview');
                 
     
         <h1 itemprop="name">
-            <a class="article-title" href="/2017/06/24/Go最佳实践/">Go最佳实践</a>
+            <a class="article-title" href="/2017/08/27/Go如何精确计算小数-decimal研究/">Go如何精确计算小数-Decimal研究-Tidb MyDecimal问题</a>
         </h1>
     
 
@@ -239,8 +239,8 @@ ga('send', 'pageview');
                         
     <div class="article-date">
         <i class="fa fa-calendar"></i>
-        <a href="/2017/06/24/Go最佳实践/">
-            <time datetime="2017-06-23T16:00:00.000Z" itemprop="datePublished">2017-06-24</time>
+        <a href="/2017/08/27/Go如何精确计算小数-decimal研究/">
+            <time datetime="2017-08-26T16:00:00.000Z" itemprop="datePublished">2017-08-27</time>
         </a>
     </div>
 
@@ -249,7 +249,7 @@ ga('send', 'pageview');
                         
     <div class="article-tag">
         <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/Go/">Go</a>
+        <a class="tag-link" href="/tags/Go/">Go</a>, <a class="tag-link" href="/tags/decimal/">decimal</a>
     </div>
 
                     </div>
@@ -260,63 +260,45 @@ ga('send', 'pageview');
         <div class="article-entry" itemprop="articleBody">
         
             
-            <h2 id="来自NSQ"><a href="#来自NSQ" class="headerlink" title="来自NSQ"></a>来自NSQ</h2><p>nsq的官方文档的Dsign中提到一个PPT<a href="https://speakerdeck.com/snakes/nsq-nyc-golang-meetup" target="_blank" rel="external">https://speakerdeck.com/snakes/nsq-nyc-golang-meetup</a>, 里面有这样一段话<br><img src="https://ws1.sinaimg.cn/large/cfe1407cgy1fgwq34bdnzj213y0pihcj.jpg" alt=""><br>总结一下.</p>
+            <p>##1 浮点数为什么不精确<br>先看两个case</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="comment">// case1: 135.90*100 ====</span></div><div class="line"><span class="comment">// float32</span></div><div class="line"><span class="keyword">var</span> f1 <span class="keyword">float32</span> = <span class="number">135.90</span></div><div class="line">fmt.Println(f1 * <span class="number">100</span>) <span class="comment">// output:13589.999</span></div><div class="line"><span class="comment">// float64</span></div><div class="line"><span class="keyword">var</span> f2 <span class="keyword">float64</span> = <span class="number">135.90</span></div><div class="line">fmt.Println(f2 * <span class="number">100</span>) <span class="comment">// output:13590</span></div></pre></td></tr></table></figure>
+<p>浮点数在单精度下, 135.9*100即出现了偏差, 双精度下结果正确.</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="comment">// case2: 0.1 add 10 times ===</span></div><div class="line"><span class="comment">// float32</span></div><div class="line"><span class="keyword">var</span> f3 <span class="keyword">float32</span> = <span class="number">0</span></div><div class="line"><span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">10</span>; i++ &#123;</div><div class="line">	f3 += <span class="number">0.1</span></div><div class="line">&#125;</div><div class="line">fmt.Println(f3) <span class="comment">//output:1.0000001</span></div><div class="line"></div><div class="line"><span class="comment">// float64</span></div><div class="line"><span class="keyword">var</span> f4 <span class="keyword">float64</span> = <span class="number">0</span></div><div class="line"><span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">10</span>; i++ &#123;</div><div class="line">	f4 += <span class="number">0.1</span></div><div class="line">&#125;</div><div class="line">fmt.Println(f4) <span class="comment">//output:0.9999999999999999</span></div></pre></td></tr></table></figure>
+<p>0.1加10次, 这下无论是float32和float64都出现了偏差.</p>
+<p>为什么呢, Go和大多数语言一样, 使用标准的<a href="https://zh.wikipedia.org/wiki/IEEE_754" target="_blank" rel="external">IEEE754</a>表示浮点数, 0.1使用二进制表示结果是一个无限循环数, 只能舍入后表示, 累加10次之后就会出现偏差.</p>
+<p>此外, 还有几个隐藏的坑<a href="https://play.golang.org/p/bQPbirROmN" target="_blank" rel="external">https://play.golang.org/p/bQPbirROmN</a></p>
 <ol>
-<li>don’t be afraid of <strong>sync</strong> package<br>sync包里有</li>
+<li>float32和float64直接互转会精度丢失, 四舍五入后错误.</li>
+<li>int64转float64在数值很大的时候出现偏差.</li>
+<li>合理但须注意: 两位小数乘100强转int, 比期望值少了1.</li>
 </ol>
+<figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="keyword">package</span> main</div><div class="line"></div><div class="line"><span class="keyword">import</span> (</div><div class="line">	<span class="string">"fmt"</span></div><div class="line">)</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</div><div class="line">	<span class="comment">// case: float32==&gt;float64</span></div><div class="line">	<span class="comment">// 从数据库中取出80.45, 历史代码用float32接收</span></div><div class="line">	<span class="keyword">var</span> a <span class="keyword">float32</span> = <span class="number">80.45</span></div><div class="line">	<span class="keyword">var</span> b <span class="keyword">float64</span></div><div class="line">	<span class="comment">// 有些函数只能接收float64, 只能强转</span></div><div class="line">	b = <span class="keyword">float64</span>(a)</div><div class="line">	<span class="comment">// 打印出值, 强转后出现偏差</span></div><div class="line">	fmt.Println(a) <span class="comment">//output:80.45</span></div><div class="line">	fmt.Println(b) <span class="comment">//output:80.44999694824219</span></div><div class="line">	<span class="comment">// ... 四舍五入保留小数点后1位, 期望80.5, 结果是80.4</span></div><div class="line"></div><div class="line">	<span class="comment">// case: int64==&gt;float64</span></div><div class="line">	<span class="keyword">var</span> c <span class="keyword">int64</span> = <span class="number">987654321098765432</span></div><div class="line">	fmt.Printf(<span class="string">"%.f\n"</span>, <span class="keyword">float64</span>(c)) <span class="comment">//output:987654321098765440</span></div><div class="line"></div><div class="line">	<span class="comment">// case: int(float64(xx.xx*100))</span></div><div class="line">	<span class="keyword">var</span> d <span class="keyword">float64</span> = <span class="number">1129.6</span></div><div class="line">	<span class="keyword">var</span> e <span class="keyword">int64</span> = <span class="keyword">int64</span>(d * <span class="number">100</span>)</div><div class="line">	fmt.Println(e) <span class="comment">//output:112959</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>##2 数据库是怎么做的<br>MySQL提供了decimal(p,d)/numberlic(p,d)类型的定点数表示法, 由p位数字(不包括符号、小数点)组成, 小数点后面有d位数字, 占p+2个字节, 计算性能会比double/float类型弱一些. </p>
+<p>##3 Go代码如何实现Decimal<br>Java有成熟的标准库java.lang.BigDecimal,Python有标准库Decimal, 可惜GO没有. 在GitHub搜decimal, star数量比较多的是TiDB里的MyDecimal和ithub.com/shopspring/decimal的实现.</p>
 <ul>
-<li>sync.Mutex(互斥锁,一读一写)</li>
-<li>sync.RWMutex(读写锁,可以多读一写)</li>
-<li>sync.Pool(对象池, 合理利用可以减少内存分配, 降低GC压力, 稍后写一篇博客说说)</li>
-<li>sync.Once(并发控制. 适用于开几个goroutines去执行一个只执行一次的任务, 比如单例模式)</li>
-<li>sync.Cond(并发控制, cond.Wait()阻塞至其他goroutie运行到cond.Signal())</li>
-<li>sync.WaitGroup(并发控制. 通常用法 wg.Add增加任务数量 goroutie完成任务后执行wg.Done,任务数量减1 wg.Wait等待wg任务数量为0)</li>
+<li><p>shopspring的Decimal实现比较简单, 思路是使用十进制定点数表示法, 有多少位小数就小数点后移多少位, value保存移之后的整数, exp保存小数点后的数位个数, number=value*10^exp, 因为移小数点后的整数可能很大, 所以这里借用标准包里的math/big表示这个大整数. exp使用了int32, 所以这个包最多能表示小数点后有32个十进制数位的情况.</p>
+<p>  Decimal结构体的定义如下</p>
+  <figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="comment">// Decimal represents a fixed-point decimal. It is immutable.</span></div><div class="line"><span class="comment">// number = value * 10 ^ exp</span></div><div class="line"><span class="keyword">type</span> Decimal <span class="keyword">struct</span> &#123;</div><div class="line">	value *big.Int</div><div class="line"></div><div class="line">	<span class="comment">// NOTE(vadim): this must be an int32, because we cast it to float64 during</span></div><div class="line">	<span class="comment">// calculations. If exp is 64 bit, we might lose precision.</span></div><div class="line">	<span class="comment">// If we cared about being able to represent every possible decimal, we</span></div><div class="line">	<span class="comment">// could make exp a *big.Int but it would hurt performance and numbers</span></div><div class="line">	<span class="comment">// like that are unrealistic.</span></div><div class="line">	exp <span class="keyword">int32</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+<li><p>TiDB里的MyDecimal定义位于<code>github.com/pingcap/tidb/util/types/mydecimal.go</code>, 实现比shopspring的Decimal复杂多了, 也更底层(不依赖math/big), 性能也更好(见下面的benchmark). 其思路是:<br>digitsInt保存数字的整数部分数字个数, digitsFrac保存数字的小数部分数字个数, resultFrac保存计算及序列化时保留至小数点后几位, negative标明数字是否为负数, wordBuf是一个定长的int32数组(长度为9), 数字去掉小数点的主体保存在这里, 一个int32有32个bit, 最大值为(<code>2**31-1</code>)2147483647(10个十进制数), 所以一个int32最多能表示9个十进制数位, 因此wordBuf 最多能容纳9*9个十进制数位.</p>
+  <figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="comment">// MyDecimal represents a decimal value.</span></div><div class="line"><span class="keyword">type</span> MyDecimal <span class="keyword">struct</span> &#123;</div><div class="line">	digitsInt <span class="keyword">int8</span> <span class="comment">// the number of *decimal* digits before the point.</span></div><div class="line"></div><div class="line">	digitsFrac <span class="keyword">int8</span> <span class="comment">// the number of decimal digits after the point.</span></div><div class="line"></div><div class="line">	resultFrac <span class="keyword">int8</span> <span class="comment">// result fraction digits.</span></div><div class="line"></div><div class="line">	negative <span class="keyword">bool</span></div><div class="line"></div><div class="line">	<span class="comment">//  wordBuf is an array of int32 words.</span></div><div class="line">	<span class="comment">// A word is an int32 value can hold 9 digits.(0 &lt;= word &lt; wordBase)</span></div><div class="line">	wordBuf [maxWordBufLen]<span class="keyword">int32</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
 </ul>
+<p>看看这两种decimal类型在文首的两个case下的结果, 同时跑个分.</p>
+<blockquote>
+<p>main_test.go</p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="keyword">package</span> main</div><div class="line"></div><div class="line"><span class="keyword">import</span> (</div><div class="line">	<span class="string">"testing"</span></div><div class="line">	<span class="string">"github.com/shopspring/decimal"</span></div><div class="line">	<span class="string">"github.com/pingcap/tidb/util/types"</span></div><div class="line">	<span class="string">"log"</span></div><div class="line">)</div><div class="line"></div><div class="line"><span class="keyword">var</span> case1String = <span class="string">"135.90"</span></div><div class="line"><span class="keyword">var</span> case1Bytes = []<span class="keyword">byte</span>(case1String)</div><div class="line"><span class="keyword">var</span> case2String = <span class="string">"0"</span></div><div class="line"><span class="keyword">var</span> case2Bytes = []<span class="keyword">byte</span>(<span class="string">"0"</span>)</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">ShopspringDecimalCase1</span><span class="params">()</span> <span class="title">decimal</span>.<span class="title">Decimal</span></span> &#123;</div><div class="line">	dec1, err := decimal.NewFromString(case1String)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		log.Fatal(err)</div><div class="line">	&#125;</div><div class="line">	dec2 := decimal.NewFromFloat(<span class="number">100</span>)</div><div class="line">	dec3 := dec1.Mul(dec2)</div><div class="line">	<span class="keyword">return</span> dec3</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">TidbDecimalCase1</span><span class="params">()</span> *<span class="title">types</span>.<span class="title">MyDecimal</span></span> &#123;</div><div class="line">	dec1 := <span class="built_in">new</span>(types.MyDecimal)</div><div class="line">	err := dec1.FromString(case1Bytes)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		log.Fatal(err)</div><div class="line">	&#125;</div><div class="line">	dec2 := <span class="built_in">new</span>(types.MyDecimal).FromInt(<span class="number">100</span>)</div><div class="line">	dec3 := <span class="built_in">new</span>(types.MyDecimal)</div><div class="line">	err = types.DecimalMul(dec1, dec2, dec3)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		log.Fatal(err)</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span> dec3</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">ShopspringDecimalCase2</span><span class="params">()</span> <span class="title">decimal</span>.<span class="title">Decimal</span></span> &#123;</div><div class="line">	dec1, err := decimal.NewFromString(case2String)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		log.Fatal(err)</div><div class="line">	&#125;</div><div class="line">	dec2 := decimal.NewFromFloat(<span class="number">0.1</span>)</div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">10</span>; i++ &#123;</div><div class="line">		dec1 = dec1.Add(dec2)</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span> dec1</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">TidbDecimalCase2</span><span class="params">()</span> *<span class="title">types</span>.<span class="title">MyDecimal</span></span> &#123;</div><div class="line">	dec1 := <span class="built_in">new</span>(types.MyDecimal)</div><div class="line">	dec1.FromString(case2Bytes)</div><div class="line">	dec2 := <span class="built_in">new</span>(types.MyDecimal)</div><div class="line">	dec2.FromFloat64(<span class="number">0.1</span>)</div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">10</span>; i++ &#123;</div><div class="line">		types.DecimalAdd(dec1, dec2, dec1)</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span> dec1</div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// case1: 135.90*100 ====</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkShopspringDecimalCase1</span><span class="params">(b *testing.B)</span></span> &#123;</div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; b.N; i++ &#123;</div><div class="line">		ShopspringDecimalCase1()</div><div class="line">	&#125;</div><div class="line">	b.Log(ShopspringDecimalCase1()) <span class="comment">// output: 13590</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkTidbDecimalCase1</span><span class="params">(b *testing.B)</span></span> &#123;</div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; b.N; i++ &#123;</div><div class="line">		TidbDecimalCase1()</div><div class="line">	&#125;</div><div class="line">	b.Log(TidbDecimalCase1()) <span class="comment">//  output: 13590.00</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// case2: 0.1 add 10 times ===</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkShopspringDecimalCase2</span><span class="params">(b *testing.B)</span></span> &#123;</div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; b.N; i++ &#123;</div><div class="line">		ShopspringDecimalCase2()</div><div class="line">	&#125;</div><div class="line">	b.Log(ShopspringDecimalCase2()) <span class="comment">//  output: 1</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkTidbDecimalCase2</span><span class="params">(b *testing.B)</span></span> &#123;</div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; b.N; i++ &#123;</div><div class="line">		TidbDecimalCase2()</div><div class="line">	&#125;</div><div class="line">	b.Log(TidbDecimalCase2()) <span class="comment">//  output: 1.0</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight go"><table><tr><td class="code"><pre><div class="line">BenchmarkShopspringDecimalCase1<span class="number">-8</span>        <span class="number">2000000</span>               <span class="number">664</span> ns/op             <span class="number">340</span> B/op         <span class="number">10</span> allocs/op</div><div class="line"></div><div class="line">BenchmarkTidbDecimalCase1<span class="number">-8</span>             <span class="number">20000000</span>                <span class="number">99.2</span> ns/op            <span class="number">48</span> B/op          <span class="number">1</span> allocs/op</div><div class="line"></div><div class="line">BenchmarkShopspringDecimalCase2<span class="number">-8</span>         <span class="number">300000</span>              <span class="number">5210</span> ns/op            <span class="number">4294</span> B/op        <span class="number">111</span> allocs/op</div><div class="line"></div><div class="line">BenchmarkTidbDecimalCase2<span class="number">-8</span>              <span class="number">3000000</span>               <span class="number">517</span> ns/op              <span class="number">83</span> B/op          <span class="number">3</span> allocs/op</div></pre></td></tr></table></figure>
+<p>可见两种实现在上面两个case下表示准确, TiDB的decimal实现的性能高于shopspring的实现, 堆内存分配次数也更少.</p>
+<p>##4. MyDecimal的已知问题</p>
+<p>用了一段时间后, tidb.MyDecimal也有一些问题</p>
 <ol>
-<li>goroutines are <strong>cheap</strong> not <strong>free</strong><br>这句话在其他地方也看过, <code>go func()</code>简单好用, 创建开销也很小, 但也是有开销的. 很多情况下开固定数量worker, 用channel传递数据, 效果会更好.<br>go-apns2中的example是个非常好的例子.<a href="https://github.com/sideshow/apns2/blob/master/_example/channel/main.go" target="_blank" rel="external">https://github.com/sideshow/apns2/blob/master/_example/channel/main.go</a></li>
+<li>原版除法有bug, 可以通过除数和被除数同时放大一定倍数临时修复, 更好的解决方法需要官方人员解决, 已提issue, 这个bug真是匪夷所思. <a href="https://github.com/pingcap/tidb/issues/4873" target="_blank" rel="external">https://github.com/pingcap/tidb/issues/4873</a>, 2017.11.3官方修复decimal除法问题:<a href="https://github.com/pingcap/tidb/pull/4995/files" target="_blank" rel="external">https://github.com/pingcap/tidb/pull/4995/files</a>.</li>
+<li>原版乘法有小问题, 行为不一致, 原版的from1和to不能为同一个指针, 但 Add Sub Div却可以. 可以通过copy参数修复.</li>
+<li>移位小坑, 右移属于扩大数值, 没有问题. 左移有问题, 注意1左移两位不会变成0.01, 所以shift不要传负数.</li>
+<li>round, 目前这个库的Round模式ModeHalfEven实际上是ModeHalfUp, 正常的四舍五入, 不是float的ModeHalfEven. 3.5=&gt;4, 4.5=&gt;5, 5.5=&gt;6, 注意后期是否有变更.</li>
 </ol>
-<p>注意一个问题, go里面一个goroutine panic了, 会导致进程退出, 所以<code>go func()</code>时第一行带上</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span>&#123;</div><div class="line">	<span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span>&#123;</div><div class="line">		<span class="keyword">if</span> err:=<span class="built_in">recover</span>(); err!=<span class="literal">nil</span>&#123;</div><div class="line">		&#125;</div><div class="line">	&#125;()</div><div class="line">&#125;()</div></pre></td></tr></table></figure>
-<p>是安全的做法, worker channel法时类似</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="keyword">package</span> main</div><div class="line"></div><div class="line"><span class="keyword">import</span> (</div><div class="line">	<span class="string">"fmt"</span></div><div class="line">	<span class="string">"log"</span></div><div class="line">	<span class="string">"time"</span></div><div class="line">)</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</div><div class="line">	ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">10</span>)</div><div class="line"></div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">2</span>; i++ &#123;</div><div class="line">		<span class="keyword">go</span> worker(ch, i)</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">3</span>; i++ &#123;</div><div class="line">		ch &lt;- i</div><div class="line">		ch &lt;- <span class="number">-1</span></div><div class="line">	&#125;</div><div class="line"></div><div class="line">	time.Sleep(time.Second * <span class="number">5</span>)</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">worker</span><span class="params">(ch &lt;-<span class="keyword">chan</span> <span class="keyword">int</span>, goId <span class="keyword">int</span>)</span></span> &#123;</div><div class="line"></div><div class="line">	log.Printf(<span class="string">"worker%d running"</span>, goId)</div><div class="line">	<span class="keyword">for</span> data := <span class="keyword">range</span> ch &#123;</div><div class="line">		<span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">			<span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">				<span class="keyword">if</span> err := <span class="built_in">recover</span>(); err != <span class="literal">nil</span> &#123;</div><div class="line">					log.Printf(<span class="string">"worker%d recover error:%s"</span>, goId, err)</div><div class="line">				&#125;</div><div class="line">			&#125;()</div><div class="line">			log.Printf(<span class="string">"worker%d received data:%d"</span>, goId, data)</div><div class="line">			<span class="keyword">if</span> data == <span class="number">-1</span> &#123;</div><div class="line">				<span class="built_in">panic</span>(fmt.Errorf(<span class="string">"worker%d panic"</span>, goId))</div><div class="line">			&#125;</div><div class="line">		&#125;()</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>fasthttp之所以快, 其中一个原因就是net/http是来一个连接就创建一个goroutie, 而fasthttp用了池复用了goroutines.</p>
-<ol>
-<li><p>watch your allocations (string() is costly, re-user buffers)<br>go里面 []byte和string互转是会发生复制的, 开销明显, 如果代码里频繁互转, 考虑使用bytes.buffer 和 sync.Pool</p>
-</li>
-<li><p>use anonymous structs for arbitrary JSON<br>在写http api时, parse body这种事情, 如果只是纯粹取body里的json数据, 没必要单独定义结构体, 在函数里定义一个匿名结构体就好. <code>var s struct { A int}</code></p>
-</li>
-<li><p>no built-in per-request HTTP timeouts<br>这是说要注意默认的httpClient没有超时</p>
-</li>
-<li><p>synchronizing goroutine exit is hard - log each cleanup step in long-running goroutines<br>同步化的goroutine一不小心就没有退出, 如果你写一个长期运行的服务, 用logger记录每一个goroutine的清理退出, 防止goroutine泄露</p>
-</li>
-<li><p>select skips nil channels </p>
-</li>
-</ol>
-<p>select语句是会跳过nil的channels的. 因为在Go里往已经close掉的channel里发送数据是会panic的, 可以利用select语句.<br>附: channel操作导致panic的情况有: 关闭一个nil的channel, 关闭一个已经关闭的channel( j,ok:= &lt;- ch, ok为false时代表ch已经关闭了), 往一个已经关闭的channel里发送数据(从已经关闭的channel里读数据是OK的, 如果这个channel是带缓冲的, 那么可以读到所有数据)</p>
-<h2 id="来自GO箴言"><a href="#来自GO箴言" class="headerlink" title="来自GO箴言"></a>来自GO箴言</h2><p>Python有<code>import this</code>的zen of Python, 想不到Go也有箴言<br><a href="https://speakerdeck.com/ajstarks/go-proverbs" target="_blank" rel="external">https://speakerdeck.com/ajstarks/go-proverbs</a><br><img src="https://ws1.sinaimg.cn/large/cfe1407cgy1fh5dfxouv0j212o0lsdop.jpg" alt=""></p>
-<ol>
-<li>在go里, goroutines之间通信不要用共享内存的方式实现, 应该用channel来实现</li>
-<li>并发不是并行</li>
-<li>channel是编排, mutexs是串行</li>
-<li>interface定义越多的方法, 抽象程度越低. Go提倡用接口组合的方式实现更大的接口</li>
-<li>零值, 猜测这里说的是struct{}吧, struct{}是一个不占内存的空结构体, 在用map实现set, channel发送无额外意义的signal时能降低内存分配</li>
-<li>提倡gofmt</li>
-<li>一点点复制比一点点依赖好. 官方包里有时能见到一些复制的代码, 这是为了不互相依赖</li>
-<li>syscall每个平台实现不一样, 要加build tags</li>
-<li>cgo每个平台的lib不一样, 要加build tags</li>
-<li>Cgo不是go</li>
-<li>unsafe包不提供保障</li>
-<li>简洁胜过高效</li>
-<li>error是值  可以用值的方式去处理错误: 传递, 比较</li>
-<li>不用仅检查错误, 要优雅地处理</li>
-<li>多花精力设计架构, 模块命名, 写详细的文档</li>
-<li>写良好的文档给用户</li>
-<li>对于普通错误, 应该用多值返回错误, 而不是手动panic</li>
-</ol>
-<h2 id="未知来源"><a href="#未知来源" class="headerlink" title="未知来源"></a>未知来源</h2><ol>
-<li>写可重复使用的函数, 接收接口类型, 返回具体类型</li>
-</ol>
-<h2 id="Golang-Github"><a href="#Golang-Github" class="headerlink" title="Golang Github"></a>Golang Github</h2><p><a href="https://github.com/golang/go/wiki/CodeReviewComments" target="_blank" rel="external">https://github.com/golang/go/wiki/CodeReviewComments</a></p>
 
         
         </div>
@@ -327,7 +309,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2017/06/24/Go最佳实践/" data-id="cjlrq32fj000r6fstbjy3ezd7" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2017/08/27/Go如何精确计算小数-decimal研究/" data-id="cjppf55ck000vv00othff8ync" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -395,7 +377,7 @@ ga('send', 'pageview');
 
             
     
-        <a href="https://imhanjm.com/2017/06/24/Go最佳实践/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2017/06/24/Go最佳实践/">评论</a>
+        <a href="https://imhanjm.com/2017/08/27/Go如何精确计算小数-decimal研究/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2017/08/27/Go如何精确计算小数-decimal研究/">评论</a>
     
 
         </footer>
@@ -405,7 +387,7 @@ ga('send', 'pageview');
 
 
 
-    <article id="post-Go logger 日志实践" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-DockerContainer下gdb无法正常工作的解决办法" class="article article-type-post" itemscope itemprop="blogPost">
     <div class="article-inner">
         
         
@@ -413,7 +395,7 @@ ga('send', 'pageview');
                 
     
         <h1 itemprop="name">
-            <a class="article-title" href="/2017/05/19/Go logger 日志实践/">GO Logger 日志实践</a>
+            <a class="article-title" href="/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/">DockerContainer下gdb无法正常工作的解决办法</a>
         </h1>
     
 
@@ -422,8 +404,8 @@ ga('send', 'pageview');
                         
     <div class="article-date">
         <i class="fa fa-calendar"></i>
-        <a href="/2017/05/19/Go logger 日志实践/">
-            <time datetime="2017-05-18T16:00:00.000Z" itemprop="datePublished">2017-05-19</time>
+        <a href="/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/">
+            <time datetime="2017-08-19T16:00:00.000Z" itemprop="datePublished">2017-08-20</time>
         </a>
     </div>
 
@@ -432,7 +414,7 @@ ga('send', 'pageview');
                         
     <div class="article-tag">
         <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/Go/">Go</a>, <a class="tag-link" href="/tags/log/">log</a>
+        <a class="tag-link" href="/tags/Docker/">Docker</a>
     </div>
 
                     </div>
@@ -443,18 +425,18 @@ ga('send', 'pageview');
         <div class="article-entry" itemprop="articleBody">
         
             
-            <h2 id="分析一下用过的打印日志的log包"><a href="#分析一下用过的打印日志的log包" class="headerlink" title="分析一下用过的打印日志的log包"></a>分析一下用过的打印日志的log包</h2><ol>
-<li>Go标准库自带log, 这个log的func比较少, 没有区分level, 但足够简单, 有prefix功能, 可以设置flag来控制时间格式, caller的文件名和行数, 其它的标准包如 net/http database/sql 等也用了此包.</li>
-<li>对自带的log进行包装, 加入level, 颜色. 如<a href="https://github.com/ngaut/log" target="_blank" rel="external">ngaut/log</a>, 这个log star数并不多, 还是从最近很火的一个项目<a href="https://github.com/pingcap/tidb" target="_blank" rel="external">pingcap/tidb</a>里看到的, 有点小清新的感觉, 但这个log可能只是为tidb使用的, 缺少自带log的一些方法, 导致没法使用在一些可以定制logger的第三方库如gorm中. 于是我fork了一下<a href="https://github.com/hanjm/log" target="_blank" rel="external">https://github.com/hanjm/log</a>, 增加了一些方法, 以便可以给gorm用.</li>
-<li>完全自己实现的log, 结构化输出, 通常是key=value或json, 有名的有<a href="https://github.com/sirupsen/logrus" target="_blank" rel="external">logrus</a>, <a href="https://github.com/uber-go/zap" target="_blank" rel="external">zap</a>等. 第一次看到logrus感觉美极了, 于是大量使用, 直到在关注tidb的时候收到带日志的issues邮件, 里面的日志带了caller, 感觉很有用, 于是去搜logrus的issue看有没有这个功能, 搜到了一个issue<a href="https://github.com/sirupsen/logrus/issues/63" target="_blank" rel="external">https://github.com/sirupsen/logrus/issues/63</a>, 讨论了三年这个功能还没加上, 只好放弃美丽的logrus, 找到了替代品zap, zap的设计非常好, 定制性强. log是经常调用的代码, 每次调用不可避免地要进行内存分配, 分配次数和每次分配的内存大小将影响性能. 对log内容的处理也是一个涉及到性能的点, 像log.Printf参数是interface{}, logrus的field是map[stirng]interface{}, 打印interface{}只能靠reflect, Go是静态强类型语言, 用反射的开销相对比较大, 所以zap使用了手动指定类型的方式, 从zap提供的benchmark上开看, 性能提升还是蛮大的, 虽然相比logrus使用起来更麻烦, 但为了性能, 还是值得的.</li>
-</ol>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ol>
-<li>为了方便进行日志分析, 统一用json行日志, 这样用elk时可以免去定制正则表达式存储到elasticSearch的field中.</li>
-<li>net/http database/sql 及一些第三方包可能直接使用了标注库的log, 有个trick可以改变所有使用标准包log的行为, 通过<code>log.SetOutput(w io.Writer)</code>来改变位置, w是一个实现了<code>Write(p []byte) (n int, err error)</code>方法的io.Writer即可.</li>
-<li>runtime.Caller可以得到调用者的pc, 文件名, 文件行数, runtime.FuncForPC(pc).Name()可以得到pc所在的函数名, 对于debug非常有帮助. 但有一定性能开销, 所以方案是: 对于http server的access log, 没有必要使用带caller的日志, 而对于http api具体实现的函数内的log, 有必要记录caller, 而且光有文件名和行数还不够, 毕竟改了代码行数就变了, 而函数名一般不会变, 带上函数名会更直观.</li>
-<li>GitHub搜了一圈, 好多公司都会定制自己的log, 如tidb的<a href="https://github.com/ngaut/log" target="_blank" rel="external">ngaut/log</a>, 七牛的<a href="https://github.com/qiniu/log" target="_blank" rel="external">qiniu/log</a>, 饿了么的<a href="https://github.com/eleme/log" target="_blank" rel="external">eleme/log</a>, mailgun的<a href="https://github.com/mailgun/log" target="_blank" rel="external">mailgun/log</a>, 是的, 我也造一个小轮子<a href="https://github.com/hanjm/zaplog" target="_blank" rel="external">zaplog</a>.zaplog是包装了zap, 带caller func name, 兼容logrus stdlog 的日志输出工具.</li>
-</ol>
-<figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="keyword">package</span> zaplog</div><div class="line"></div><div class="line"><span class="keyword">import</span> (</div><div class="line">	<span class="string">"bytes"</span></div><div class="line">	<span class="string">"fmt"</span></div><div class="line">	<span class="string">"go.uber.org/zap"</span></div><div class="line">	<span class="string">"go.uber.org/zap/zapcore"</span></div><div class="line">	<span class="string">"log"</span></div><div class="line">	<span class="string">"runtime"</span></div><div class="line">	<span class="string">"strings"</span></div><div class="line">)</div><div class="line"></div><div class="line"><span class="comment">// CallerEncoder will add caller to log. format is "filename:lineNum:funcName", e.g:"zaplog/zaplog_test.go:15:zaplog.TestNewLogger"</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">CallerEncoder</span><span class="params">(caller zapcore.EntryCaller, enc zapcore.PrimitiveArrayEncoder)</span></span> &#123;</div><div class="line">	enc.AppendString(strings.Join([]<span class="keyword">string</span>&#123;caller.TrimmedPath(), runtime.FuncForPC(caller.PC).Name()&#125;, <span class="string">":"</span>))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">newLoggerConfig</span><span class="params">(debugLevel <span class="keyword">bool</span>)</span> <span class="params">(loggerConfig zap.Config)</span></span> &#123;</div><div class="line">	loggerConfig = zap.NewProductionConfig()</div><div class="line">	loggerConfig.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder</div><div class="line">	loggerConfig.EncoderConfig.EncodeCaller = CallerEncoder</div><div class="line">	<span class="keyword">if</span> debugLevel &#123;</div><div class="line">		loggerConfig.Level = zap.NewAtomicLevelAt(zap.DebugLevel)</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// NewCustomLoggers is a shortcut to get normal logger, noCallerLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewCustomLoggers</span><span class="params">(debugLevel <span class="keyword">bool</span>)</span> <span class="params">(logger, noCallerLogger *zap.Logger)</span></span> &#123;</div><div class="line">	loggerConfig := newLoggerConfig(debugLevel)</div><div class="line">	logger, err := loggerConfig.Build()</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		<span class="built_in">panic</span>(err)</div><div class="line">	&#125;</div><div class="line">	loggerConfig.DisableCaller = <span class="literal">true</span></div><div class="line">	noCallerLogger, err = loggerConfig.Build()</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		<span class="built_in">panic</span>(err)</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// NewLogger return a normal logger</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewLogger</span><span class="params">(debugLevel <span class="keyword">bool</span>)</span> <span class="params">(logger *zap.Logger)</span></span> &#123;</div><div class="line">	loggerConfig := newLoggerConfig(debugLevel)</div><div class="line">	logger, err := loggerConfig.Build()</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		<span class="built_in">panic</span>(err)</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// NewNoCallerLogger return a no caller key value, will be faster</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewNoCallerLogger</span><span class="params">(debugLevel <span class="keyword">bool</span>)</span> <span class="params">(noCallerLogger *zap.Logger)</span></span> &#123;</div><div class="line">	loggerConfig := newLoggerConfig(debugLevel)</div><div class="line">	loggerConfig.DisableCaller = <span class="literal">true</span></div><div class="line">	noCallerLogger, err := loggerConfig.Build()</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		<span class="built_in">panic</span>(err)</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// CompatibleLogger is a logger which compatible to logrus/std log/prometheus.</span></div><div class="line"><span class="comment">// it implements Print() Println() Printf() Dbug() Debugln() Debugf() Info() Infoln() Infof() Warn() Warnln() Warnf()</span></div><div class="line"><span class="comment">// Error() Errorln() Errorf() Fatal() Fataln() Fatalf() Panic() Panicln() Panicf() With() WithField() WithFields()</span></div><div class="line"><span class="keyword">type</span> CompatibleLogger <span class="keyword">struct</span> &#123;</div><div class="line">	_log *zap.Logger</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// NewCompatibleLogger return CompatibleLogger with caller field</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewCompatibleLogger</span><span class="params">(debugLevel <span class="keyword">bool</span>)</span> *<span class="title">CompatibleLogger</span></span> &#123;</div><div class="line">	<span class="keyword">return</span> &amp;CompatibleLogger&#123;NewLogger(debugLevel).WithOptions(zap.AddCallerSkip(<span class="number">1</span>))&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Print logs a message at level Info on the compatibleLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l CompatibleLogger)</span> <span class="title">Print</span><span class="params">(args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</div><div class="line">	l._log.Info(fmt.Sprint(args...))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Println logs a message at level Info on the compatibleLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l CompatibleLogger)</span> <span class="title">Println</span><span class="params">(args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</div><div class="line">	l._log.Info(fmt.Sprint(args...))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Printf logs a message at level Info on the compatibleLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l CompatibleLogger)</span> <span class="title">Printf</span><span class="params">(format <span class="keyword">string</span>, args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</div><div class="line">	l._log.Info(fmt.Sprintf(format, args...))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Debug logs a message at level Debug on the compatibleLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l CompatibleLogger)</span> <span class="title">Debug</span><span class="params">(args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</div><div class="line">	l._log.Debug(fmt.Sprint(args...))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Debugln logs a message at level Debug on the compatibleLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l CompatibleLogger)</span> <span class="title">Debugln</span><span class="params">(args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</div><div class="line">	l._log.Debug(fmt.Sprint(args...))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Debugf logs a message at level Debug on the compatibleLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l CompatibleLogger)</span> <span class="title">Debugf</span><span class="params">(format <span class="keyword">string</span>, args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</div><div class="line">	l._log.Debug(fmt.Sprintf(format, args...))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Info logs a message at level Info on the compatibleLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l CompatibleLogger)</span> <span class="title">Info</span><span class="params">(args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</div><div class="line">	l._log.Info(fmt.Sprint(args...))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Infoln logs a message at level Info on the compatibleLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l CompatibleLogger)</span> <span class="title">Infoln</span><span class="params">(args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</div><div class="line">	l._log.Info(fmt.Sprint(args...))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Infof logs a message at level Info on the compatibleLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l CompatibleLogger)</span> <span class="title">Infof</span><span class="params">(format <span class="keyword">string</span>, args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</div><div class="line">	l._log.Info(fmt.Sprintf(format, args...))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Warn logs a message at level Warn on the compatibleLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l CompatibleLogger)</span> <span class="title">Warn</span><span class="params">(args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</div><div class="line">	l._log.Warn(fmt.Sprint(args...))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Warnln logs a message at level Warn on the compatibleLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l CompatibleLogger)</span> <span class="title">Warnln</span><span class="params">(args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</div><div class="line">	l._log.Warn(fmt.Sprint(args...))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Warnf logs a message at level Warn on the compatibleLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l CompatibleLogger)</span> <span class="title">Warnf</span><span class="params">(format <span class="keyword">string</span>, args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</div><div class="line">	l._log.Warn(fmt.Sprintf(format, args...))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Error logs a message at level Error on the compatibleLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l CompatibleLogger)</span> <span class="title">Error</span><span class="params">(args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</div><div class="line">	l._log.Error(fmt.Sprint(args...))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Errorln logs a message at level Error on the compatibleLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l CompatibleLogger)</span> <span class="title">Errorln</span><span class="params">(args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</div><div class="line">	l._log.Error(fmt.Sprint(args...))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Errorf logs a message at level Error on the compatibleLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l CompatibleLogger)</span> <span class="title">Errorf</span><span class="params">(format <span class="keyword">string</span>, args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</div><div class="line">	l._log.Error(fmt.Sprintf(format, args...))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Fatal logs a message at level Fatal on the compatibleLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l CompatibleLogger)</span> <span class="title">Fatal</span><span class="params">(args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</div><div class="line">	l._log.Fatal(fmt.Sprint(args...))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Fatalln logs a message at level Fatal on the compatibleLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l CompatibleLogger)</span> <span class="title">Fatalln</span><span class="params">(args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</div><div class="line">	l._log.Fatal(fmt.Sprint(args...))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Fatalf logs a message at level Fatal on the compatibleLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l CompatibleLogger)</span> <span class="title">Fatalf</span><span class="params">(format <span class="keyword">string</span>, args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</div><div class="line">	l._log.Fatal(fmt.Sprintf(format, args...))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Panic logs a message at level Painc on the compatibleLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l CompatibleLogger)</span> <span class="title">Panic</span><span class="params">(args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</div><div class="line">	l._log.Panic(fmt.Sprint(args...))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Panicln logs a message at level Painc on the compatibleLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l CompatibleLogger)</span> <span class="title">Panicln</span><span class="params">(args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</div><div class="line">	l._log.Panic(fmt.Sprint(args...))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Panicf logs a message at level Painc on the compatibleLogger.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l CompatibleLogger)</span> <span class="title">Panicf</span><span class="params">(format <span class="keyword">string</span>, args ...<span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</div><div class="line">	l._log.Panic(fmt.Sprintf(format, args...))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// With return a logger with an extra field.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *CompatibleLogger)</span> <span class="title">With</span><span class="params">(key <span class="keyword">string</span>, value <span class="keyword">interface</span>&#123;&#125;)</span> *<span class="title">CompatibleLogger</span></span> &#123;</div><div class="line">	<span class="keyword">return</span> &amp;CompatibleLogger&#123;l._log.With(zap.Any(key, value))&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// WithField return a logger with an extra field.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *CompatibleLogger)</span> <span class="title">WithField</span><span class="params">(key <span class="keyword">string</span>, value <span class="keyword">interface</span>&#123;&#125;)</span> *<span class="title">CompatibleLogger</span></span> &#123;</div><div class="line">	<span class="keyword">return</span> &amp;CompatibleLogger&#123;l._log.With(zap.Any(key, value))&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// WithFields return a logger with extra fields.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *CompatibleLogger)</span> <span class="title">WithFields</span><span class="params">(fields <span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">interface</span>&#123;&#125;)</span> *<span class="title">CompatibleLogger</span></span> &#123;</div><div class="line">	i := <span class="number">0</span></div><div class="line">	<span class="keyword">var</span> clog *CompatibleLogger</div><div class="line">	<span class="keyword">for</span> k, v := <span class="keyword">range</span> fields &#123;</div><div class="line">		<span class="keyword">if</span> i == <span class="number">0</span> &#123;</div><div class="line">			clog = l.WithField(k, v)</div><div class="line">		&#125; <span class="keyword">else</span> &#123;</div><div class="line">			clog = clog.WithField(k, v)</div><div class="line">		&#125;</div><div class="line">		i++</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span> clog</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// FormatStdLog set the output of stand package log to zaplog</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">FormatStdLog</span><span class="params">()</span></span> &#123;</div><div class="line">	log.SetFlags(log.Llongfile)</div><div class="line">	log.SetOutput(&amp;logWriter&#123;NewNoCallerLogger(<span class="literal">false</span>)&#125;)</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">type</span> logWriter <span class="keyword">struct</span> &#123;</div><div class="line">	logger *zap.Logger</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Write implement io.Writer, as std log's output</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(w logWriter)</span> <span class="title">Write</span><span class="params">(p []<span class="keyword">byte</span>)</span> <span class="params">(n <span class="keyword">int</span>, err error)</span></span> &#123;</div><div class="line">	i := bytes.Index(p, []<span class="keyword">byte</span>(<span class="string">":"</span>)) + <span class="number">1</span></div><div class="line">	j := bytes.Index(p[i:], []<span class="keyword">byte</span>(<span class="string">":"</span>)) + <span class="number">1</span> + i</div><div class="line">	caller := bytes.TrimRight(p[:j], <span class="string">":"</span>)</div><div class="line">	<span class="comment">// find last index of /</span></div><div class="line">	i = bytes.LastIndex(caller, []<span class="keyword">byte</span>(<span class="string">"/"</span>))</div><div class="line">	<span class="comment">// find penultimate index of /</span></div><div class="line">	i = bytes.LastIndex(caller[:i], []<span class="keyword">byte</span>(<span class="string">"/"</span>))</div><div class="line">	w.logger.Info(<span class="string">"stdLog"</span>, zap.ByteString(<span class="string">"caller"</span>, caller[i+<span class="number">1</span>:]), zap.ByteString(<span class="string">"log"</span>, bytes.TrimSpace(p[j:])))</div><div class="line">	<span class="keyword">return</span> <span class="built_in">len</span>(p), <span class="literal">nil</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+            <p>昨天想在Mac上使用gdb调试一个Linux下编译的动态链接库, 以正常选项启动一个docker container, 运行gdb却发现如下错误提示.</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">warning: Error disabling address space randomization: Operation not permitted</div><div class="line">Cannot create process: Operation not permitted</div><div class="line">During startup program exited with code 127.</div><div class="line">(gdb)</div></pre></td></tr></table></figure>
+<p>在google搜索结果里第6个才找到正确答案, <a href="https://www.google.com/search?safe=off&amp;q=docker+gdb+warning%3A+Error+disabling+address+space+randomization%3A+Operation+not+permitted+Cannot+create+process%3A+Operation+not+permitted+During+startup+program+exited+with+code+127&amp;oq=docker+gdb+warning%3A+Error+disabling+address+space+randomization%3A+Operation+not+permitted+Cannot+create+process%3A+Operation+not+permitted+During+startup+program+exited+with+code+127" target="_blank" rel="external">https://www.google.com/search?safe=off&amp;q=docker+gdb+warning%3A+Error+disabling+address+space+randomization%3A+Operation+not+permitted+Cannot+create+process%3A+Operation+not+permitted+During+startup+program+exited+with+code+127&amp;oq=docker+gdb+warning%3A+Error+disabling+address+space+randomization%3A+Operation+not+permitted+Cannot+create+process%3A+Operation+not+permitted+During+startup+program+exited+with+code+127</a>, 原来是docker run中的一个不太常用的选项, docker run –privileged, 加上即可.</p>
+<p>于是找官方文档查看此选项的解释, 了解到: 默认docker是以受限模式下运行container, 如不能在container中运行再运行一个docker, 不能访问宿主机上的真实设备, /dev/, gdb无法访问真实的内存设备.<br>&gt;</p>
+<blockquote>
+<p>Runtime privilege and Linux capabilities</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">--cap-add: Add Linux capabilities</div><div class="line">--cap-drop: Drop Linux capabilities</div><div class="line">--privileged=false: Give extended privileges to this container</div><div class="line">--device=[]: Allows you to run devices inside the container without the --privileged flag.</div></pre></td></tr></table></figure>
+<p>By default, Docker containers are “unprivileged” and cannot, for example, run a Docker daemon inside a Docker container. This is because by default a container is not allowed to access any devices, but a “privileged” container is given access to all devices (see the documentation on cgroups devices).</p>
+<p>When the operator executes docker run –privileged, Docker will enable access to all devices on the host as well as set some configuration in AppArmor or SELinux to allow the container nearly all the same access to the host as processes running outside containers on the host. Additional information about running with –privileged is available on the Docker Blog.</p>
+<p>If you want to limit access to a specific device or devices you can use the –device flag. It allows you to specify one or more devices that will be accessible within the container.</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">&gt;$ docker run --device=/dev/snd:/dev/snd ...</div><div class="line">&gt;</div></pre></td></tr></table></figure>
+</blockquote>
 
         
         </div>
@@ -465,7 +447,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2017/05/19/Go logger 日志实践/" data-id="cjlrq32gj00276fstxjmf9oy0" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/" data-id="cjppf55cj000tv00obwgtrixq" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -533,7 +515,7 @@ ga('send', 'pageview');
 
             
     
-        <a href="https://imhanjm.com/2017/05/19/Go logger 日志实践/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2017/05/19/Go logger 日志实践/">评论</a>
+        <a href="https://imhanjm.com/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/">评论</a>
     
 
         </footer>
@@ -544,7 +526,7 @@ ga('send', 'pageview');
 
 
     <nav id="page-nav">
-        <a class="extend prev" rel="prev" href="/page/3/">&laquo; 上一页</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/5/">下一页 &raquo;</a>
+        <a class="extend prev" rel="prev" href="/page/3/">&laquo; 上一页</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/5/">下一页 &raquo;</a>
     </nav>
 </section>
             
@@ -555,6 +537,63 @@ ga('send', 'pageview');
         <h3 class="widget-title">最新文章</h3>
         <div class="widget">
             <ul id="recent-post" class="">
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2018/11/29/go sql.Driver的mysql driver 中的一个有意思的行为/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2018/11/29/go sql.Driver的mysql driver 中的一个有意思的行为/" class="title">Go sql.Driver的mysql Driver 中的一个有意思的行为.Md</a></p>
+                            <p class="item-date"><time datetime="2018-11-28T16:00:00.000Z" itemprop="datePublished">2018-11-29</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2018/11/18/学习influxdb/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2018/11/18/学习influxdb/" class="title">学习Influxdb</a></p>
+                            <p class="item-date"><time datetime="2018-11-17T16:00:00.000Z" itemprop="datePublished">2018-11-18</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2018/10/06/GRPC文档阅读心得/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2018/10/06/GRPC文档阅读心得/" class="title">GRPC文档阅读心得</a></p>
+                            <p class="item-date"><time datetime="2018-10-05T16:00:00.000Z" itemprop="datePublished">2018-10-06</time></p>
+                        </div>
+                    </li>
                 
                     <li>
                         
@@ -594,63 +633,6 @@ ga('send', 'pageview');
                         </div>
                     </li>
                 
-                    <li>
-                        
-                        <div class="item-thumbnail">
-                            <a href="/2017/10/29/深入理解golang时间处理(time.Time)/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"></p>
-                            <p class="item-title"><a href="/2017/10/29/深入理解golang时间处理(time.Time)/" class="title">深入理解GO时间处理(time.Time)</a></p>
-                            <p class="item-date"><time datetime="2017-10-28T16:00:00.000Z" itemprop="datePublished">2017-10-29</time></p>
-                        </div>
-                    </li>
-                
-                    <li>
-                        
-                        <div class="item-thumbnail">
-                            <a href="/2017/08/27/Go如何精确计算小数-decimal研究/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"></p>
-                            <p class="item-title"><a href="/2017/08/27/Go如何精确计算小数-decimal研究/" class="title">Go如何精确计算小数-Decimal研究-Tidb MyDecimal问题</a></p>
-                            <p class="item-date"><time datetime="2017-08-26T16:00:00.000Z" itemprop="datePublished">2017-08-27</time></p>
-                        </div>
-                    </li>
-                
-                    <li>
-                        
-                        <div class="item-thumbnail">
-                            <a href="/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"></p>
-                            <p class="item-title"><a href="/2017/08/20/DockerContainer下gdb无法正常工作的解决办法/" class="title">DockerContainer下gdb无法正常工作的解决办法</a></p>
-                            <p class="item-date"><time datetime="2017-08-19T16:00:00.000Z" itemprop="datePublished">2017-08-20</time></p>
-                        </div>
-                    </li>
-                
             </ul>
         </div>
     </div>
@@ -662,7 +644,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">归档</h3>
         <div class="widget">
-            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">1</span></li></ul>
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -671,7 +653,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签</h3>
         <div class="widget">
-            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cool-tools/">Cool tools</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Error-handling/">Error handling</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Macos/">Macos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS/">NATS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS-Streaming/">NATS Streaming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/">Nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bench/">bench</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/decimal/">decimal</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log/">log</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/时间处理/">时间处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/架构/">架构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/连接池/">连接池</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/错误处理/">错误处理</a><span class="tag-list-count">1</span></li></ul>
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cool-tools/">Cool tools</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Error-handling/">Error handling</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRPC/">GRPC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Macos/">Macos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS/">NATS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS-Streaming/">NATS Streaming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/">Nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bench/">bench</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/decimal/">decimal</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grpc-go/">grpc-go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/influxdb/">influxdb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log/">log</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/时间处理/">时间处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/架构/">架构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/连接池/">连接池</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/错误处理/">错误处理</a><span class="tag-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -680,7 +662,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/Cool-tools/" style="font-size: 15px;">Cool tools</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Error-handling/" style="font-size: 10px;">Error handling</a> <a href="/tags/Go/" style="font-size: 20px;">Go</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Macos/" style="font-size: 10px;">Macos</a> <a href="/tags/NATS/" style="font-size: 10px;">NATS</a> <a href="/tags/NATS-Streaming/" style="font-size: 10px;">NATS Streaming</a> <a href="/tags/Nginx/" style="font-size: 10px;">Nginx</a> <a href="/tags/bench/" style="font-size: 10px;">bench</a> <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a> <a href="/tags/decimal/" style="font-size: 10px;">decimal</a> <a href="/tags/log/" style="font-size: 10px;">log</a> <a href="/tags/mysql/" style="font-size: 10px;">mysql</a> <a href="/tags/时间处理/" style="font-size: 10px;">时间处理</a> <a href="/tags/架构/" style="font-size: 10px;">架构</a> <a href="/tags/消息队列/" style="font-size: 10px;">消息队列</a> <a href="/tags/连接池/" style="font-size: 10px;">连接池</a> <a href="/tags/错误处理/" style="font-size: 10px;">错误处理</a>
+            <a href="/tags/Cool-tools/" style="font-size: 15px;">Cool tools</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Error-handling/" style="font-size: 10px;">Error handling</a> <a href="/tags/GRPC/" style="font-size: 10px;">GRPC</a> <a href="/tags/Go/" style="font-size: 20px;">Go</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Macos/" style="font-size: 10px;">Macos</a> <a href="/tags/NATS/" style="font-size: 10px;">NATS</a> <a href="/tags/NATS-Streaming/" style="font-size: 10px;">NATS Streaming</a> <a href="/tags/Nginx/" style="font-size: 10px;">Nginx</a> <a href="/tags/bench/" style="font-size: 10px;">bench</a> <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a> <a href="/tags/decimal/" style="font-size: 10px;">decimal</a> <a href="/tags/grpc-go/" style="font-size: 10px;">grpc-go</a> <a href="/tags/influxdb/" style="font-size: 10px;">influxdb</a> <a href="/tags/log/" style="font-size: 10px;">log</a> <a href="/tags/mysql/" style="font-size: 15px;">mysql</a> <a href="/tags/时间处理/" style="font-size: 10px;">时间处理</a> <a href="/tags/架构/" style="font-size: 10px;">架构</a> <a href="/tags/消息队列/" style="font-size: 10px;">消息队列</a> <a href="/tags/连接池/" style="font-size: 10px;">连接池</a> <a href="/tags/错误处理/" style="font-size: 10px;">错误处理</a>
         </div>
     </div>
 
@@ -697,6 +679,10 @@ ga('send', 'pageview');
                 
                     <li>
                         <a href="http://www.coldcofe.cn/">coldcofe</a>
+                    </li>
+                
+                    <li>
+                        <a href="feilengcui008.github.io">feilengcui008</a>
                     </li>
                 
                     <li>
