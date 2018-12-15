@@ -169,11 +169,11 @@ ga('send', 'pageview');
         </div>
         <div class="article-info profile-block">
             <div class="article-info-block">
-                20
+                21
                 <span>文章</span>
             </div>
             <div class="article-info-block">
-                23
+                24
                 <span>标签</span>
             </div>
         </div>
@@ -222,6 +222,147 @@ ga('send', 'pageview');
 
             
             <section id="main">
+    <article id="post-Nginx HTTP2编译安装" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 itemprop="name">
+            <a class="article-title" href="/2017/04/20/Nginx HTTP2编译安装/">Nginx HTTP/2 编译安装</a>
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2017/04/20/Nginx HTTP2编译安装/">
+            <time datetime="2017-04-19T16:00:00.000Z" itemprop="datePublished">2017-04-20</time>
+        </a>
+    </div>
+
+
+                        
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/HTTP/">HTTP</a>, <a class="tag-link" href="/tags/Nginx/">Nginx</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>yum apt等包管理系统安装的软件有时候比较旧, 导致一些莫名其妙的问题. 最近在给Nginx加HTTP/2模块中, 编译时加上了<code>--with-http_v2_module</code>参数, 但Chrome请求发现还是不是http2, 后面发现是OpenSSL版本太低. 踩过这一坑后, 感觉Linux下部分软件最好还是自己编译安装比较妥, 如果编译过程出错, 搜下错误信息, 一般是基础依赖没有安装, 很好解决.</p>
+<p>官方的源码编译指南<br><a href="https://nginx.org/en/docs/configure.html" target="_blank" rel="external">https://nginx.org/en/docs/configure.html</a><br><a href="https://nginx.org/en/docs/http/ngx_http_v2_module.html" target="_blank" rel="external">https://nginx.org/en/docs/http/ngx_http_v2_module.html</a> (这里写了需要OpenSSL1.0.2以上版本), 很多选项都有合适的默认值, 比如–prefix=/usr/local/nginx, 所以只需要指定自己需要的字段</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">--user=www-data // 习惯将web相关的服务以www-data用户运行, 如没有此用户可以创建一个也可不加此项按默认nobody用户</div><div class="line">--group=www-data</div><div class="line">--with-http_v2_module // 默认选项不带http2</div><div class="line">--with-http_ssl_module // 默认选项不带ssl, 上http2必须要上ssl的</div><div class="line">--with-stream // https://nginx.org/en/docs/stream/ngx_stream_core_module.html</div><div class="line">--with-openssl // 指定OpenSSL</div><div class="line">--with-pcre=./pcre-8.40 // 需要(version 4.4 — 8.40)的pcre,注意Nginx不支持pcre2</div><div class="line">--with-pcre-jit // 打开pcre JIT支持</div><div class="line">--with-zlib=./zlib-1.2.11 // 需要(version 1.1.3 — 1.2.11)的zlib以支持gzip</div></pre></td></tr></table></figure>
+<p>1.<a href="https://nginx.org/en/download.html" target="_blank" rel="external">官网下载Nginx包</a></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">cd /usr/local</div><div class="line">wget https://nginx.org/download/nginx-1.12.0.tar.gz</div><div class="line">tar -zxf nginx-1.12.0.tar.gz</div><div class="line">cd nginx-1.12.0</div></pre></td></tr></table></figure>
+<p>2.[官网下载OpenSSL 1.0.2以上版本].<a href="https://github.com/openssl/openssl/releases" target="_blank" rel="external">https://github.com/openssl/openssl/releases</a></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">cd nginx-1.12.0</div><div class="line">wget https://github.com/openssl/openssl/archive/OpenSSL_1_1_0e.tar.gz</div><div class="line">tar -zxf OpenSSL_1_1_0e.tar.gz</div></pre></td></tr></table></figure>
+<p>2.<a href="https://ftp.pcre.org/pub/pcre/" target="_blank" rel="external">官网下载pcre</a></p>
+<p>注意Nginx不支持pcre2,下载pcre最新版即可. 解压到Nginx解压的目录</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">cd nginx-1.12.0</div><div class="line">wget https://ftp.pcre.org/pub/pcre/pcre-8.40.tar.gz</div><div class="line">tar -zxf pcre-8.40.tar.gz</div></pre></td></tr></table></figure>
+<p>4.<a href="http://zlib.net/" target="_blank" rel="external">官网下载zlib</a>(version 1.1.3 — 1.2.11)</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">cd nginx-1.12.0</div><div class="line">wget http://zlib.net/zlib-1.2.11.tar.gz</div><div class="line">tar -zxf zlib-1.2.11.tar.gz</div></pre></td></tr></table></figure>
+<p>5.编译并安装</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">./configure \</div><div class="line">--user=www-data \</div><div class="line">--group=www-data \</div><div class="line">--with-http_v2_module \</div><div class="line">--with-http_ssl_module \</div><div class="line">--with-stream \</div><div class="line">--with-openssl=./openssl-OpenSSL_1_1_0e \</div><div class="line">--with-pcre=./pcre-8.40 --with-pcre-jit \</div><div class="line">--with-zlib=./zlib-1.2.11</div><div class="line">make &amp;&amp; make install</div></pre></td></tr></table></figure>
+<p>6.为了方便操作,软链/usr/local/nginx/sbin/nginx到/usr/local/bin</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">ln -s /usr/local/nginx/sbin/nginx /usr/local/bin</div></pre></td></tr></table></figure>
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="https://imhanjm.com/2017/04/20/Nginx HTTP2编译安装/" data-id="cjppj1j28000vpe0o5b5igjxs" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+        <a href="https://imhanjm.com/2017/04/20/Nginx HTTP2编译安装/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2017/04/20/Nginx HTTP2编译安装/">评论</a>
+    
+
+        </footer>
+    </div>
+    
+</article>
+
+
+
     <article id="post-Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比" class="article article-type-post" itemscope itemprop="blogPost">
     <div class="article-inner">
         
@@ -302,7 +443,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2017/03/21/Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比/" data-id="cjpphqw5d002rij0ofx9m3pq7" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2017/03/21/Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比/" data-id="cjppj1j3m002lpe0o8igxnn6z" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -380,194 +521,8 @@ ga('send', 'pageview');
 
 
 
-    <article id="post-Go快速笔记" class="article article-type-post" itemscope itemprop="blogPost">
-    <div class="article-inner">
-        
-        
-            <header class="article-header">
-                
-    
-        <h1 itemprop="name">
-            <a class="article-title" href="/2016/12/31/Go快速笔记/">Go快速笔记</a>
-        </h1>
-    
-
-                
-                    <div class="article-meta">
-                        
-    <div class="article-date">
-        <i class="fa fa-calendar"></i>
-        <a href="/2016/12/31/Go快速笔记/">
-            <time datetime="2016-12-30T16:00:00.000Z" itemprop="datePublished">2016-12-31</time>
-        </a>
-    </div>
-
-
-                        
-                        
-    <div class="article-tag">
-        <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/Go/">Go</a>
-    </div>
-
-                    </div>
-                
-            </header>
-        
-        
-        <div class="article-entry" itemprop="articleBody">
-        
-            
-            <h3 id="1-与var定义"><a href="#1-与var定义" class="headerlink" title="1. := 与var定义"></a>1. := 与var定义</h3><p>在函数中，<code>:=</code> 简洁赋值语句在明确类型的地方，可以用于替代 var 定义。</p>
-<p>函数外的每个语句都必须以关键字开始（<code>var</code>、<code>func</code>、等等），<code>:=</code> 结构不能使用在函数外。</p>
-<p>常量用<code>const</code>定义</p>
-<p><code>slice</code> <code>channle</code> <code>map</code> <strong>必须使用make函数来定义</strong></p>
-<p>new 分配内存后置零,返回指针</p>
-<p>make 分配内存后初始化, 返回对象</p>
-<p>在满足下列条件时，已被声明的变量 v 可出现在:= 声明中：</p>
-<ol>
-<li>本次声明与已声明的 v 处于同一作用域中,（若 v 已在外层作用域中声明过，则此次声明会创建一个新的变量v）</li>
-<li>在初始化中与其类型相应的值才能赋予 v，且在此次声明中至少另有一个变量是新声明的。</li>
-</ol>
-<h3 id="2-基本数据类型"><a href="#2-基本数据类型" class="headerlink" title="2. 基本数据类型"></a>2. 基本数据类型</h3><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">bool</div><div class="line">string</div><div class="line">int  int8  int16  int32  int64</div><div class="line">uint uint8 uint16 uint32 uint64 uintptr</div><div class="line">byte // uint8 的别名</div><div class="line">rune // int32 的别名</div><div class="line">     // 代表一个Unicode码</div><div class="line">float32 float64</div><div class="line">complex64 complex128</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">单引号字符常量表示 Unicode Code Point，⽀支持 \uFFFF、\U7FFFFFFF、\xFF 格式。 对应 rune 类型，UCS-4。</div><div class="line">var c1, c2 rune = &apos;\u6211&apos;, &apos;们&apos;</div></pre></td></tr></table></figure>
-<h3 id="3-Channel"><a href="#3-Channel" class="headerlink" title="3.Channel"></a>3.Channel</h3><p> channel 操作符 &lt;- ,操作符只有这一个,这样就不会搞错位置了</p>
-<p>发送者可以 close 一个 channel 来表示再没有值会被发送了。接收者可以通过赋值语句的第二参数来测试 channel 是否被关闭：当没有值可以接收并且 channel 已经被关闭，那么经过</p>
-<p>v, ok := &lt;-ch<br>之后 ok 会被设置为 <code>false</code>。</p>
-<p>循环 <code>for i := range c</code> 会不断从 channel 接收值，直到它被关闭。</p>
-<p>注意： 只有发送者才能关闭 channel，而不是接收者。向一个已经关闭的 channel 发送数据会引起 panic。 </p>
-<p>还要注意： channel 与文件不同；通常情况下无需关闭它们。只有在需要告诉接收者没有更多的数据的时候才有必要进行关闭，例如中断一个 <code>range</code>。</p>
-<h3 id="4-select"><a href="#4-select" class="headerlink" title="4.select"></a>4.select</h3><p><code>select</code> 语句使得一个 goroutine 在多个通讯操作上等待。</p>
-<p><code>select</code> 会阻塞，直到条件分支中的某个可以继续执行，这时就会执行那个条件分支。当多个都准备好的时候，会随机选择一个。</p>
-<p>当 <code>select</code> 中的其他条件分支都没有准备好的时候，<code>default</code> 分支会被执行。</p>
-<p>为了非阻塞的发送或者接收，可使用 default 分支：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">select &#123;</div><div class="line">case i := &lt;-c:</div><div class="line">    // 使用 i</div><div class="line">default:</div><div class="line">    // 从 c 读取会阻塞</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h3 id="5-for-range-遍历-range-会复制对象"><a href="#5-for-range-遍历-range-会复制对象" class="headerlink" title="5.for range 遍历 range 会复制对象"></a>5.for range 遍历 <em>range 会复制对象</em></h3><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">for key, value := range oldMap &#123;</div><div class="line">	newMap[key] = value</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>//若你只需要该遍历中的第一个项（键或下标），去掉第二个就行了：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">for key := range m &#123;</div><div class="line">	if key.expired() &#123;</div><div class="line">		delete(m, key)</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h3 id="6-Switch"><a href="#6-Switch" class="headerlink" title="6.Switch"></a>6.Switch</h3><p>switch 可以什么都不写 当多级if else使用   还可以当做判断类型使用 t.(type) 只能在switch使用</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">switch t := t.(type)</div></pre></td></tr></table></figure>
-<h3 id="7-Map"><a href="#7-Map" class="headerlink" title="7.Map"></a>7.Map</h3><p>key不存在不会报错，会返回与map的value的类型对应的零值.  用<code>if _,ok:=someMap[key];ok {}</code> 来判断有没有值 </p>
-<h3 id="8-Print"><a href="#8-Print" class="headerlink" title="8.Print"></a>8.Print</h3><ol>
-<li>字符串函数（Sprintf 等）会返回一个字符串，而非填充给定的缓冲区。</li>
-<li>fmt.Fprint 一类的格式化打印函数可接受任何实现了<code>io.Writer</code>接口的对象作为第一个实参:如<code>os.Stdout``os.Stderr</code></li>
-<li>fmt.Printf<ul>
-<li>%v（对应“值”）map中的键可能按任意顺序输出。</li>
-<li>当打印结构体时，改进的格式 %+v 会为结构体的每个字段添上字段名，而另一种格式 %#v 将完全按照Go的语法打印值。</li>
-<li>当遇到 string 或 []byte 值时， 可使用 %q 产生带引号的字符串；而格式 %#q 会尽可能使用反引号。</li>
-<li>%T 类型</li>
-<li>若你想控制自定义类型的默认格式，只需为该类型定义一个具有 String() string 签名的方法。</li>
-</ul>
-</li>
-</ol>
-<h3 id="9-append-中extend"><a href="#9-append-中extend" class="headerlink" title="9.append 中extend"></a>9.append 中extend</h3><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">x := []int&#123;1,2,3&#125;</div><div class="line">y := []int&#123;4,5,6&#125;</div><div class="line">x = append(x, y...)</div><div class="line">fmt.Println(x)</div></pre></td></tr></table></figure>
-<h3 id="10-类型转换"><a href="#10-类型转换" class="headerlink" title="10.类型转换"></a>10.类型转换</h3><p>要提取我们知道在该值中的字符串，可以这样：</p>
-<p><code>str := value.(string)</code><br>但若它所转换的值中不包含字符串，该程序就会以运行时错误崩溃。为避免这种情况， 需使用“逗号, ok”惯用测试它能安全地判断该值是否为字符串：<br><figure class="highlight golang"><table><tr><td class="code"><pre><div class="line">str, ok := value.(<span class="keyword">string</span>) </div><div class="line"><span class="keyword">if</span> ok &#123; </div><div class="line">	fmt.Printf(<span class="string">"字符串值为 %q\n"</span>, str)</div><div class="line"> &#125; <span class="keyword">else</span> &#123; </div><div class="line"> 	fmt.Printf(<span class="string">"该值非字符串\n"</span>) </div><div class="line"> &#125;</div></pre></td></tr></table></figure></p>
-<p>若类型断言失败，str 将继续存在且为字符串类型，但它将拥有零值，即空字符串。</p>
-<h3 id="11-x-x"><a href="#11-x-x" class="headerlink" title="11. x:=x"></a>11. x:=x</h3><p>req := req<br>但在Go中这样做是合法且惯用的。你用相同的名字获得了该变量的一个新的版本， 以此来局部地刻意屏蔽循环变量，使它对每个Go程保持唯一。<br>比如gorm中</p>
-<h3 id="12-函数"><a href="#12-函数" class="headerlink" title="12.函数"></a>12.函数</h3><p>变参   变参本质上就是 slice。只能有⼀一个，且必须是最后⼀一个。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">func test(s string, n ...int) string &#123;</div><div class="line"> var x int</div><div class="line"> for _, i := range n &#123;</div><div class="line"> 	x += i </div><div class="line"> &#125;</div><div class="line">return fmt.Sprintf(s, x)</div><div class="line">&#125;</div><div class="line">func main() &#123; </div><div class="line">println(test(&quot;sum: %d&quot;, 1, 2, 3)) </div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>使⽤用 slice 对象做变参时，必须展开。<br><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">func main() &#123; </div><div class="line">	s := []int&#123;1, 2, 3</div><div class="line">&#125;</div><div class="line">println(test(&quot;sum: %d&quot;, s...)) &#125;</div></pre></td></tr></table></figure></p>
-<p>匿名函数可赋值给变量，做为结构字段，<strong><em>或者在 channel ⾥里传送</em></strong>。</p>
-<h3 id="13-Defer"><a href="#13-Defer" class="headerlink" title="13.Defer"></a>13.Defer</h3><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">func add(x, y int) (z int) &#123;</div><div class="line">	defer func() &#123; </div><div class="line">		println(z) // 输出: 203 </div><div class="line">	&#125;()</div><div class="line">	z = x + y return z + 200</div><div class="line">	// 执⾏行顺序: (z = z + 200) -&gt; (call defer) -&gt; (ret)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>多个 defer 注册，按 FILO 次序执⾏行。哪怕函数或某个延迟调⽤用发⽣生错误，这些调⽤用依旧 会被执⾏行。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">func test(x int) &#123;</div><div class="line">	defer println(&quot;a&quot;) defer println(&quot;b&quot;)</div><div class="line">	defer func() &#123; println(100 / x) &#125;()</div><div class="line">	defer println(&quot;c&quot;)</div><div class="line">	// div0 异常未被捕获，逐步往外传递，最终终⽌止进程。</div><div class="line">&#125;</div><div class="line">func main() &#123; test(0) &#125;</div></pre></td></tr></table></figure>
-<p>输出：<br><code>c b a panic: runtime error: integer divide by zero</code></p>
-<h3 id="14-error"><a href="#14-error" class="headerlink" title="14. error"></a>14. error</h3><p>捕获函数 recover 只有在延迟调⽤用内直接调⽤用才会终⽌止错误，否则总是返回 nil。任何未捕获的错误都会沿调⽤用堆栈向外传递。</p>
-<p>导致关键流程出现不可修复性错误的 使⽤用 panic，其他使⽤用 error。</p>
-<h3 id="15-数组"><a href="#15-数组" class="headerlink" title="15. 数组"></a>15. 数组</h3><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">a := [3]int&#123;1, 2&#125;// 未初始化元素值为 0。 </div><div class="line">b := [...]int&#123;1, 2, 3, 4&#125;// 通过初始化值确定数组⻓长度。</div><div class="line">c := [5]int&#123;2: 100, 4:200&#125; // 使⽤用索引号初始化元素。</div><div class="line">d := [...]struct &#123; name string age uint8 &#125;&#123; &#123;&quot;user1&quot;, 10&#125;, &#123;&quot;user2&quot;, 20&#125;, &#125; // 可省略元素类型。 // 别忘了最后⼀一⾏行的逗号。</div><div class="line">⽀支持多维数组。</div><div class="line">a := [2][3]int&#123;&#123;1, 2, 3&#125;, &#123;4, 5, 6&#125;&#125; </div><div class="line">b := [...][2]int&#123;&#123;1, 1&#125;, &#123;2, 2&#125;, &#123;3, 3&#125;&#125;  // 第 2 纬度不能⽤用 &quot;...&quot;。</div></pre></td></tr></table></figure>
-<h3 id="16-slice"><a href="#16-slice" class="headerlink" title="16. slice"></a>16. slice</h3><p><code>array</code>和<code>slice</code>是不同的类型,不同长度的array类型不同   <code>slice是[]int</code>    <code>array是[n]int</code></p>
-<p>官方文档中说<br><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">In Go, array is a fixed length of continuous memory with specified type, while slice is just a reference which points to an underlying array. Since they are different types, they can&apos;t assign value each other directly.</div></pre></td></tr></table></figure></p>
-
-        
-        </div>
-        <footer class="article-footer">
-            <div class="share-container">
-
-
-
-</div>
-
-    <a data-url="https://imhanjm.com/2016/12/31/Go快速笔记/" data-id="cjpphqw3l0008ij0oypsb9hhq" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
-<script>
-    (function ($) {
-        // Prevent duplicate binding
-        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
-            __SHARE_BUTTON_BINDED__ = true;
-        } else {
-            return;
-        }
-        $('body').on('click', function() {
-            $('.article-share-box.on').removeClass('on');
-        }).on('click', '.article-share-link', function(e) {
-            e.stopPropagation();
-
-            var $this = $(this),
-                url = $this.attr('data-url'),
-                encodedUrl = encodeURIComponent(url),
-                id = 'article-share-box-' + $this.attr('data-id'),
-                offset = $this.offset(),
-                box;
-
-            if ($('#' + id).length) {
-                box = $('#' + id);
-
-                if (box.hasClass('on')){
-                    box.removeClass('on');
-                    return;
-                }
-            } else {
-                var html = [
-                    '<div id="' + id + '" class="article-share-box">',
-                        '<input class="article-share-input" value="' + url + '">',
-                        '<div class="article-share-links">',
-                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
-                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
-                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
-                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
-                        '</div>',
-                    '</div>'
-                ].join('');
-
-              box = $(html);
-
-              $('body').append(box);
-            }
-
-            $('.article-share-box.on').hide();
-
-            box.css({
-                top: offset.top + 25,
-                left: offset.left
-            }).addClass('on');
-
-        }).on('click', '.article-share-box', function (e) {
-            e.stopPropagation();
-        }).on('click', '.article-share-box-input', function () {
-            $(this).select();
-        }).on('click', '.article-share-box-link', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
-        });
-    })(jQuery);
-</script>
-
-            
-    
-        <a href="https://imhanjm.com/2016/12/31/Go快速笔记/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2016/12/31/Go快速笔记/">评论</a>
-    
-
-        </footer>
-    </div>
-    
-</article>
-
-
-
     <nav id="page-nav">
-        <a class="extend prev" rel="prev" href="/page/9/">&laquo; 上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="page-number" href="/page/9/">9</a><span class="page-number current">10</span>
+        <a class="extend prev" rel="prev" href="/page/9/">&laquo; 上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="page-number" href="/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/11/">下一页 &raquo;</a>
     </nav>
 </section>
             
@@ -578,6 +533,25 @@ ga('send', 'pageview');
         <h3 class="widget-title">最新文章</h3>
         <div class="widget">
             <ul id="recent-post" class="">
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2018/12/15/Nginx with gRPC编译安装/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2018/12/15/Nginx with gRPC编译安装/" class="title">Nginx With gRPC编译安装</a></p>
+                            <p class="item-date"><time datetime="2018-12-14T16:00:00.000Z" itemprop="datePublished">2018-12-15</time></p>
+                        </div>
+                    </li>
                 
                     <li>
                         
@@ -655,25 +629,6 @@ ga('send', 'pageview');
                         </div>
                     </li>
                 
-                    <li>
-                        
-                        <div class="item-thumbnail">
-                            <a href="/2018/02/17/深入理解NATS & NATS Streaming/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"></p>
-                            <p class="item-title"><a href="/2018/02/17/深入理解NATS & NATS Streaming/" class="title">深入理解NATS &amp; NATS Streaming (踩坑记)</a></p>
-                            <p class="item-date"><time datetime="2018-02-16T16:00:00.000Z" itemprop="datePublished">2018-02-17</time></p>
-                        </div>
-                    </li>
-                
             </ul>
         </div>
     </div>
@@ -685,7 +640,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">归档</h3>
         <div class="widget">
-            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">1</span></li></ul>
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -694,7 +649,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签</h3>
         <div class="widget">
-            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cool-tools/">Cool tools</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Error-handling/">Error handling</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRPC/">GRPC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Macos/">Macos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS/">NATS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS-Streaming/">NATS Streaming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/">Nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bench/">bench</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/decimal/">decimal</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grpc-go/">grpc-go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/influxdb/">influxdb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log/">log</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/时间处理/">时间处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/架构/">架构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/连接池/">连接池</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/错误处理/">错误处理</a><span class="tag-list-count">1</span></li></ul>
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cool-tools/">Cool tools</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Error-handling/">Error handling</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRPC/">GRPC</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP2/">HTTP2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Macos/">Macos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS/">NATS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS-Streaming/">NATS Streaming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/">Nginx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bench/">bench</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/decimal/">decimal</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grpc-go/">grpc-go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/influxdb/">influxdb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log/">log</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/时间处理/">时间处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/架构/">架构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/连接池/">连接池</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/错误处理/">错误处理</a><span class="tag-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -703,7 +658,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/Cool-tools/" style="font-size: 15px;">Cool tools</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Error-handling/" style="font-size: 10px;">Error handling</a> <a href="/tags/GRPC/" style="font-size: 10px;">GRPC</a> <a href="/tags/Go/" style="font-size: 20px;">Go</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Macos/" style="font-size: 10px;">Macos</a> <a href="/tags/NATS/" style="font-size: 10px;">NATS</a> <a href="/tags/NATS-Streaming/" style="font-size: 10px;">NATS Streaming</a> <a href="/tags/Nginx/" style="font-size: 10px;">Nginx</a> <a href="/tags/bench/" style="font-size: 10px;">bench</a> <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a> <a href="/tags/decimal/" style="font-size: 10px;">decimal</a> <a href="/tags/grpc-go/" style="font-size: 10px;">grpc-go</a> <a href="/tags/influxdb/" style="font-size: 10px;">influxdb</a> <a href="/tags/log/" style="font-size: 10px;">log</a> <a href="/tags/mysql/" style="font-size: 15px;">mysql</a> <a href="/tags/时间处理/" style="font-size: 10px;">时间处理</a> <a href="/tags/架构/" style="font-size: 10px;">架构</a> <a href="/tags/消息队列/" style="font-size: 10px;">消息队列</a> <a href="/tags/连接池/" style="font-size: 10px;">连接池</a> <a href="/tags/错误处理/" style="font-size: 10px;">错误处理</a>
+            <a href="/tags/Cool-tools/" style="font-size: 15px;">Cool tools</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Error-handling/" style="font-size: 10px;">Error handling</a> <a href="/tags/GRPC/" style="font-size: 15px;">GRPC</a> <a href="/tags/Go/" style="font-size: 20px;">Go</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/HTTP2/" style="font-size: 10px;">HTTP2</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Macos/" style="font-size: 10px;">Macos</a> <a href="/tags/NATS/" style="font-size: 10px;">NATS</a> <a href="/tags/NATS-Streaming/" style="font-size: 10px;">NATS Streaming</a> <a href="/tags/Nginx/" style="font-size: 15px;">Nginx</a> <a href="/tags/bench/" style="font-size: 10px;">bench</a> <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a> <a href="/tags/decimal/" style="font-size: 10px;">decimal</a> <a href="/tags/grpc-go/" style="font-size: 10px;">grpc-go</a> <a href="/tags/influxdb/" style="font-size: 10px;">influxdb</a> <a href="/tags/log/" style="font-size: 10px;">log</a> <a href="/tags/mysql/" style="font-size: 15px;">mysql</a> <a href="/tags/时间处理/" style="font-size: 10px;">时间处理</a> <a href="/tags/架构/" style="font-size: 10px;">架构</a> <a href="/tags/消息队列/" style="font-size: 10px;">消息队列</a> <a href="/tags/连接池/" style="font-size: 10px;">连接池</a> <a href="/tags/错误处理/" style="font-size: 10px;">错误处理</a>
         </div>
     </div>
 
