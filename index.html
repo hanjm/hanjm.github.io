@@ -169,11 +169,11 @@ ga('send', 'pageview');
         </div>
         <div class="article-info profile-block">
             <div class="article-info-block">
-                20
+                22
                 <span>文章</span>
             </div>
             <div class="article-info-block">
-                23
+                26
                 <span>标签</span>
             </div>
         </div>
@@ -222,7 +222,7 @@ ga('send', 'pageview');
 
             
             <section id="main">
-    <article id="post-go sql.Driver的mysql driver 中的一个有意思的行为" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-macos docker container连接宿主机172.17.0.1的办法" class="article article-type-post" itemscope itemprop="blogPost">
     <div class="article-inner">
         
         
@@ -230,7 +230,7 @@ ga('send', 'pageview');
                 
     
         <h1 itemprop="name">
-            <a class="article-title" href="/2018/11/29/go sql.Driver的mysql driver 中的一个有意思的行为/">Go sql.Driver的mysql Driver 中的一个有意思的行为</a>
+            <a class="article-title" href="/2018/12/16/macos docker container连接宿主机172.17.0.1的办法/">Macos Docker container连接宿主机172.17.0.1的办法</a>
         </h1>
     
 
@@ -239,8 +239,8 @@ ga('send', 'pageview');
                         
     <div class="article-date">
         <i class="fa fa-calendar"></i>
-        <a href="/2018/11/29/go sql.Driver的mysql driver 中的一个有意思的行为/">
-            <time datetime="2018-11-28T16:00:00.000Z" itemprop="datePublished">2018-11-29</time>
+        <a href="/2018/12/16/macos docker container连接宿主机172.17.0.1的办法/">
+            <time datetime="2018-12-15T16:00:00.000Z" itemprop="datePublished">2018-12-16</time>
         </a>
     </div>
 
@@ -249,7 +249,7 @@ ga('send', 'pageview');
                         
     <div class="article-tag">
         <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/Go/">Go</a>, <a class="tag-link" href="/tags/mysql/">mysql</a>
+        <a class="tag-link" href="/tags/172-17-0-1/">172.17.0.1</a>, <a class="tag-link" href="/tags/Docker/">Docker</a>, <a class="tag-link" href="/tags/docker-for-mac/">docker for mac</a>
     </div>
 
                     </div>
@@ -260,10 +260,25 @@ ga('send', 'pageview');
         <div class="article-entry" itemprop="articleBody">
         
             
-            <p>如果参数中没有参数, 则直接query.<br>如果sql中有参数, 且打开了InterpolateParams开关, 那么就客户端直接拼参数到SQL里, 不需要prepare直接query.<br>如果sql中有参数, 且没有打开InterpolateParams(默认设置), 且带参数, 就会走先prepare再发query参数两步.</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><div class="line">github.com/<span class="keyword">go</span>-sql-driver/mysql/connection.<span class="keyword">go</span>:<span class="number">370</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(mc *mysqlConn)</span> <span class="title">query</span><span class="params">(query <span class="keyword">string</span>, args []driver.Value)</span> <span class="params">(*textRows, error)</span></span> &#123;</div><div class="line"><span class="comment">//...</span></div><div class="line"><span class="keyword">if</span> <span class="built_in">len</span>(args) != <span class="number">0</span> &#123;</div><div class="line">	<span class="keyword">if</span> !mc.cfg.InterpolateParams &#123;</div><div class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, driver.ErrSkip</div><div class="line">	&#125;</div><div class="line">	<span class="comment">// try client-side prepare to reduce roundtrip</span></div><div class="line">	prepared, err := mc.interpolateParams(query, args)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, err</div><div class="line">	&#125;</div><div class="line">	query = prepared</div><div class="line">&#125;</div><div class="line"><span class="comment">// Send command</span></div><div class="line">err := mc.writeCommandPacketStr(comQuery, query)</div><div class="line"><span class="keyword">if</span> err == <span class="literal">nil</span> &#123;</div><div class="line">	<span class="comment">// Read Result</span></div><div class="line"><span class="comment">// ...</span></div></pre></td></tr></table></figure>
-<p>后续再补篇文章详细写写sql.Driver</p>
-
+            <p>在Linux docker container里面, 如果想访问宿主机上的服务, 用 172.17.0.1 这个host即可.</p>
+<p>今天在Mac上的 dockercontainer里面启动一个服务, 这个服务需要连我主机上的MySQL, 用 172.17.0.1 是访问不了的, Connection refused.</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">root@d99939cc53fc:/tmp# curl 172.17.0.1:3306</div><div class="line">curl: (7) Failed to connect to 172.17.0.1 port 3306: Connection refused</div></pre></td></tr></table></figure>
+<p>但是看网络结构, 和Linux的一样, 也是在172.17段下的.</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">root@d99939cc53fc:/tmp# ip addr</div><div class="line">1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1</div><div class="line">    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00</div><div class="line">    inet 127.0.0.1/8 scope host lo</div><div class="line">       valid_lft forever preferred_lft forever</div><div class="line">2: tunl0@NONE: &lt;NOARP&gt; mtu 1480 qdisc noop state DOWN group default qlen 1</div><div class="line">    link/ipip 0.0.0.0 brd 0.0.0.0</div><div class="line">3: ip6tnl0@NONE: &lt;NOARP&gt; mtu 1452 qdisc noop state DOWN group default qlen 1</div><div class="line">    link/tunnel6 :: brd ::</div><div class="line">6: eth0@if7: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default</div><div class="line">    link/ether 02:42:ac:11:00:02 brd ff:ff:ff:ff:ff:ff link-netnsid 0</div><div class="line">    inet 172.17.0.2/16 brd 172.17.255.255 scope global eth0</div><div class="line">       valid_lft forever preferred_lft forever</div></pre></td></tr></table></figure>
+<p>不得其解, Google之, 发现有个隐藏奥秘, <a href="https://stackoverflow.com/questions/38504890/docker-for-mac-1-12-0-how-to-connect-to-host-from-container" target="_blank" rel="external">https://stackoverflow.com/questions/38504890/docker-for-mac-1-12-0-how-to-connect-to-host-from-container</a> 问题下有人在 <em>Docker Community Edition 17.06.0-ce-mac18, 2017-06-28</em> 的<a href="https://docs.docker.com/docker-for-mac/release-notes/" target="_blank" rel="external">release notes</a>中发现有 </p>
+<blockquote>
+<p>Add an experimental DNS name for the host: docker.for.mac.localhost</p>
+</blockquote>
+<p>这样一条更新日志. </p>
+<p>页面搜索<code>docker.for.mac.localhost</code>, 发现在 <em>Docker Community Edition 17.12.0-ce-mac46 2018-01-09</em> 的 release notes中发现有一条相关的更新日志</p>
+<blockquote>
+<ul>
+<li>DNS name <code>docker.for.mac.host.internal</code> should be used instead of <code>docker.for.mac.localhost</code> (still valid) for host resolution from containers, since since there is an RFC banning the use of subdomains of localhost. See <a href="https://tools.ietf.org/html/draft-west-let-localhost-be-localhost-06" target="_blank" rel="external">https://tools.ietf.org/html/draft-west-let-localhost-be-localhost-06</a>.</li>
+</ul>
+</blockquote>
+<p>所以, 结论就是在 container 中应该用 <code>docker.for.mac.host.internal</code> 来访问宿主机.</p>
+<p>于是用curl看一下端口通不通, 果然通.</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">root@d99939cc53fc:/tmp# curl docker.for.mac.host.internal:3306</div><div class="line">5.7.21Bf</div></pre></td></tr></table></figure>
         
         </div>
         <footer class="article-footer">
@@ -273,7 +288,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2018/11/29/go sql.Driver的mysql driver 中的一个有意思的行为/" data-id="cjpplu7w600106y0oldyqwr04" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2018/12/16/macos docker container连接宿主机172.17.0.1的办法/" data-id="cjqi35zie001701st3q401xst" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -341,7 +356,7 @@ ga('send', 'pageview');
 
             
     
-        <a href="https://imhanjm.com/2018/11/29/go sql.Driver的mysql driver 中的一个有意思的行为/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2018/11/29/go sql.Driver的mysql driver 中的一个有意思的行为/">评论</a>
+        <a href="https://imhanjm.com/2018/12/16/macos docker container连接宿主机172.17.0.1的办法/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2018/12/16/macos docker container连接宿主机172.17.0.1的办法/">评论</a>
     
 
         </footer>
@@ -351,7 +366,7 @@ ga('send', 'pageview');
 
 
 
-    <article id="post-学习influxdb" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Nginx with gRPC编译安装" class="article article-type-post" itemscope itemprop="blogPost">
     <div class="article-inner">
         
         
@@ -359,7 +374,7 @@ ga('send', 'pageview');
                 
     
         <h1 itemprop="name">
-            <a class="article-title" href="/2018/11/18/学习influxdb/">学习Influxdb</a>
+            <a class="article-title" href="/2018/12/15/Nginx with gRPC编译安装/">Nginx With gRPC编译安装</a>
         </h1>
     
 
@@ -368,8 +383,8 @@ ga('send', 'pageview');
                         
     <div class="article-date">
         <i class="fa fa-calendar"></i>
-        <a href="/2018/11/18/学习influxdb/">
-            <time datetime="2018-11-17T16:00:00.000Z" itemprop="datePublished">2018-11-18</time>
+        <a href="/2018/12/15/Nginx with gRPC编译安装/">
+            <time datetime="2018-12-14T16:00:00.000Z" itemprop="datePublished">2018-12-15</time>
         </a>
     </div>
 
@@ -378,7 +393,7 @@ ga('send', 'pageview');
                         
     <div class="article-tag">
         <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/Go/">Go</a>, <a class="tag-link" href="/tags/influxdb/">influxdb</a>
+        <a class="tag-link" href="/tags/GRPC/">GRPC</a>, <a class="tag-link" href="/tags/HTTP2/">HTTP2</a>, <a class="tag-link" href="/tags/Nginx/">Nginx</a>
     </div>
 
                     </div>
@@ -389,31 +404,23 @@ ga('send', 'pageview');
         <div class="article-entry" itemprop="articleBody">
         
             
-            <p>最近要实现接口监控, 准备用主流的时序数据库influxdb.</p>
-<h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><p>influxdb的库也 database, 概念和mysql一样<br>influxdb的表叫 MEASUREMENTS, 意义更贴切, 测量的复数形式.<br>influxdb的一行数据叫 point, 就像做物理实验的打点, 每个点有其值和属性<br>influxdb的字段分类为 tag 和 field, field就是值, tag是其属性. 拿接口来说, 字段有 service_name, instance_id, method, handler_name, method, request_url, response_code, content_length, response_size, duration. 显然, 前面7个字段是tag, 特点是一般不是数值变量, 可枚举的, 所以influxdb对tag加了索引. 后面3个是field, 是数值变量, 是范围变化的, 不需要加索引.</p>
-<h2 id="插入数据"><a href="#插入数据" class="headerlink" title="插入数据"></a>插入数据</h2><p>对于插入数据, influxdb同时提供了单条和批量插入的API. 开始不知道有批量方式, 来一条插一条, influxdb CPU巨高. 后面在官网文档找到了办法, 改用批量插入, 大大降低了CPU占用, 官方推荐是5k~1w条数据一批.</p>
-<blockquote>
-<p><a href="https://docs.influxdata.com/influxdb/v1.7/concepts/glossary/#batch" target="_blank" rel="external">https://docs.influxdata.com/influxdb/v1.7/concepts/glossary/#batch</a></p>
-<p>InfluxData recommends batch sizes of 5,000-10,000 points,<br>although different use cases may be better served by significantly smaller or larger batches.</p>
-</blockquote>
-<p>influxdb同时提供了HTTP接口和UDP接口. UDP的好处在于减少了HTTP头部的开销, 性能更好</p>
-<h2 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h2><ol>
-<li><p>库</p>
- <figure class="highlight shell"><table><tr><td class="code"><pre><div class="line"><span class="meta">#</span> 创建数据库</div><div class="line">CREATE DATABASE "db_name"</div><div class="line"><span class="meta">#</span> 显示所有数据库</div><div class="line">SHOW DATABASES</div><div class="line"><span class="meta">#</span> 删除数据库</div><div class="line">DROP DATABASE "db_name"</div><div class="line"><span class="meta">#</span> 使用数据库</div><div class="line">USE mydb</div></pre></td></tr></table></figure>
-</li>
-<li><p>表</p>
- <figure class="highlight shell"><table><tr><td class="code"><pre><div class="line"><span class="meta">#</span> 显示该数据库中的表</div><div class="line">SHOW MEASUREMENTS</div><div class="line"><span class="meta">#</span> 创建表, 插入数据时会自动创建</div><div class="line"><span class="meta">#</span> 删除表</div><div class="line">DROP MEASUREMENT "measurementName"</div></pre></td></tr></table></figure>
-</li>
-<li><p>查看数据保留策略 retention polices</p>
- <figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">SHOW RETENTION POLICIES ON "testDB"</div></pre></td></tr></table></figure>
-</li>
-<li><p>创建新的Retention Policies并设置为默认值</p>
- <figure class="highlight shell"><table><tr><td class="code"><pre><div class="line"><span class="meta">	#</span> DURATION 保留多少天</div><div class="line"><span class="meta">	#</span> REPLICATION 副本数</div><div class="line">CREATE RETENTION POLICY "rp_name" ON "db_name" DURATION 30d REPLICATION 1 DEFAULT</div></pre></td></tr></table></figure>
-</li>
-</ol>
-<h2 id="连续查询"><a href="#连续查询" class="headerlink" title="连续查询"></a>连续查询</h2><figure class="highlight shell"><table><tr><td class="code"><pre><div class="line"><span class="meta">#</span> 创建一个连续查询, 每10秒计算一个接口响应耗时平均值到新表</div><div class="line">CREATE CONTINUOUS QUERY cq_http_handler_stats_duration ON statsdb BEGIN SELECT mean("duration") INTO http_handler_stats_average_duraion_10s FROM http_handler_stats GROUP BY time(10s) END</div><div class="line"><span class="meta"></span></div><div class="line"># 如果成功创建, 那么过了第一个周期后, SHOW MEASUREMENTS 能看到多了一张表</div><div class="line"><span class="meta"></span></div><div class="line"># 显示创建的连续查询</div><div class="line">SHOW CONTINUOUS QUERIES</div><div class="line"><span class="meta"></span></div><div class="line"># 删除</div><div class="line">DROP CONTINUOUS QUERY cq_http_handler_stats_duration ON statsdb</div></pre></td></tr></table></figure>
-<h2 id="图表"><a href="#图表" class="headerlink" title="图表"></a>图表</h2><p>grafana 是 influxdb 的良好伴侣, 写个query语句就能得到很炫酷的图形. 比如接口请求量图表按handler_name, response_code, time(10s) group by就得到了.</p>
-
+            <p>之前写过nginx HTTP2编译安装的文章, 最近想探索下nginx with gRPC support, 所以更新一下.</p>
+<p>yum apt等包管理系统安装的软件有时候比较旧, 导致一些莫名其妙的问题. 最近在给Nginx加HTTP/2模块中, 编译时加上了<code>--with-http_v2_module</code>参数, 但Chrome请求发现还是不是http2, 后面发现是OpenSSL版本太低. 踩过这一坑后, 感觉Linux下部分软件最好还是自己编译安装比较妥, 如果编译过程出错, 搜下错误信息, 一般是基础依赖没有安装, 很好解决.</p>
+<p>官方的源码编译指南<br><a href="https://nginx.org/en/docs/configure.html" target="_blank" rel="external">https://nginx.org/en/docs/configure.html</a><br><a href="https://nginx.org/en/docs/http/ngx_http_v2_module.html" target="_blank" rel="external">https://nginx.org/en/docs/http/ngx_http_v2_module.html</a> (这里写了需要OpenSSL1.0.2以上版本), 很多选项都有合适的默认值, 比如–prefix=/usr/local/nginx, 所以只需要指定自己需要的字段</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">--user=www-data // 习惯将web相关的服务以www-data用户运行, 如没有此用户可以创建一个也可不加此项按默认nobody用户</div><div class="line">--group=www-data</div><div class="line">--with-http_v2_module // 默认选项不带http2</div><div class="line">--with-http_ssl_module // 默认选项不带ssl, 上http2必须要上ssl的</div><div class="line">--with-stream // https://nginx.org/en/docs/stream/ngx_stream_core_module.html</div><div class="line">--with-openssl // 指定OpenSSL</div><div class="line">--with-pcre=./pcre-8.40 // 需要(version 4.4 — 8.40)的pcre,注意Nginx不支持pcre2</div><div class="line">--with-pcre-jit // 打开pcre JIT支持</div><div class="line">--with-zlib=./zlib-1.2.11 // 需要(version 1.1.3 — 1.2.11)的zlib以支持gzip</div></pre></td></tr></table></figure>
+<p>1.<a href="https://nginx.org/en/download.html" target="_blank" rel="external">官网下载Nginx包</a></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">cd /usr/local</div><div class="line">wget https://nginx.org/download/nginx-1.14.2.tar.gz</div><div class="line">tar -zxf nginx-1.14.2.tar.gz</div><div class="line">cd nginx-1.14.2</div></pre></td></tr></table></figure>
+<p>2.[官网下载OpenSSL 1.0.2以上版本].<a href="https://github.com/openssl/openssl/releases" target="_blank" rel="external">https://github.com/openssl/openssl/releases</a></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">cd nginx-1.14.2</div><div class="line">wget https://github.com/openssl/openssl/archive/OpenSSL_1_1_0e.tar.gz</div><div class="line">tar -zxf OpenSSL_1_1_0e.tar.gz</div></pre></td></tr></table></figure>
+<p>2.<a href="https://ftp.pcre.org/pub/pcre/" target="_blank" rel="external">官网下载pcre</a></p>
+<p>注意Nginx不支持pcre2,下载pcre最新版即可. 解压到Nginx解压的目录</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">cd nginx-1.14.2</div><div class="line">wget https://ftp.pcre.org/pub/pcre/pcre-8.40.tar.gz</div><div class="line">tar -zxf pcre-8.40.tar.gz</div></pre></td></tr></table></figure>
+<p>4.<a href="http://zlib.net/" target="_blank" rel="external">官网下载zlib</a>(version 1.1.3 — 1.2.11)</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">cd nginx-1.14.2</div><div class="line">wget http://zlib.net/zlib-1.2.11.tar.gz</div><div class="line">tar -zxf zlib-1.2.11.tar.gz</div></pre></td></tr></table></figure>
+<p>5.编译并安装</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">./configure \</div><div class="line">--user=nginx \</div><div class="line">--group=nginx \</div><div class="line">--conf-path=/etc/nginx/nginx.conf \</div><div class="line">--with-http_v2_module \</div><div class="line">--with-http_ssl_module \</div><div class="line">--with-stream \</div><div class="line">--with-openssl=./openssl-OpenSSL_1_1_0e \</div><div class="line">--with-pcre=./pcre-8.40 --with-pcre-jit \</div><div class="line">--with-zlib=./zlib-1.2.11</div><div class="line">make &amp;&amp; make install</div></pre></td></tr></table></figure>
+<p>6.为了方便操作,软链/usr/local/nginx/sbin/nginx到/usr/local/bin</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">ln -sf /usr/local/nginx/sbin/nginx /usr/local/bin</div></pre></td></tr></table></figure>
         
         </div>
         <footer class="article-footer">
@@ -423,7 +430,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2018/11/18/学习influxdb/" data-id="cjpplu7w700116y0o44n81i30" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2018/12/15/Nginx with gRPC编译安装/" data-id="cjqi35zi6000z01str7zjj247" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -491,7 +498,7 @@ ga('send', 'pageview');
 
             
     
-        <a href="https://imhanjm.com/2018/11/18/学习influxdb/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2018/11/18/学习influxdb/">评论</a>
+        <a href="https://imhanjm.com/2018/12/15/Nginx with gRPC编译安装/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2018/12/15/Nginx with gRPC编译安装/">评论</a>
     
 
         </footer>
@@ -502,7 +509,7 @@ ga('send', 'pageview');
 
 
     <nav id="page-nav">
-        <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/2/">下一页 &raquo;</a>
+        <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/2/">下一页 &raquo;</a>
     </nav>
 </section>
             
@@ -513,6 +520,44 @@ ga('send', 'pageview');
         <h3 class="widget-title">最新文章</h3>
         <div class="widget">
             <ul id="recent-post" class="">
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2018/12/16/macos docker container连接宿主机172.17.0.1的办法/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2018/12/16/macos docker container连接宿主机172.17.0.1的办法/" class="title">Macos Docker container连接宿主机172.17.0.1的办法</a></p>
+                            <p class="item-date"><time datetime="2018-12-15T16:00:00.000Z" itemprop="datePublished">2018-12-16</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2018/12/15/Nginx with gRPC编译安装/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2018/12/15/Nginx with gRPC编译安装/" class="title">Nginx With gRPC编译安装</a></p>
+                            <p class="item-date"><time datetime="2018-12-14T16:00:00.000Z" itemprop="datePublished">2018-12-15</time></p>
+                        </div>
+                    </li>
                 
                     <li>
                         
@@ -571,44 +616,6 @@ ga('send', 'pageview');
                         </div>
                     </li>
                 
-                    <li>
-                        
-                        <div class="item-thumbnail">
-                            <a href="/2018/07/08/Go如何优雅地错误处理(Error handling and Go 1)/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"></p>
-                            <p class="item-title"><a href="/2018/07/08/Go如何优雅地错误处理(Error handling and Go 1)/" class="title">Go如何优雅地错误处理(Error Handling and Go 1)</a></p>
-                            <p class="item-date"><time datetime="2018-07-07T16:00:00.000Z" itemprop="datePublished">2018-07-08</time></p>
-                        </div>
-                    </li>
-                
-                    <li>
-                        
-                        <div class="item-thumbnail">
-                            <a href="/2018/02/17/深入理解NATS & NATS Streaming/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"></p>
-                            <p class="item-title"><a href="/2018/02/17/深入理解NATS & NATS Streaming/" class="title">深入理解NATS &amp; NATS Streaming (踩坑记)</a></p>
-                            <p class="item-date"><time datetime="2018-02-16T16:00:00.000Z" itemprop="datePublished">2018-02-17</time></p>
-                        </div>
-                    </li>
-                
             </ul>
         </div>
     </div>
@@ -620,7 +627,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">归档</h3>
         <div class="widget">
-            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">1</span></li></ul>
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -629,7 +636,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签</h3>
         <div class="widget">
-            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cool-tools/">Cool tools</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Error-handling/">Error handling</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRPC/">GRPC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Macos/">Macos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS/">NATS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS-Streaming/">NATS Streaming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/">Nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bench/">bench</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/decimal/">decimal</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grpc-go/">grpc-go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/influxdb/">influxdb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log/">log</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/时间处理/">时间处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/架构/">架构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/连接池/">连接池</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/错误处理/">错误处理</a><span class="tag-list-count">1</span></li></ul>
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/172-17-0-1/">172.17.0.1</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cool-tools/">Cool tools</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Error-handling/">Error handling</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRPC/">GRPC</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP2/">HTTP2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Macos/">Macos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS/">NATS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS-Streaming/">NATS Streaming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/">Nginx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bench/">bench</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/decimal/">decimal</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker-for-mac/">docker for mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grpc-go/">grpc-go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/influxdb/">influxdb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log/">log</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/时间处理/">时间处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/架构/">架构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/连接池/">连接池</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/错误处理/">错误处理</a><span class="tag-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -638,7 +645,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/Cool-tools/" style="font-size: 15px;">Cool tools</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Error-handling/" style="font-size: 10px;">Error handling</a> <a href="/tags/GRPC/" style="font-size: 10px;">GRPC</a> <a href="/tags/Go/" style="font-size: 20px;">Go</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Macos/" style="font-size: 10px;">Macos</a> <a href="/tags/NATS/" style="font-size: 10px;">NATS</a> <a href="/tags/NATS-Streaming/" style="font-size: 10px;">NATS Streaming</a> <a href="/tags/Nginx/" style="font-size: 10px;">Nginx</a> <a href="/tags/bench/" style="font-size: 10px;">bench</a> <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a> <a href="/tags/decimal/" style="font-size: 10px;">decimal</a> <a href="/tags/grpc-go/" style="font-size: 10px;">grpc-go</a> <a href="/tags/influxdb/" style="font-size: 10px;">influxdb</a> <a href="/tags/log/" style="font-size: 10px;">log</a> <a href="/tags/mysql/" style="font-size: 15px;">mysql</a> <a href="/tags/时间处理/" style="font-size: 10px;">时间处理</a> <a href="/tags/架构/" style="font-size: 10px;">架构</a> <a href="/tags/消息队列/" style="font-size: 10px;">消息队列</a> <a href="/tags/连接池/" style="font-size: 10px;">连接池</a> <a href="/tags/错误处理/" style="font-size: 10px;">错误处理</a>
+            <a href="/tags/172-17-0-1/" style="font-size: 10px;">172.17.0.1</a> <a href="/tags/Cool-tools/" style="font-size: 15px;">Cool tools</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/Error-handling/" style="font-size: 10px;">Error handling</a> <a href="/tags/GRPC/" style="font-size: 15px;">GRPC</a> <a href="/tags/Go/" style="font-size: 20px;">Go</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/HTTP2/" style="font-size: 10px;">HTTP2</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Macos/" style="font-size: 10px;">Macos</a> <a href="/tags/NATS/" style="font-size: 10px;">NATS</a> <a href="/tags/NATS-Streaming/" style="font-size: 10px;">NATS Streaming</a> <a href="/tags/Nginx/" style="font-size: 15px;">Nginx</a> <a href="/tags/bench/" style="font-size: 10px;">bench</a> <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a> <a href="/tags/decimal/" style="font-size: 10px;">decimal</a> <a href="/tags/docker-for-mac/" style="font-size: 10px;">docker for mac</a> <a href="/tags/grpc-go/" style="font-size: 10px;">grpc-go</a> <a href="/tags/influxdb/" style="font-size: 10px;">influxdb</a> <a href="/tags/log/" style="font-size: 10px;">log</a> <a href="/tags/mysql/" style="font-size: 15px;">mysql</a> <a href="/tags/时间处理/" style="font-size: 10px;">时间处理</a> <a href="/tags/架构/" style="font-size: 10px;">架构</a> <a href="/tags/消息队列/" style="font-size: 10px;">消息队列</a> <a href="/tags/连接池/" style="font-size: 10px;">连接池</a> <a href="/tags/错误处理/" style="font-size: 10px;">错误处理</a>
         </div>
     </div>
 
@@ -798,7 +805,7 @@ ga('send', 'pageview');
         <footer id="footer">
     <div class="outer">
         <div id="footer-info" class="inner">
-            &copy; 2018 hanjm<br>
+            &copy; 2019 hanjm<br>
             Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
         </div>
     </div>

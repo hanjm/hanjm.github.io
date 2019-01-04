@@ -169,11 +169,11 @@ ga('send', 'pageview');
         </div>
         <div class="article-info profile-block">
             <div class="article-info-block">
-                20
+                22
                 <span>文章</span>
             </div>
             <div class="article-info-block">
-                23
+                26
                 <span>标签</span>
             </div>
         </div>
@@ -222,7 +222,7 @@ ga('send', 'pageview');
 
             
             <section id="main">
-    <article id="post-GRPC文档阅读心得" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-go sql.Driver的mysql driver 中的一个有意思的行为" class="article article-type-post" itemscope itemprop="blogPost">
     <div class="article-inner">
         
         
@@ -230,7 +230,7 @@ ga('send', 'pageview');
                 
     
         <h1 itemprop="name">
-            <a class="article-title" href="/2018/10/06/GRPC文档阅读心得/">GRPC文档阅读心得</a>
+            <a class="article-title" href="/2018/11/29/go sql.Driver的mysql driver 中的一个有意思的行为/">Go sql.Driver的mysql Driver 中的一个有意思的行为</a>
         </h1>
     
 
@@ -239,8 +239,8 @@ ga('send', 'pageview');
                         
     <div class="article-date">
         <i class="fa fa-calendar"></i>
-        <a href="/2018/10/06/GRPC文档阅读心得/">
-            <time datetime="2018-10-05T16:00:00.000Z" itemprop="datePublished">2018-10-06</time>
+        <a href="/2018/11/29/go sql.Driver的mysql driver 中的一个有意思的行为/">
+            <time datetime="2018-11-28T16:00:00.000Z" itemprop="datePublished">2018-11-29</time>
         </a>
     </div>
 
@@ -249,7 +249,7 @@ ga('send', 'pageview');
                         
     <div class="article-tag">
         <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/GRPC/">GRPC</a>, <a class="tag-link" href="/tags/Go/">Go</a>, <a class="tag-link" href="/tags/grpc-go/">grpc-go</a>
+        <a class="tag-link" href="/tags/Go/">Go</a>, <a class="tag-link" href="/tags/mysql/">mysql</a>
     </div>
 
                     </div>
@@ -260,36 +260,9 @@ ga('send', 'pageview');
         <div class="article-entry" itemprop="articleBody">
         
             
-            <p>主要是两个文档, grpc repo的文档 <a href="https://github.com/grpc/grpc/tree/master/doc" target="_blank" rel="external">https://github.com/grpc/grpc/tree/master/doc</a> , grpc-go repo的文档 <a href="https://github.com/grpc/grpc-go/tree/master/Documentation" target="_blank" rel="external">https://github.com/grpc/grpc-go/tree/master/Documentation</a>.</p>
-<h1 id="grpc-go-文档"><a href="#grpc-go-文档" class="headerlink" title="grpc-go 文档"></a>grpc-go 文档</h1><hr>
-<h3 id="gRPC-Server-Reflection-Tutorial"><a href="#gRPC-Server-Reflection-Tutorial" class="headerlink" title="gRPC Server Reflection Tutorial"></a><a href="https://github.com/grpc/grpc-go/blob/master/Documentation/server-reflection-tutorial.md" target="_blank" rel="external">gRPC Server Reflection Tutorial</a></h3><p>在代码中<code>import &quot;google.golang.org/grpc/reflection&quot;</code>包, 然后加一行代码<code>reflection.Register(s)</code>, 就可以启用 server reflection. 就可以用grpc_cli去进行获得服务列表, 方法列表, message结构体定义了. reflection.Register(s)实际上是注册了一个特殊的service, 它能列出server中已注册的服务和方法等信息.</p>
-<h2 id="Compression"><a href="#Compression" class="headerlink" title="Compression"></a><a href="https://github.com/grpc/grpc-go/blob/master/Documentation/compression.md" target="_blank" rel="external">Compression</a></h2><p>用 <code>encoding.RegisterCompressor</code>方法取注册一个压缩器, 启用了压缩的话, 服务端和客户端双方都要进行同样的处理, 服务端在newServer时要带上compressor的serverOption, 客户端在dail的时候要带上WithDefaultCallOptions的DialOption, DialOption加上压缩解压的处理, 不然会得到一个 <code>Internal error</code>, 和HTTP方式一样, 压缩类型体现在content-type的header上.</p>
-<h2 id="Concurrency"><a href="#Concurrency" class="headerlink" title="Concurrency"></a><a href="https://github.com/grpc/grpc-go/blob/master/Documentation/concurrency.md" target="_blank" rel="external">Concurrency</a></h2><p>Dial得到的ClientConn是并发安全.<br>stream的读写不是并发安全的, sendMsg或RecvMsg不能在多个goroutine中并发地调用,但可以分别在两个goroutine中处理send和Recv.</p>
-<h2 id="Encoding"><a href="#Encoding" class="headerlink" title="Encoding"></a><a href="https://github.com/grpc/grpc-go/blob/master/Documentation/encoding.md" target="_blank" rel="external">Encoding</a></h2><h3 id="序列化反序列化"><a href="#序列化反序列化" class="headerlink" title="序列化反序列化"></a>序列化反序列化</h3><p>自定义消息编码解码, 注册一个实现 <code>Codec</code> 接口的对象即可, 然后在Dial或Call时带上<code>grpc.CallContentSubtype</code>这个CallOption, 这样就可以自动处理这个带这个content-type的请求. 默认为 proto</p>
-<h3 id="压缩解压缩"><a href="#压缩解压缩" class="headerlink" title="压缩解压缩"></a>压缩解压缩</h3><p>自定义压缩解压缩, 注册一个实现 <code>Compressor</code>接口的对象即可, 然后在Dial或Call时带上<code>grpc.UseCompressor</code>这个CallOption.</p>
-<h2 id="Mocking-Service-for-gRPC"><a href="#Mocking-Service-for-gRPC" class="headerlink" title="[Mocking Service for gRPC"></a>[Mocking Service for gRPC</h2><p>](<a href="https://github.com/grpc/grpc-go/blob/master/Documentation/gomock-example.md" target="_blank" rel="external">https://github.com/grpc/grpc-go/blob/master/Documentation/gomock-example.md</a>)</p>
-<p>主要讲如何在单元测试中mock, 用gomock命令行生成实现xx接口的代码, 没什么特别的</p>
-<h2 id="Authentication"><a href="#Authentication" class="headerlink" title="[Authentication"></a>[Authentication</h2><p>](<a href="https://github.com/grpc/grpc-go/blob/master/Documentation/grpc-auth-support.md" target="_blank" rel="external">https://github.com/grpc/grpc-go/blob/master/Documentation/grpc-auth-support.md</a>)</p>
-<p>主要讲如何进行身份验证, 没什么特别的</p>
-<h2 id="Metadata"><a href="#Metadata" class="headerlink" title="Metadata"></a><a href="https://github.com/grpc/grpc-go/blob/master/Documentation/grpc-metadata.md" target="_blank" rel="external">Metadata</a></h2><p>metadata类似HTTP1中的header, 数据结构都是一样的<code>type MD map[string][]string</code>,<br>key都是大小写不敏感的, 但实现规范和HTTP1不一样, HTTP1是按单词之间用连字符”-“分隔, 每个单词第一个字母大写这样的规范来的, 处理起来消耗更大, 而metadata是全转为小写, 实际使用过程中, 提前规范化key能提高不必要的<code>strings.ToLower</code>调用.<br>用-bin结尾的来传递二进制数据.</p>
-<p>服务端handler用<code>metadata.FromIncomingContext(ctx)</code>拿到metadata, 客户端用<code>metadata.AppendToOutgoingContext</code>来附加kv到ctx中.</p>
-<p>如果服务端handler又想附加一些信息返回client, 那么就要通过header和trailer传递, 类似responseHeader.<br><figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *server)</span> <span class="title">SomeRPC</span><span class="params">(ctx context.Context, in *pb.someRequest)</span> <span class="params">(*pb.someResponse, error)</span></span> &#123;</div><div class="line">    <span class="comment">// create and send header</span></div><div class="line">    header := metadata.Pairs(<span class="string">"header-key"</span>, <span class="string">"val"</span>)</div><div class="line">    grpc.SendHeader(ctx, header)</div><div class="line">    <span class="comment">// create and set trailer</span></div><div class="line">    trailer := metadata.Pairs(<span class="string">"trailer-key"</span>, <span class="string">"val"</span>)</div><div class="line">    grpc.SetTrailer(ctx, trailer)</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>然后客户端在调用的时候传要保存的header和trailler的指针到CallOption中, 调用完后指针指向的metadata map就有数据了, 坦率地讲, 我觉得这样处理很麻烦.<br><figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> header, trailer metadata.MD <span class="comment">// variable to store header and trailer</span></div><div class="line">r, err := client.SomeRPC(</div><div class="line">    ctx,</div><div class="line">    someRequest,</div><div class="line">    grpc.Header(&amp;header),    <span class="comment">// will retrieve header</span></div><div class="line">    grpc.Trailer(&amp;trailer),  <span class="comment">// will retrieve trailer</span></div><div class="line">)</div><div class="line"></div><div class="line"><span class="comment">// do something with header and trailer</span></div></pre></td></tr></table></figure></p>
-<h2 id="Keepalive"><a href="#Keepalive" class="headerlink" title="Keepalive"></a><a href="https://github.com/grpc/grpc-go/blob/master/Documentation/keepalive.md" target="_blank" rel="external">Keepalive</a></h2><p>gRPC会定时发http2 ping帧来判断连接是否挂掉, 如果ping没有在一定时期内ack, 那么连接会被close.</p>
-<h2 id="Log-Levels"><a href="#Log-Levels" class="headerlink" title="Log Levels"></a><a href="https://github.com/grpc/grpc-go/blob/master/Documentation/log_levels.md" target="_blank" rel="external">Log Levels</a></h2><p>grpc-go包默认用gpclog包打日志, grpclog包默认是用多个*log.Logger来实现日志级别, 默认输出到stderr, 对于生产环境, 肯定要集成到自己的日志流里去, 接口是个好东西, grpclog包允许setLog, 实现grpclog.LoggerV2接口即可.</p>
-<h3 id="info日志包括"><a href="#info日志包括" class="headerlink" title="info日志包括:"></a>info日志包括:</h3><p>grpclog里的info是为了debug</p>
-<ul>
-<li>DNS 收到了更新</li>
-<li>负载均衡器 更新了选择的目标</li>
-<li>重要的grpc 状态变更<h3 id="warn日志包括"><a href="#warn日志包括" class="headerlink" title="warn日志包括:"></a>warn日志包括:</h3>warning日志是出现了一些错误, 但还不至于panic.</li>
-<li>DNS无法解析给定的target</li>
-<li>连接server时出错</li>
-<li>连接丢失或中断<h3 id="error日志包括"><a href="#error日志包括" class="headerlink" title="error日志包括:"></a>error日志包括:</h3>grpc内部有些error不是用户发起的函数调用, 所以无法返回error给调用者, 只能内部自己打error日志</li>
-<li>函数签名没有error, 但调用方传了个错误的参数过来.  </li>
-<li>内部错误.<h3 id="Fatal日志"><a href="#Fatal日志" class="headerlink" title="Fatal日志:"></a>Fatal日志:</h3>fatal日志是出现了不可恢复的内部错误, 要panic.</li>
-</ul>
-<h1 id="grpc-文档"><a href="#grpc-文档" class="headerlink" title="grpc 文档"></a>grpc 文档</h1><hr>
-<p>之前一直有个误区, 多个连接比单个连接要快, 看了 <a href="https://github.com/grpc/grpc-go/issues/1512" target="_blank" rel="external">grpc-go issues1</a>、<a href="https://github.com/grpc/grpc-go/issues/682" target="_blank" rel="external">grpc-go issues2</a> 以及 <a href="https://developers.google.com/web/fundamentals/performance/http2/?hl=zh-cn" target="_blank" rel="external">HTTP2文档</a> 才发现, 由于HTTP2有多路复用的特性, 对于同一个sever, 只需要维护一个连接就好了, 没有必要用多个连接去并行复用数据流. 连接数量减少对提升 HTTPS 部署的性能来说是一项特别重要的功能：可以减少开销较大的 TLS 连接数、提升会话重用率，以及从整体上减少所需的客户端和服务器资源。</p>
+            <p>如果参数中没有参数, 则直接query.<br>如果sql中有参数, 且打开了InterpolateParams开关, 那么就客户端直接拼参数到SQL里, 不需要prepare直接query.<br>如果sql中有参数, 且没有打开InterpolateParams(默认设置), 且带参数, 就会走先prepare再发query参数两步.</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><div class="line">github.com/<span class="keyword">go</span>-sql-driver/mysql/connection.<span class="keyword">go</span>:<span class="number">370</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(mc *mysqlConn)</span> <span class="title">query</span><span class="params">(query <span class="keyword">string</span>, args []driver.Value)</span> <span class="params">(*textRows, error)</span></span> &#123;</div><div class="line"><span class="comment">//...</span></div><div class="line"><span class="keyword">if</span> <span class="built_in">len</span>(args) != <span class="number">0</span> &#123;</div><div class="line">	<span class="keyword">if</span> !mc.cfg.InterpolateParams &#123;</div><div class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, driver.ErrSkip</div><div class="line">	&#125;</div><div class="line">	<span class="comment">// try client-side prepare to reduce roundtrip</span></div><div class="line">	prepared, err := mc.interpolateParams(query, args)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, err</div><div class="line">	&#125;</div><div class="line">	query = prepared</div><div class="line">&#125;</div><div class="line"><span class="comment">// Send command</span></div><div class="line">err := mc.writeCommandPacketStr(comQuery, query)</div><div class="line"><span class="keyword">if</span> err == <span class="literal">nil</span> &#123;</div><div class="line">	<span class="comment">// Read Result</span></div><div class="line"><span class="comment">// ...</span></div></pre></td></tr></table></figure>
+<p>后续再补篇文章详细写写sql.Driver</p>
 
         
         </div>
@@ -300,7 +273,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2018/10/06/GRPC文档阅读心得/" data-id="cjpplu7w5000y6y0o92x4qrmb" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2018/11/29/go sql.Driver的mysql driver 中的一个有意思的行为/" data-id="cjqi35zi9001101stybf4up05" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -368,7 +341,7 @@ ga('send', 'pageview');
 
             
     
-        <a href="https://imhanjm.com/2018/10/06/GRPC文档阅读心得/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2018/10/06/GRPC文档阅读心得/">评论</a>
+        <a href="https://imhanjm.com/2018/11/29/go sql.Driver的mysql driver 中的一个有意思的行为/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2018/11/29/go sql.Driver的mysql driver 中的一个有意思的行为/">评论</a>
     
 
         </footer>
@@ -378,7 +351,7 @@ ga('send', 'pageview');
 
 
 
-    <article id="post-Go如何优雅地错误处理(Error handling and Go 1)" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-学习influxdb" class="article article-type-post" itemscope itemprop="blogPost">
     <div class="article-inner">
         
         
@@ -386,7 +359,7 @@ ga('send', 'pageview');
                 
     
         <h1 itemprop="name">
-            <a class="article-title" href="/2018/07/08/Go如何优雅地错误处理(Error handling and Go 1)/">Go如何优雅地错误处理(Error Handling and Go 1)</a>
+            <a class="article-title" href="/2018/11/18/学习influxdb/">学习Influxdb</a>
         </h1>
     
 
@@ -395,8 +368,8 @@ ga('send', 'pageview');
                         
     <div class="article-date">
         <i class="fa fa-calendar"></i>
-        <a href="/2018/07/08/Go如何优雅地错误处理(Error handling and Go 1)/">
-            <time datetime="2018-07-07T16:00:00.000Z" itemprop="datePublished">2018-07-08</time>
+        <a href="/2018/11/18/学习influxdb/">
+            <time datetime="2018-11-17T16:00:00.000Z" itemprop="datePublished">2018-11-18</time>
         </a>
     </div>
 
@@ -405,7 +378,7 @@ ga('send', 'pageview');
                         
     <div class="article-tag">
         <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/Error-handling/">Error handling</a>, <a class="tag-link" href="/tags/Go/">Go</a>, <a class="tag-link" href="/tags/错误处理/">错误处理</a>
+        <a class="tag-link" href="/tags/Go/">Go</a>, <a class="tag-link" href="/tags/influxdb/">influxdb</a>
     </div>
 
                     </div>
@@ -416,28 +389,30 @@ ga('send', 'pageview');
         <div class="article-entry" itemprop="articleBody">
         
             
-            <p>Go的错误处理一直被吐槽太繁琐, 作为主要用GO的攻城狮, 经常写 <code>if err!=nil</code>, 但是如果想偷懒, 少带了上下文信息, 直接写 <code>if err!=nil { return err}</code> 或者 <code>fmt.Errorf</code> 携带的上下文信息太少了的话, 看到错误日志也会一脸懵逼, 难以定位问题.<br>官方在 2011 年就发过一篇博客教大家如何在Go中处理error <a href="https://blog.golang.org/error-handling-and-go" target="_blank" rel="external">https://blog.golang.org/error-handling-and-go</a> , error 是一个内建的 interface, 鼓励大家用好自定义错误类型, 常用的范式有三种:</p>
-<ul>
-<li>一是用 <code>errors.New(str string)</code> 定义错误常量, 让调用方去判断返回的 <code>err</code> 是否等于这个常量, 来进行区分处理;</li>
-<li>二是用 <code>fmt.Errorf(fmt string, args... interface{})</code> 增加一些上下文信息, 用文字的方式告诉调用方哪里出错了, 让调用方打错误日志出来;</li>
-<li>三是自定义 struct type , 实现 error 接口, 调用方用类型断言转成特定的 struct type , 拿到更结构化的错误信息.</li>
-</ul>
-<p>我最开始最常用的做法是, fmt.Errorf 时写上 此函数函数名、调用出错的函数名、参数是什么、err , 代码十分啰嗦, 而且通常打日志是在上层函数打的, 看到错误日志还需要用函数名去代码中搜索看看在哪里出错. 业务代码调用层级一多,非常麻烦. 很多情况下我既想带上下文信息, 又想在上层调用方取得最里层出错的函数返回的error常量或自定义的 struct type, 最好还能自动带上行号函数名信息, 减少每次写 fmt.Errof 的手动写上函数名的痛苦. 于是开始在 github 找包, star 数最高的是 <code>pkg/errors</code> 、<code>juju/errors</code>.</p>
-<ul>
-<li><code>pkg/errors</code> 解决了一些问题, 核心函数是 Wrapf 和 Cause: Wrapf包装错误附加上下文信息并带上调用栈, 但是每次去包装错误的时候都去取一次调用栈, 完全没有必要啊, 因为最早出错的函数里就能拿到完整的调用栈的, 并且调用栈打出来的信息也不好看, 而且通常HTTP服务会用框架, 用了框架的话调用栈就会肿起来, 这些框架的固定调用栈信息打印出来毫无帮助. Cause 去递归拿到最里层的 error, 用于和error常量比较或类型断言成自定义 struct type.</li>
-</ul>
-<figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="comment">// Wrapf returns an error annotating err with a stack trace</span></div><div class="line"><span class="comment">// at the point Wrapf is call, and the format specifier.</span></div><div class="line"><span class="comment">// If err is nil, Wrapf returns nil.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">Wrapf</span><span class="params">(err error, format <span class="keyword">string</span>, args ...<span class="keyword">interface</span>&#123;&#125;)</span> <span class="title">error</span></span> &#123;</div><div class="line">	<span class="keyword">if</span> err == <span class="literal">nil</span> &#123;</div><div class="line">		<span class="keyword">return</span> <span class="literal">nil</span></div><div class="line">	&#125;</div><div class="line">	err = &amp;withMessage&#123;</div><div class="line">		cause: err,</div><div class="line">		msg:   fmt.Sprintf(format, args...),</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span> &amp;withStack&#123;</div><div class="line">		err,</div><div class="line">		callers(),</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Cause returns the underlying cause of the error, if possible.</span></div><div class="line"><span class="comment">// An error value has a cause if it implements the following</span></div><div class="line"><span class="comment">// interface:</span></div><div class="line"><span class="comment">//</span></div><div class="line"><span class="comment">//     type causer interface &#123;</span></div><div class="line"><span class="comment">//            Cause() error</span></div><div class="line"><span class="comment">//     &#125;</span></div><div class="line"><span class="comment">//</span></div><div class="line"><span class="comment">// If the error does not implement Cause, the original error will</span></div><div class="line"><span class="comment">// be returned. If the error is nil, nil will be returned without further</span></div><div class="line"><span class="comment">// investigation.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">Cause</span><span class="params">(err error)</span> <span class="title">error</span></span> &#123;</div><div class="line">	<span class="keyword">type</span> causer <span class="keyword">interface</span> &#123;</div><div class="line">		Cause() error</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="keyword">for</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		cause, ok := err.(causer)</div><div class="line">		<span class="keyword">if</span> !ok &#123;</div><div class="line">			<span class="keyword">break</span></div><div class="line">		&#125;</div><div class="line">		err = cause.Cause()</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span> err</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<ul>
-<li><code>juju/errors</code> API非常复杂, 包装的error的函数就有三个 <code>func Annotatef(other error, format string, args ...interface{}) error</code> 、<code>func Maskf(other error, format string, args ...interface{}) error</code> 、 <code>func Wrapf(other, newDescriptive error, format string, args ...interface{}) error</code> … , 每次包装时都会SetLocation, 消耗更大, 即时有时不需要打印error string 只需要判断, 它也去用runtime.Caller去拿文件名, 行号; 调用栈打出来的信息也不好看.</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">// SetLocation records the source location of the error at callDepth stack</div><div class="line">// frames above the call.</div><div class="line">func (e *Err) SetLocation(callDepth int) &#123;</div><div class="line">	_, file, line, _ := runtime.Caller(callDepth + 1)</div><div class="line">	e.file = trimGoPath(file)</div><div class="line">	e.line = line</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>以上包不满足要求, 只能造轮子了. 两个思想. API要设计的简单, 调用栈要好看 <a href="https://github.com/hanjm/errors" target="_blank" rel="external">https://github.com/hanjm/errors</a></p>
-<ul>
-<li>API简单: 定义error常量只有 <code>errors.New</code> 函数, 兼容标准库的函数, 兼容很重要; 包装error的只有 <code>errors.Errorf</code> 函数, 只在最早出错的时候取调用栈, 调用方再包装时无需取调用栈, 此时只需要pc, 不需要这时就把文件名行号取出来; 取最里层的 error 只有 <code>errors.GetInnerMost</code>, 用于和 error 常量比较或类型断言成自定义 struct type分类处理.</li>
-<li>调用栈好看: 去掉标准包的调用栈, 去掉框架固定的调用栈信息(通常是github.com的包), 只保留业务逻辑的调用栈. 按[ 文件名:行号 函数名:message]分行格式化输出, 把调用栈和附加的message对应起来. (第一版格式是[文件名:行号 函数名:message], 没有空格, 后面有个同事说在Goland IDE里看panic信息时可以点击定位到源码, 你的包能不能加这个功能, 所以去研究了下, 写了几个print的demo试了下发现如果输出中的文件名前后带空格的话, intellij IDE会自动识别输出中的文件名变成超链接, 所以给 “文件名:行号” 前后加了空格, 就能在IDE中直接点击定位到源码对应的行, 非常地方便, 感谢这位同事)</li>
-</ul>
-<p>在IDE中加个live template, 写errf回车就补全到<br><figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="keyword">if</span> err!=<span class="literal">nil</span> &#123;</div><div class="line">	err = errors.Errorf(err,<span class="string">"&#123;&#123;光标&#125;&#125;"</span>)</div><div class="line">	<span class="keyword">return</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>然后补充必要的注释和参数就行了, 在本地环境调试时看到错误日志点击就可以定位到源码, 在非本地环境跑看到错误日志相比之前也能更好地知道发生了什么, 复制文件名:行号到IDE中就能定位到源码, 大大减轻了错误处理的繁琐.</p>
+            <p>最近要实现接口监控, 准备用主流的时序数据库influxdb.</p>
+<h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><p>influxdb的库也 database, 概念和mysql一样<br>influxdb的表叫 MEASUREMENTS, 意义更贴切, 测量的复数形式.<br>influxdb的一行数据叫 point, 就像做物理实验的打点, 每个点有其值和属性<br>influxdb的字段分类为 tag 和 field, field就是值, tag是其属性. 拿接口来说, 字段有 service_name, instance_id, method, handler_name, method, request_url, response_code, content_length, response_size, duration. 显然, 前面7个字段是tag, 特点是一般不是数值变量, 可枚举的, 所以influxdb对tag加了索引. 后面3个是field, 是数值变量, 是范围变化的, 不需要加索引.</p>
+<h2 id="插入数据"><a href="#插入数据" class="headerlink" title="插入数据"></a>插入数据</h2><p>对于插入数据, influxdb同时提供了单条和批量插入的API. 开始不知道有批量方式, 来一条插一条, influxdb CPU巨高. 后面在官网文档找到了办法, 改用批量插入, 大大降低了CPU占用, 官方推荐是5k~1w条数据一批.</p>
+<blockquote>
+<p><a href="https://docs.influxdata.com/influxdb/v1.7/concepts/glossary/#batch" target="_blank" rel="external">https://docs.influxdata.com/influxdb/v1.7/concepts/glossary/#batch</a></p>
+<p>InfluxData recommends batch sizes of 5,000-10,000 points,<br>although different use cases may be better served by significantly smaller or larger batches.</p>
+</blockquote>
+<p>influxdb同时提供了HTTP接口和UDP接口. UDP的好处在于减少了HTTP头部的开销, 性能更好</p>
+<h2 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h2><ol>
+<li><p>库</p>
+ <figure class="highlight shell"><table><tr><td class="code"><pre><div class="line"><span class="meta">#</span> 创建数据库</div><div class="line">CREATE DATABASE "db_name"</div><div class="line"><span class="meta">#</span> 显示所有数据库</div><div class="line">SHOW DATABASES</div><div class="line"><span class="meta">#</span> 删除数据库</div><div class="line">DROP DATABASE "db_name"</div><div class="line"><span class="meta">#</span> 使用数据库</div><div class="line">USE mydb</div></pre></td></tr></table></figure>
+</li>
+<li><p>表</p>
+ <figure class="highlight shell"><table><tr><td class="code"><pre><div class="line"><span class="meta">#</span> 显示该数据库中的表</div><div class="line">SHOW MEASUREMENTS</div><div class="line"><span class="meta">#</span> 创建表, 插入数据时会自动创建</div><div class="line"><span class="meta">#</span> 删除表</div><div class="line">DROP MEASUREMENT "measurementName"</div></pre></td></tr></table></figure>
+</li>
+<li><p>查看数据保留策略 retention polices</p>
+ <figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">SHOW RETENTION POLICIES ON "testDB"</div></pre></td></tr></table></figure>
+</li>
+<li><p>创建新的Retention Policies并设置为默认值</p>
+ <figure class="highlight shell"><table><tr><td class="code"><pre><div class="line"><span class="meta">	#</span> DURATION 保留多少天</div><div class="line"><span class="meta">	#</span> REPLICATION 副本数</div><div class="line">CREATE RETENTION POLICY "rp_name" ON "db_name" DURATION 30d REPLICATION 1 DEFAULT</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<h2 id="连续查询"><a href="#连续查询" class="headerlink" title="连续查询"></a>连续查询</h2><figure class="highlight shell"><table><tr><td class="code"><pre><div class="line"><span class="meta">#</span> 创建一个连续查询, 每10秒计算一个接口响应耗时平均值到新表</div><div class="line">CREATE CONTINUOUS QUERY cq_http_handler_stats_duration ON statsdb BEGIN SELECT mean("duration") INTO http_handler_stats_average_duraion_10s FROM http_handler_stats GROUP BY time(10s) END</div><div class="line"><span class="meta"></span></div><div class="line"># 如果成功创建, 那么过了第一个周期后, SHOW MEASUREMENTS 能看到多了一张表</div><div class="line"><span class="meta"></span></div><div class="line"># 显示创建的连续查询</div><div class="line">SHOW CONTINUOUS QUERIES</div><div class="line"><span class="meta"></span></div><div class="line"># 删除</div><div class="line">DROP CONTINUOUS QUERY cq_http_handler_stats_duration ON statsdb</div></pre></td></tr></table></figure>
+<h2 id="图表"><a href="#图表" class="headerlink" title="图表"></a>图表</h2><p>grafana 是 influxdb 的良好伴侣, 写个query语句就能得到很炫酷的图形. 比如接口请求量图表按handler_name, response_code, time(10s) group by就得到了.</p>
 
         
         </div>
@@ -448,7 +423,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2018/07/08/Go如何优雅地错误处理(Error handling and Go 1)/" data-id="cjpplu7w900136y0o9ji9rl77" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2018/11/18/学习influxdb/" data-id="cjqi35zib001201stp86wdmhx" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -516,7 +491,7 @@ ga('send', 'pageview');
 
             
     
-        <a href="https://imhanjm.com/2018/07/08/Go如何优雅地错误处理(Error handling and Go 1)/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2018/07/08/Go如何优雅地错误处理(Error handling and Go 1)/">评论</a>
+        <a href="https://imhanjm.com/2018/11/18/学习influxdb/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2018/11/18/学习influxdb/">评论</a>
     
 
         </footer>
@@ -527,7 +502,7 @@ ga('send', 'pageview');
 
 
     <nav id="page-nav">
-        <a class="extend prev" rel="prev" href="/">&laquo; 上一页</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/3/">下一页 &raquo;</a>
+        <a class="extend prev" rel="prev" href="/">&laquo; 上一页</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/3/">下一页 &raquo;</a>
     </nav>
 </section>
             
@@ -538,6 +513,44 @@ ga('send', 'pageview');
         <h3 class="widget-title">最新文章</h3>
         <div class="widget">
             <ul id="recent-post" class="">
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2018/12/16/macos docker container连接宿主机172.17.0.1的办法/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2018/12/16/macos docker container连接宿主机172.17.0.1的办法/" class="title">Macos Docker container连接宿主机172.17.0.1的办法</a></p>
+                            <p class="item-date"><time datetime="2018-12-15T16:00:00.000Z" itemprop="datePublished">2018-12-16</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2018/12/15/Nginx with gRPC编译安装/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2018/12/15/Nginx with gRPC编译安装/" class="title">Nginx With gRPC编译安装</a></p>
+                            <p class="item-date"><time datetime="2018-12-14T16:00:00.000Z" itemprop="datePublished">2018-12-15</time></p>
+                        </div>
+                    </li>
                 
                     <li>
                         
@@ -596,44 +609,6 @@ ga('send', 'pageview');
                         </div>
                     </li>
                 
-                    <li>
-                        
-                        <div class="item-thumbnail">
-                            <a href="/2018/07/08/Go如何优雅地错误处理(Error handling and Go 1)/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"></p>
-                            <p class="item-title"><a href="/2018/07/08/Go如何优雅地错误处理(Error handling and Go 1)/" class="title">Go如何优雅地错误处理(Error Handling and Go 1)</a></p>
-                            <p class="item-date"><time datetime="2018-07-07T16:00:00.000Z" itemprop="datePublished">2018-07-08</time></p>
-                        </div>
-                    </li>
-                
-                    <li>
-                        
-                        <div class="item-thumbnail">
-                            <a href="/2018/02/17/深入理解NATS & NATS Streaming/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"></p>
-                            <p class="item-title"><a href="/2018/02/17/深入理解NATS & NATS Streaming/" class="title">深入理解NATS &amp; NATS Streaming (踩坑记)</a></p>
-                            <p class="item-date"><time datetime="2018-02-16T16:00:00.000Z" itemprop="datePublished">2018-02-17</time></p>
-                        </div>
-                    </li>
-                
             </ul>
         </div>
     </div>
@@ -645,7 +620,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">归档</h3>
         <div class="widget">
-            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">1</span></li></ul>
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -654,7 +629,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签</h3>
         <div class="widget">
-            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cool-tools/">Cool tools</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Error-handling/">Error handling</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRPC/">GRPC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Macos/">Macos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS/">NATS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS-Streaming/">NATS Streaming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/">Nginx</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bench/">bench</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/decimal/">decimal</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grpc-go/">grpc-go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/influxdb/">influxdb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log/">log</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/时间处理/">时间处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/架构/">架构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/连接池/">连接池</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/错误处理/">错误处理</a><span class="tag-list-count">1</span></li></ul>
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/172-17-0-1/">172.17.0.1</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cool-tools/">Cool tools</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Error-handling/">Error handling</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRPC/">GRPC</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP2/">HTTP2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Macos/">Macos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS/">NATS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS-Streaming/">NATS Streaming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/">Nginx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bench/">bench</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/decimal/">decimal</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker-for-mac/">docker for mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grpc-go/">grpc-go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/influxdb/">influxdb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log/">log</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/时间处理/">时间处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/架构/">架构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/连接池/">连接池</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/错误处理/">错误处理</a><span class="tag-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -663,7 +638,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/Cool-tools/" style="font-size: 15px;">Cool tools</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Error-handling/" style="font-size: 10px;">Error handling</a> <a href="/tags/GRPC/" style="font-size: 10px;">GRPC</a> <a href="/tags/Go/" style="font-size: 20px;">Go</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Macos/" style="font-size: 10px;">Macos</a> <a href="/tags/NATS/" style="font-size: 10px;">NATS</a> <a href="/tags/NATS-Streaming/" style="font-size: 10px;">NATS Streaming</a> <a href="/tags/Nginx/" style="font-size: 10px;">Nginx</a> <a href="/tags/bench/" style="font-size: 10px;">bench</a> <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a> <a href="/tags/decimal/" style="font-size: 10px;">decimal</a> <a href="/tags/grpc-go/" style="font-size: 10px;">grpc-go</a> <a href="/tags/influxdb/" style="font-size: 10px;">influxdb</a> <a href="/tags/log/" style="font-size: 10px;">log</a> <a href="/tags/mysql/" style="font-size: 15px;">mysql</a> <a href="/tags/时间处理/" style="font-size: 10px;">时间处理</a> <a href="/tags/架构/" style="font-size: 10px;">架构</a> <a href="/tags/消息队列/" style="font-size: 10px;">消息队列</a> <a href="/tags/连接池/" style="font-size: 10px;">连接池</a> <a href="/tags/错误处理/" style="font-size: 10px;">错误处理</a>
+            <a href="/tags/172-17-0-1/" style="font-size: 10px;">172.17.0.1</a> <a href="/tags/Cool-tools/" style="font-size: 15px;">Cool tools</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/Error-handling/" style="font-size: 10px;">Error handling</a> <a href="/tags/GRPC/" style="font-size: 15px;">GRPC</a> <a href="/tags/Go/" style="font-size: 20px;">Go</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/HTTP2/" style="font-size: 10px;">HTTP2</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Macos/" style="font-size: 10px;">Macos</a> <a href="/tags/NATS/" style="font-size: 10px;">NATS</a> <a href="/tags/NATS-Streaming/" style="font-size: 10px;">NATS Streaming</a> <a href="/tags/Nginx/" style="font-size: 15px;">Nginx</a> <a href="/tags/bench/" style="font-size: 10px;">bench</a> <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a> <a href="/tags/decimal/" style="font-size: 10px;">decimal</a> <a href="/tags/docker-for-mac/" style="font-size: 10px;">docker for mac</a> <a href="/tags/grpc-go/" style="font-size: 10px;">grpc-go</a> <a href="/tags/influxdb/" style="font-size: 10px;">influxdb</a> <a href="/tags/log/" style="font-size: 10px;">log</a> <a href="/tags/mysql/" style="font-size: 15px;">mysql</a> <a href="/tags/时间处理/" style="font-size: 10px;">时间处理</a> <a href="/tags/架构/" style="font-size: 10px;">架构</a> <a href="/tags/消息队列/" style="font-size: 10px;">消息队列</a> <a href="/tags/连接池/" style="font-size: 10px;">连接池</a> <a href="/tags/错误处理/" style="font-size: 10px;">错误处理</a>
         </div>
     </div>
 
@@ -823,7 +798,7 @@ ga('send', 'pageview');
         <footer id="footer">
     <div class="outer">
         <div id="footer-info" class="inner">
-            &copy; 2018 hanjm<br>
+            &copy; 2019 hanjm<br>
             Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
         </div>
     </div>

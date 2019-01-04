@@ -3,17 +3,19 @@
 <head>
     <meta charset="utf-8">
     
-    <title>归档 | hello</title>
+    <title>Macos Docker container连接宿主机172.17.0.1的办法 | hello</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <meta name="description" content="hanjm&apos;s blog">
-<meta property="og:type" content="website">
-<meta property="og:title" content="hello">
-<meta property="og:url" content="https://imhanjm.com/archives/page/11/index.html">
+    <meta name="description" content="在Linux docker container里面, 如果想访问宿主机上的服务, 用 172.17.0.1 这个host即可. 今天在Mac上的 dockercontainer里面启动一个服务, 这个服务需要连我主机上的MySQL, 用 172.17.0.1 是访问不了的, Connection refused. root@d99939cc53fc:/tmp# curl 172.17.0.1:33">
+<meta name="keywords" content="Docker,172.17.0.1,docker for mac">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Macos Docker container连接宿主机172.17.0.1的办法">
+<meta property="og:url" content="https://imhanjm.com/2018/12/16/macos docker container连接宿主机172.17.0.1的办法/index.html">
 <meta property="og:site_name" content="hello">
-<meta property="og:description" content="hanjm&apos;s blog">
+<meta property="og:description" content="在Linux docker container里面, 如果想访问宿主机上的服务, 用 172.17.0.1 这个host即可. 今天在Mac上的 dockercontainer里面启动一个服务, 这个服务需要连我主机上的MySQL, 用 172.17.0.1 是访问不了的, Connection refused. root@d99939cc53fc:/tmp# curl 172.17.0.1:33">
+<meta property="og:updated_time" content="2018-12-16T05:27:03.173Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="hello">
-<meta name="twitter:description" content="hanjm&apos;s blog">
+<meta name="twitter:title" content="Macos Docker container连接宿主机172.17.0.1的办法">
+<meta name="twitter:description" content="在Linux docker container里面, 如果想访问宿主机上的服务, 用 172.17.0.1 这个host即可. 今天在Mac上的 dockercontainer里面启动一个服务, 这个服务需要连我主机上的MySQL, 用 172.17.0.1 是访问不了的, Connection refused. root@d99939cc53fc:/tmp# curl 172.17.0.1:33">
     
 
     
@@ -221,85 +223,177 @@ ga('send', 'pageview');
 </aside>
 
             
-            <section id="main"><div class="timeline timeline-wrap">
-    
-            <div class="timeline-row timeline-row-major">
-                <span class="node"><i class="fa fa-calendar"></i></span>
-                <h1 class="title">2017</h1>
-            </div>
+            <section id="main"><article id="post-macos docker container连接宿主机172.17.0.1的办法" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
         
-        <div class="timeline-row">
-            <span class="node"></span>
-            <div class="content">
+        
+            <header class="article-header">
                 
     
-        <h1 itemprop="name">
-            <a class="timeline-article-title" href="/2017/03/21/Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比/">Python(Tornado Tornado+uvloop Tornado+uvloop2 Flask Sanic Django) Go(http Httprouter Fasthttp) RPS性能对比</a>
+        <h1 class="article-title" itemprop="name">
+            Macos Docker container连接宿主机172.17.0.1的办法
         </h1>
     
 
-                <div class="article-meta">
-                    
+                
+                    <div class="article-meta">
+                        
     <div class="article-date">
         <i class="fa fa-calendar"></i>
-        <a href="/2017/03/21/Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比/">
-            <time datetime="2017-03-20T16:00:00.000Z" itemprop="datePublished">2017-03-21</time>
+        <a href="/2018/12/16/macos docker container连接宿主机172.17.0.1的办法/">
+            <time datetime="2018-12-15T16:00:00.000Z" itemprop="datePublished">2018-12-16</time>
         </a>
     </div>
 
 
-                    
-                    
+                        
+                        
     <div class="article-tag">
         <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/bench/">bench</a>
+        <a class="tag-link" href="/tags/172-17-0-1/">172.17.0.1</a>, <a class="tag-link" href="/tags/Docker/">Docker</a>, <a class="tag-link" href="/tags/docker-for-mac/">docker for mac</a>
     </div>
 
-                </div>
-            </div>
-        </div>
-    
-            <div class="timeline-row timeline-row-major">
-                <span class="node"><i class="fa fa-calendar"></i></span>
-                <h1 class="title">2016</h1>
-            </div>
-        
-        <div class="timeline-row">
-            <span class="node"></span>
-            <div class="content">
+                    </div>
                 
-    
-        <h1 itemprop="name">
-            <a class="timeline-article-title" href="/2016/12/31/Go快速笔记/">Go快速笔记</a>
-        </h1>
-    
-
-                <div class="article-meta">
-                    
-    <div class="article-date">
-        <i class="fa fa-calendar"></i>
-        <a href="/2016/12/31/Go快速笔记/">
-            <time datetime="2016-12-30T16:00:00.000Z" itemprop="datePublished">2016-12-31</time>
-        </a>
-    </div>
-
-
-                    
-                    
-    <div class="article-tag">
-        <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/Go/">Go</a>
-    </div>
-
-                </div>
-            </div>
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>在Linux docker container里面, 如果想访问宿主机上的服务, 用 172.17.0.1 这个host即可.</p>
+<p>今天在Mac上的 dockercontainer里面启动一个服务, 这个服务需要连我主机上的MySQL, 用 172.17.0.1 是访问不了的, Connection refused.</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">root@d99939cc53fc:/tmp# curl 172.17.0.1:3306</div><div class="line">curl: (7) Failed to connect to 172.17.0.1 port 3306: Connection refused</div></pre></td></tr></table></figure>
+<p>但是看网络结构, 和Linux的一样, 也是在172.17段下的.</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">root@d99939cc53fc:/tmp# ip addr</div><div class="line">1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1</div><div class="line">    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00</div><div class="line">    inet 127.0.0.1/8 scope host lo</div><div class="line">       valid_lft forever preferred_lft forever</div><div class="line">2: tunl0@NONE: &lt;NOARP&gt; mtu 1480 qdisc noop state DOWN group default qlen 1</div><div class="line">    link/ipip 0.0.0.0 brd 0.0.0.0</div><div class="line">3: ip6tnl0@NONE: &lt;NOARP&gt; mtu 1452 qdisc noop state DOWN group default qlen 1</div><div class="line">    link/tunnel6 :: brd ::</div><div class="line">6: eth0@if7: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default</div><div class="line">    link/ether 02:42:ac:11:00:02 brd ff:ff:ff:ff:ff:ff link-netnsid 0</div><div class="line">    inet 172.17.0.2/16 brd 172.17.255.255 scope global eth0</div><div class="line">       valid_lft forever preferred_lft forever</div></pre></td></tr></table></figure>
+<p>不得其解, Google之, 发现有个隐藏奥秘, <a href="https://stackoverflow.com/questions/38504890/docker-for-mac-1-12-0-how-to-connect-to-host-from-container" target="_blank" rel="external">https://stackoverflow.com/questions/38504890/docker-for-mac-1-12-0-how-to-connect-to-host-from-container</a> 问题下有人在 <em>Docker Community Edition 17.06.0-ce-mac18, 2017-06-28</em> 的<a href="https://docs.docker.com/docker-for-mac/release-notes/" target="_blank" rel="external">release notes</a>中发现有 </p>
+<blockquote>
+<p>Add an experimental DNS name for the host: docker.for.mac.localhost</p>
+</blockquote>
+<p>这样一条更新日志. </p>
+<p>页面搜索<code>docker.for.mac.localhost</code>, 发现在 <em>Docker Community Edition 17.12.0-ce-mac46 2018-01-09</em> 的 release notes中发现有一条相关的更新日志</p>
+<blockquote>
+<ul>
+<li>DNS name <code>docker.for.mac.host.internal</code> should be used instead of <code>docker.for.mac.localhost</code> (still valid) for host resolution from containers, since since there is an RFC banning the use of subdomains of localhost. See <a href="https://tools.ietf.org/html/draft-west-let-localhost-be-localhost-06" target="_blank" rel="external">https://tools.ietf.org/html/draft-west-let-localhost-be-localhost-06</a>.</li>
+</ul>
+</blockquote>
+<p>所以, 结论就是在 container 中应该用 <code>docker.for.mac.host.internal</code> 来访问宿主机.</p>
+<p>于是用curl看一下端口通不通, 果然通.</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">root@d99939cc53fc:/tmp# curl docker.for.mac.host.internal:3306</div><div class="line">5.7.21Bf</div></pre></td></tr></table></figure>
+        
         </div>
-    
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
 </div>
 
-    <nav id="page-nav">
-        <a class="extend prev" rel="prev" href="/archives/page/10/">&laquo; 上一页</a><a class="page-number" href="/archives/">1</a><span class="space">&hellip;</span><a class="page-number" href="/archives/page/9/">9</a><a class="page-number" href="/archives/page/10/">10</a><span class="page-number current">11</span>
-    </nav>
+    <a data-url="https://imhanjm.com/2018/12/16/macos docker container连接宿主机172.17.0.1的办法/" data-id="cjqi35zie001701st3q401xst" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+        <a href="https://imhanjm.com/2018/12/16/macos docker container连接宿主机172.17.0.1的办法/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2018/12/16/macos docker container连接宿主机172.17.0.1的办法/">评论</a>
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2018/12/15/Nginx with gRPC编译安装/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    Nginx With gRPC编译安装
+                
+            </div>
+        </a>
+    
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
 </section>
             
                 <aside id="sidebar">
@@ -604,11 +698,13 @@ ga('send', 'pageview');
     <script>
     var disqus_config = function () {
         
-        this.page.identifier = 'undefined';
+            this.page.url = 'https://imhanjm.com/2018/12/16/macos docker container连接宿主机172.17.0.1的办法/';
+        
+        this.page.identifier = 'macos docker container连接宿主机172.17.0.1的办法';
     };
     (function() { 
         var d = document, s = d.createElement('script');  
-        s.src = '//' + 'hanjmblog' + '.disqus.com/count.js';
+        s.src = '//' + 'hanjmblog' + '.disqus.com/embed.js';
         s.setAttribute('data-timestamp', +new Date());
         (d.head || d.body).appendChild(s);
     })();
