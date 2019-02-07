@@ -169,11 +169,11 @@ ga('send', 'pageview');
         </div>
         <div class="article-info profile-block">
             <div class="article-info-block">
-                22
+                23
                 <span>文章</span>
             </div>
             <div class="article-info-block">
-                26
+                30
                 <span>标签</span>
             </div>
         </div>
@@ -222,6 +222,186 @@ ga('send', 'pageview');
 
             
             <section id="main">
+    <article id="post-深入理解ActiveMQ消息队列协议STMOP AMQP MQTT" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 itemprop="name">
+            <a class="article-title" href="/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/">深入理解ActiveMQ消息队列协议STMOP AMQP MQTT</a>
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/">
+            <time datetime="2019-02-06T16:00:00.000Z" itemprop="datePublished">2019-02-07</time>
+        </a>
+    </div>
+
+
+                        
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/activemq/">activemq</a>, <a class="tag-link" href="/tags/messageQueue/">messageQueue</a>, <a class="tag-link" href="/tags/mq/">mq</a>, <a class="tag-link" href="/tags/pubsub/">pubsub</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>AWS MQ是完全托管的 ActiveMQ 服务, 最近需要使用, 于是学习其文档, 实践其特性, 由于 ActiveMQ 支持非常丰富的协议, OpenWire amqp stomp mqtt, 所以也学习了各大协议的特性及其SDK.</p>
+<h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><p>本地开发最方便的方式当然是docker了, <a href="https://hub.docker.com/r/rmohr/activemq/" target="_blank" rel="external">rmohr/activemq</a> 文档比较好的且有5.16.5版本的tag.</p>
+<p>需要注意的是, 首先要根据其docker hub镜像文档上的几步操作, 将镜像中的默认配置文件复制到自定义的本机conf目录下 <code>/usr/local/activemq/conf</code>, 然后就快速地启动了一个默认配置的 ActiveMQ server</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line"><span class="meta">#</span> active mq</div><div class="line">docker run -itd --name activemq \</div><div class="line">-p 61616:61616 -p 8161:8161 -p 5672:5672 -p 61613:61613 -p 1883:1883 -p 61614:61614 \</div><div class="line">-v /usr/local/activemq/conf:/opt/activemq/conf \</div><div class="line">-v /usr/local/activemq/data:/opt/activemq/data \</div><div class="line">rmohr/activemq:5.15.6</div></pre></td></tr></table></figure>
+<hr>
+<h1 id="特性"><a href="#特性" class="headerlink" title="特性"></a>特性</h1><h3 id="Advisory"><a href="#Advisory" class="headerlink" title="Advisory"></a>Advisory</h3><p>ActiveMQ可以将本身的一些事件投递到系统的消息队列, 如 queue/topic的创建, 没有消费者的queue/topic等. <a href="http://activemq.apache.org/advisory-message.html" target="_blank" rel="external">http://activemq.apache.org/advisory-message.html</a></p>
+<p>这个特性对于监控MQ非常有用, 默认配置时关闭的, 需要在配置文件activemq.xml中打开.</p>
+<h3 id="Wildcards"><a href="#Wildcards" class="headerlink" title="Wildcards"></a>Wildcards</h3><p>通配符</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">. 用于分割名字中的多个单词</div><div class="line">* 表示任一名字, 不包括点号(.)</div><div class="line">&gt; 表示任一名字, 包括点号(.), 用于表示前缀, &gt;符号后面不会再跟其他限制条件.</div></pre></td></tr></table></figure>
+<h3 id="Virtual-Topic"><a href="#Virtual-Topic" class="headerlink" title="Virtual Topic"></a>Virtual Topic</h3><p>所谓virtual topic 就是将一个正常的topic, 变成了多个queue. 如TopicA启用了Virtual topic, 则consumer可以去消费 Consumer.xxx.TopicA 这样模式的queue的消息. (<a href="http://activemq.apache.org/virtual-destinations.html" target="_blank" rel="external">http://activemq.apache.org/virtual-destinations.html</a>)</p>
+<p>xxx对应类似NSQ中的Channel概念.</p>
+<p>需要在activemq.xml中配置virtualDestinationInterceptor的范围 prefix及其他选项.</p>
+<ul>
+<li><p><code>name=&quot;&gt;&quot;</code> 表示所有的topic都启用virtualTopic功能. </p>
+</li>
+<li><p><code>prefix=&quot;Consumer.*.&quot;</code> 表示可以订阅的virtualTopic的pattern是Consumer..</p>
+</li>
+</ul>
+<figure class="highlight xml"><table><tr><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">destinationInterceptors</span>&gt;</span> </div><div class="line">            <span class="tag">&lt;<span class="name">virtualDestinationInterceptor</span>&gt;</span> </div><div class="line">                <span class="tag">&lt;<span class="name">virtualDestinations</span>&gt;</span> </div><div class="line">                    <span class="tag">&lt;<span class="name">virtualTopic</span> <span class="attr">name</span>=<span class="string">"&gt;"</span> <span class="attr">prefix</span>=<span class="string">"Consumer.*."</span> <span class="attr">selectorAware</span>=<span class="string">"false"</span>/&gt;</span>    </div><div class="line">                <span class="tag">&lt;/<span class="name">virtualDestinations</span>&gt;</span></div><div class="line">            <span class="tag">&lt;/<span class="name">virtualDestinationInterceptor</span>&gt;</span> </div><div class="line"><span class="tag">&lt;/<span class="name">destinationInterceptors</span>&gt;</span></div></pre></td></tr></table></figure>
+<hr>
+<h1 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h1><h3 id="STOMP"><a href="#STOMP" class="headerlink" title="STOMP"></a>STOMP</h3><p>STOMP是Simple (or Streaming) Text Orientated Messaging Protocol 的缩写, 设计思路借鉴了HTTP, 有content-type, header, body, frame based, text based等类似HTTP的相关概念, 设计文档 &lt; <a href="https://stomp.github.io/stomp-specification-1.2.html&gt;" target="_blank" rel="external">https://stomp.github.io/stomp-specification-1.2.html&gt;</a>, 非常得简洁, 一页就讲完了.</p>
+<h4 id="协议细节及特点"><a href="#协议细节及特点" class="headerlink" title="协议细节及特点:"></a>协议细节及特点:</h4><ol>
+<li>对于重复的header key, 只有第一个有效.</li>
+<li>服务端可以限制消息大小, header field数量, header长度.</li>
+<li>一个client开多个subscriber时, 必须设置subscribe id.</li>
+<li>NACK command 表示 requeue.</li>
+<li>stomp有事务的概念, 消息从producer发出到consumer消费完成ACK算一个事务, 事务具有原子性.</li>
+<li>支持SSL.</li>
+</ol>
+<h4 id="ActiveMQ作为STOMP-server"><a href="#ActiveMQ作为STOMP-server" class="headerlink" title="ActiveMQ作为STOMP server"></a>ActiveMQ作为STOMP server</h4><ol>
+<li>支持 v1.1版本的STMOP协议.</li>
+<li>默认最大消息长度 <code>maxDataLength</code> 为 <code>104857600</code>, <code>maxFrameSize</code> 为 <code>MAX_LONG</code>.</li>
+<li>通过 <code>destination</code> 名字前缀是<code>/queue/</code> 还是 <code>/topic</code>/ 来区分是 <code>queue</code> (生产消费模型)还是 <code>topic</code>(发布订阅模型). 真正的名字是去掉包括两个<code>/</code>符号的前缀后的.</li>
+<li>默认不是持久化的, 需要在SEND时手动指定<code>persistent:true</code>的header以开启持久化.</li>
+</ol>
+<h4 id="demo-代码"><a href="#demo-代码" class="headerlink" title="demo 代码"></a>demo 代码</h4><figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="keyword">package</span> main</div><div class="line"></div><div class="line"><span class="keyword">import</span> (</div><div class="line">	<span class="string">"context"</span></div><div class="line">	<span class="string">"github.com/go-stomp/stomp"</span></div><div class="line">	<span class="string">"github.com/hanjm/log"</span></div><div class="line">	<span class="string">"os"</span></div><div class="line">	<span class="string">"os/signal"</span></div><div class="line">	<span class="string">"strconv"</span></div><div class="line">	<span class="string">"sync"</span></div><div class="line">	<span class="string">"syscall"</span></div><div class="line">	<span class="string">"time"</span></div><div class="line">)</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</div><div class="line">	<span class="keyword">var</span> wg sync.WaitGroup</div><div class="line">	ctx, cancel := context.WithCancel(context.Background())</div><div class="line"></div><div class="line">	wg.Add(<span class="number">1</span>)</div><div class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">		<span class="keyword">defer</span> wg.Done()</div><div class="line">		publisher(ctx, <span class="string">"/topic/stomp"</span>)</div><div class="line">	&#125;()</div><div class="line"></div><div class="line">	wg.Add(<span class="number">1</span>)</div><div class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">		<span class="keyword">defer</span> wg.Done()</div><div class="line">		Subscriber(ctx, <span class="string">"channel1"</span>, <span class="string">"Consumer.channel1.stomp"</span>)</div><div class="line">	&#125;()</div><div class="line">	<span class="comment">//</span></div><div class="line">	wg.Add(<span class="number">1</span>)</div><div class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">		<span class="keyword">defer</span> wg.Done()</div><div class="line">		Subscriber(ctx, <span class="string">"channel2"</span>, <span class="string">"Consumer.channel2.stomp"</span>)</div><div class="line">	&#125;()</div><div class="line"></div><div class="line">	wg.Add(<span class="number">1</span>)</div><div class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">		<span class="keyword">defer</span> wg.Done()</div><div class="line">		Subscriber(ctx, <span class="string">"channel3"</span>, <span class="string">"/topic/stomp"</span>)</div><div class="line">	&#125;()</div><div class="line"></div><div class="line">	<span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">		cancel()</div><div class="line">		wg.Wait()</div><div class="line">	&#125;()</div><div class="line">	SignalsListen()</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">publisher</span><span class="params">(ctx context.Context, destination <span class="keyword">string</span>)</span></span> &#123;</div><div class="line">	conn, err := stomp.Dial(<span class="string">"tcp"</span>, <span class="string">"127.0.0.1:61613"</span>)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		log.Fatal(err)</div><div class="line">		<span class="keyword">return</span></div><div class="line">	&#125;</div><div class="line">	<span class="keyword">defer</span> conn.Disconnect()</div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; ; i++ &#123;</div><div class="line">		<span class="keyword">select</span> &#123;</div><div class="line">		<span class="keyword">case</span> &lt;-ctx.Done():</div><div class="line">			<span class="keyword">return</span></div><div class="line">		<span class="keyword">case</span> &lt;-time.After(time.Second):</div><div class="line">			err = conn.Send(</div><div class="line">				destination,  <span class="comment">// destination</span></div><div class="line">				<span class="string">"text/plain"</span>, <span class="comment">// content-type</span></div><div class="line">				[]<span class="keyword">byte</span>(<span class="string">"Test message #"</span>+strconv.Itoa(i)), stomp.SendOpt.Header(<span class="string">"persistent"</span>, <span class="string">"true"</span>)) <span class="comment">// body</span></div><div class="line">			<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">				log.Error(err)</div><div class="line">				<span class="keyword">return</span></div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">Subscriber</span><span class="params">(ctx context.Context, clientID <span class="keyword">string</span>, destination <span class="keyword">string</span>)</span></span> &#123;</div><div class="line">	conn, err := stomp.Dial(<span class="string">"tcp"</span>, <span class="string">"127.0.0.1:61613"</span>)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		log.Fatal(err)</div><div class="line">		<span class="keyword">return</span></div><div class="line">	&#125;</div><div class="line">	<span class="keyword">defer</span> conn.Disconnect()</div><div class="line">	sub, err := conn.Subscribe(destination, stomp.AckClientIndividual, stomp.SubscribeOpt.Id(clientID), stomp.SubscribeOpt.Header(<span class="string">"persistent"</span>, <span class="string">"true"</span>))</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		log.Fatal(err)</div><div class="line">		<span class="keyword">return</span></div><div class="line">	&#125;</div><div class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">		<span class="keyword">select</span> &#123;</div><div class="line">		<span class="keyword">case</span> &lt;-ctx.Done():</div><div class="line">			err := sub.Unsubscribe()</div><div class="line">			<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">				log.Fatal(clientID, err)</div><div class="line">				<span class="keyword">return</span></div><div class="line">			&#125;</div><div class="line">			<span class="keyword">return</span></div><div class="line">		&#125;</div><div class="line">	&#125;()</div><div class="line">	<span class="keyword">for</span> m := <span class="keyword">range</span> sub.C &#123;</div><div class="line">		<span class="keyword">if</span> m.Err != <span class="literal">nil</span> &#123;</div><div class="line">			log.Fatal(err)</div><div class="line">			<span class="keyword">return</span></div><div class="line">		&#125;</div><div class="line">		log.Infof(<span class="string">"%s msg body:%s"</span>, clientID, m.Body)</div><div class="line">		<span class="comment">//log.Infof("%s msg header:%s", clientID, *m.Header)</span></div><div class="line">		<span class="comment">//log.Infof("%s msg content-type:%s", clientID, m.ContentType)</span></div><div class="line">		<span class="comment">//log.Infof("%s msg destination:%s", clientID, m.Destination)</span></div><div class="line">		m.Conn.Ack(m)</div><div class="line">	&#125;</div><div class="line">	log.Info(<span class="string">"close sub"</span>)</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">SignalsListen</span><span class="params">()</span></span> &#123;</div><div class="line">	sigs := <span class="built_in">make</span>(<span class="keyword">chan</span> os.Signal, <span class="number">1</span>)</div><div class="line">	signal.Notify(sigs, syscall.SIGQUIT,</div><div class="line">		syscall.SIGTERM,</div><div class="line">		syscall.SIGINT,</div><div class="line">		syscall.SIGUSR1,</div><div class="line">		syscall.SIGUSR2)</div><div class="line"></div><div class="line">	<span class="keyword">switch</span> &lt;-sigs &#123;</div><div class="line">	<span class="keyword">case</span> syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT:</div><div class="line">		log.Info(<span class="string">"service close"</span>)</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="MQTT"><a href="#MQTT" class="headerlink" title="MQTT"></a>MQTT</h2><p>MQTT协议默认就是pub sub, 用QOS来表示消息队列中的投递语义, QOS=0 表示至多发送一次, QOS=1表示至少发送一次, QOS=2表示精确地只发送一次.</p>
+<h4 id="ActiveMQ作为MQTT-server"><a href="#ActiveMQ作为MQTT-server" class="headerlink" title="ActiveMQ作为MQTT server"></a>ActiveMQ作为MQTT server</h4><ol>
+<li>通配符不同, MQTT的 <code>/</code> <code>+</code> <code>#</code> 分别对应 ActiveMQ的<code>.</code> <code>*</code> <code>&gt;</code>.</li>
+<li>QOS=0对应的是非持久化的topic, QOS=1或者QOS=2对应持久化的topic.</li>
+</ol>
+<h2 id="AMQP"><a href="#AMQP" class="headerlink" title="AMQP"></a>AMQP</h2><p>AMQP相比 stomp mqtt 就复杂得多.</p>
+<h4 id="ActiveMQ作为AMQP-server"><a href="#ActiveMQ作为AMQP-server" class="headerlink" title="ActiveMQ作为AMQP server"></a>ActiveMQ作为AMQP server</h4><ol>
+<li>使用1.0协议.</li>
+<li>默认最大消息长度 <code>maxDataLength</code> 为 <code>104857600</code>, <code>maxFrameSize</code> 为 <code>MAX_LONG</code>, consumer持有的未确认最大消息数量<code>prefetch</code>为1000, <code>producerCredit</code>为10000. 可通过连接的URI设定.</li>
+<li>支持SSL.</li>
+<li>通过 <code>destination</code> 名字前缀是<code>queue://</code> 还是 <code>topic://</code> 来区分是 <code>queue</code> (生产消费模型)还是 <code>topic</code>(发布订阅模型). 真正的名字是去掉包括两个<code>/</code>符号的前缀后的.</li>
+</ol>
+<h1 id="性能"><a href="#性能" class="headerlink" title="性能"></a>性能</h1><p>分别使用</p>
+<p>github.com/vcabbage/amqp 76star 13issue 5contributors<br>github.com/go-stomp/stomp 132star 3issue 14contributors<br>github.com/eclipse/paho.mqtt.golang 650star 20issue 34contributors</p>
+<p>作为SDK, 分别测试了下pub sub 1KB大小的消息普通场景.</p>
+<p>publish性能上, amqp=stomp&gt;mqtt, amqp和stomp差不多, 是mqtt的两倍多.<br>subscribe性能上, amqp比stomp快一点, mqtt则慢很多.</p>
+<p>benchmark代码</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="keyword">package</span> all_bench</div><div class="line"></div><div class="line"><span class="keyword">import</span> (</div><div class="line">	<span class="string">"bytes"</span></div><div class="line">	<span class="string">"context"</span></div><div class="line">	<span class="string">"github.com/eclipse/paho.mqtt.golang"</span></div><div class="line">	<span class="string">"github.com/go-stomp/stomp"</span></div><div class="line">	<span class="string">"github.com/hanjm/log"</span></div><div class="line">	<span class="string">"pack.ag/amqp"</span></div><div class="line">	<span class="string">"sync/atomic"</span></div><div class="line">	<span class="string">"testing"</span></div><div class="line">	<span class="string">"time"</span></div><div class="line">)</div><div class="line"></div><div class="line"><span class="keyword">var</span> msgData = bytes.Repeat([]<span class="keyword">byte</span>(<span class="string">"1"</span>), <span class="number">1024</span>)</div><div class="line"></div><div class="line"><span class="keyword">var</span> (</div><div class="line">	stompDestination = <span class="string">"bench-stomp"</span></div><div class="line">	amqpDestination  = <span class="string">"bench-amqp"</span></div><div class="line">	mqttDestination  = <span class="string">"bench-mqtt"</span></div><div class="line">	pubMsgCount      = <span class="number">20000</span></div><div class="line">	subMsgCount      = <span class="number">100</span></div><div class="line">)</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestMain</span><span class="params">(m *testing.M)</span></span> &#123;</div><div class="line">	m.Run()</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// go test -bench Publish  -benchmem</span></div><div class="line"><span class="comment">// go test -bench Sub  -benchmem</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkStompPublish</span><span class="params">(b *testing.B)</span></span> &#123;</div><div class="line">	conn, err := stomp.Dial(<span class="string">"tcp"</span>, <span class="string">"127.0.0.1:61613"</span>)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		log.Fatal(err)</div><div class="line">		<span class="keyword">return</span></div><div class="line">	&#125;</div><div class="line">	<span class="keyword">defer</span> conn.Disconnect()</div><div class="line"></div><div class="line">	b.N = pubMsgCount</div><div class="line">	b.ReportAllocs()</div><div class="line">	b.ResetTimer()</div><div class="line"></div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; b.N; i++ &#123;</div><div class="line">		err = conn.Send(</div><div class="line">			stompDestination, <span class="comment">// destination</span></div><div class="line">			<span class="string">"text/plain"</span>,     <span class="comment">// content-type</span></div><div class="line">			msgData) <span class="comment">// body</span></div><div class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">			log.Error(err)</div><div class="line">			<span class="keyword">return</span></div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkAmqpPublish</span><span class="params">(b *testing.B)</span></span> &#123;</div><div class="line">	<span class="comment">// Create client</span></div><div class="line">	client, err := amqp.Dial(<span class="string">"amqp://127.0.0.1"</span>,</div><div class="line">		amqp.ConnSASLPlain(<span class="string">"system"</span>, <span class="string">"manager"</span>),</div><div class="line">	)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		log.Fatal(<span class="string">"Dialing AMQP server:"</span>, err)</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">defer</span> client.Close()</div><div class="line"></div><div class="line">	<span class="comment">// Open a session</span></div><div class="line">	session, err := client.NewSession()</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		log.Fatal(<span class="string">"Creating AMQP session:"</span>, err)</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">		ctx, cancel := context.WithTimeout(context.Background(), <span class="number">10</span>*time.Second)</div><div class="line">		<span class="keyword">defer</span> cancel()</div><div class="line">		err = session.Close(ctx)</div><div class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">			log.Errorf(<span class="string">"failed to close session:%s"</span>, err)</div><div class="line">			<span class="keyword">return</span></div><div class="line">		&#125;</div><div class="line">		<span class="comment">//log.Info("session close")</span></div><div class="line">	&#125;()</div><div class="line"></div><div class="line">	<span class="comment">// Create a sender</span></div><div class="line">	sender, err := session.NewSender(</div><div class="line">		amqp.LinkTargetAddress(amqpDestination),</div><div class="line">		amqp.LinkSourceDurability(amqp.DurabilityUnsettledState),</div><div class="line">		amqp.LinkSourceExpiryPolicy(amqp.ExpiryNever),</div><div class="line">	)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		log.Fatal(<span class="string">"Creating sender link:"</span>, err)</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">		ctx, cancel := context.WithTimeout(context.Background(), <span class="number">10</span>*time.Second)</div><div class="line">		<span class="keyword">defer</span> cancel()</div><div class="line">		err := sender.Close(ctx)</div><div class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">			log.Errorf(<span class="string">"failed to close sender:%s"</span>, err)</div><div class="line">			<span class="keyword">return</span></div><div class="line">		&#125;</div><div class="line">		<span class="comment">//log.Infof("sender close")</span></div><div class="line">	&#125;()</div><div class="line"></div><div class="line">	ctx := context.Background()</div><div class="line">	msg := amqp.NewMessage(msgData)</div><div class="line"></div><div class="line">	b.N = pubMsgCount</div><div class="line">	b.ReportAllocs()</div><div class="line">	b.ResetTimer()</div><div class="line"></div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; b.N; i++ &#123;</div><div class="line">		<span class="comment">// Send message</span></div><div class="line">		err = sender.Send(ctx, msg)</div><div class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">			log.Fatal(<span class="string">"Sending message:"</span>, err)</div><div class="line">		&#125;</div><div class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">			log.Fatal(err)</div><div class="line">			<span class="keyword">return</span></div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkMqttPublish</span><span class="params">(b *testing.B)</span></span> &#123;</div><div class="line">	opt := mqtt.NewClientOptions().SetClientID(<span class="string">"pubClient"</span>).SetCleanSession(<span class="literal">false</span>)</div><div class="line">	opt.AddBroker(<span class="string">"tcp://127.0.0.1:1883"</span>)</div><div class="line">	client := mqtt.NewClient(opt)</div><div class="line">	t := client.Connect()</div><div class="line">	err := t.Error()</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		log.Fatal(err)</div><div class="line">		<span class="keyword">return</span></div><div class="line">	&#125;</div><div class="line">	<span class="keyword">if</span> t.Wait() &#123;</div><div class="line">		err := t.Error()</div><div class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">			log.Fatal(err)</div><div class="line">			<span class="keyword">return</span></div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">		client.Disconnect(<span class="number">10000</span>)</div><div class="line">	&#125;()</div><div class="line"></div><div class="line">	b.N = pubMsgCount</div><div class="line">	b.ReportAllocs()</div><div class="line">	b.ResetTimer()</div><div class="line"></div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; b.N; i++ &#123;</div><div class="line">		token := client.Publish(mqttDestination, <span class="number">2</span>, <span class="literal">true</span>, msgData)</div><div class="line">		err := token.Error()</div><div class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">			log.Fatal(err)</div><div class="line">			<span class="keyword">return</span></div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkStompSubscriber</span><span class="params">(b *testing.B)</span></span> &#123;</div><div class="line">	conn, err := stomp.Dial(<span class="string">"tcp"</span>, <span class="string">"127.0.0.1:61613"</span>)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		log.Fatal(err)</div><div class="line">		<span class="keyword">return</span></div><div class="line">	&#125;</div><div class="line">	clientID := <span class="string">"1"</span></div><div class="line">	<span class="comment">//defer conn.Disconnect()</span></div><div class="line">	sub, err := conn.Subscribe(stompDestination, stomp.AckClientIndividual, stomp.SubscribeOpt.Id(clientID))</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		log.Fatal(err)</div><div class="line">		<span class="keyword">return</span></div><div class="line">	&#125;</div><div class="line">	<span class="comment">//defer func() &#123;</span></div><div class="line">	<span class="comment">//	err := sub.Unsubscribe()</span></div><div class="line">	<span class="comment">//	if err != nil &#123;</span></div><div class="line">	<span class="comment">//		log.Fatal(clientID, err)</span></div><div class="line">	<span class="comment">//		return</span></div><div class="line">	<span class="comment">//	&#125;</span></div><div class="line">	<span class="comment">//	return</span></div><div class="line">	<span class="comment">//&#125;()</span></div><div class="line">	ctx, cancel := context.WithTimeout(context.Background(), <span class="number">100</span>*time.Second)</div><div class="line">	<span class="keyword">defer</span> cancel()</div><div class="line"></div><div class="line">	b.N = subMsgCount</div><div class="line">	b.ReportAllocs()</div><div class="line">	b.ResetTimer()</div><div class="line">	<span class="keyword">defer</span> b.StopTimer()</div><div class="line">	<span class="keyword">var</span> i <span class="keyword">int64</span> = <span class="number">0</span></div><div class="line"></div><div class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">		<span class="keyword">for</span> <span class="keyword">range</span> time.Tick(time.Second) &#123;</div><div class="line">			<span class="keyword">if</span> atomic.LoadInt64(&amp;i) &gt;= <span class="keyword">int64</span>(b.N) &#123;</div><div class="line">				cancel()</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	&#125;()</div><div class="line"></div><div class="line">	<span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">		<span class="comment">//log.Info("close")</span></div><div class="line">	&#125;()</div><div class="line">	<span class="keyword">for</span> &#123;</div><div class="line">		<span class="keyword">select</span> &#123;</div><div class="line">		<span class="keyword">case</span> m := &lt;-sub.C:</div><div class="line">			<span class="keyword">if</span> m.Err != <span class="literal">nil</span> &#123;</div><div class="line">				log.Fatal(m.Err)</div><div class="line">				<span class="keyword">return</span></div><div class="line">			&#125;</div><div class="line">			m.Conn.Ack(m)</div><div class="line">			i++</div><div class="line">			<span class="keyword">if</span> atomic.LoadInt64(&amp;i) &gt; <span class="keyword">int64</span>(b.N) &#123;</div><div class="line">				<span class="keyword">return</span></div><div class="line">			&#125;</div><div class="line">		<span class="keyword">case</span> &lt;-ctx.Done():</div><div class="line">			<span class="keyword">return</span></div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkAmqpSubscriber</span><span class="params">(b *testing.B)</span></span> &#123;</div><div class="line">	<span class="comment">// Create client</span></div><div class="line">	client, err := amqp.Dial(<span class="string">"amqp://127.0.0.1"</span>,</div><div class="line">		amqp.ConnSASLPlain(<span class="string">"system"</span>, <span class="string">"manager"</span>),</div><div class="line">	)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		log.Fatal(<span class="string">"Dialing AMQP server:"</span>, err)</div><div class="line">	&#125;</div><div class="line">	<span class="comment">//defer client.Close()</span></div><div class="line"></div><div class="line">	<span class="comment">// Open a session</span></div><div class="line">	session, err := client.NewSession()</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		log.Fatal(<span class="string">"Creating AMQP session:"</span>, err)</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	clientID := <span class="string">"1"</span></div><div class="line">	<span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">		ctx, cancel := context.WithTimeout(context.Background(), <span class="number">10</span>*time.Second)</div><div class="line">		<span class="keyword">defer</span> cancel()</div><div class="line">		err := session.Close(ctx)</div><div class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">			log.Errorf(<span class="string">"%s failed to close session:%s"</span>, clientID, err)</div><div class="line">			<span class="keyword">return</span></div><div class="line">		&#125;</div><div class="line">		<span class="comment">//log.Errorf("%s session close", clientID)</span></div><div class="line">	&#125;()</div><div class="line"></div><div class="line">	<span class="comment">// Continuously read messages</span></div><div class="line">	<span class="comment">// Create a receiver</span></div><div class="line">	receiver, err := session.NewReceiver(</div><div class="line">		amqp.LinkSourceAddress(amqpDestination),</div><div class="line">		amqp.LinkCredit(<span class="number">10</span>),</div><div class="line">	)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		log.Fatal(<span class="string">"Creating receiver link:"</span>, err)</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">		ctx, cancel := context.WithTimeout(context.Background(), <span class="number">10</span>*time.Second)</div><div class="line">		<span class="keyword">defer</span> cancel()</div><div class="line">		err := receiver.Close(ctx)</div><div class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">			log.Errorf(<span class="string">"%s failed to close receiver:%s"</span>, clientID, err)</div><div class="line">			<span class="keyword">return</span></div><div class="line">		&#125;</div><div class="line">		<span class="comment">//log.Errorf("%s receiver close", clientID)</span></div><div class="line">	&#125;()</div><div class="line">	ctx, cancel := context.WithTimeout(context.Background(), <span class="number">100</span>*time.Second)</div><div class="line">	<span class="keyword">defer</span> cancel()</div><div class="line"></div><div class="line">	b.N = subMsgCount</div><div class="line">	b.ReportAllocs()</div><div class="line">	b.ResetTimer()</div><div class="line">	<span class="keyword">defer</span> b.StopTimer()</div><div class="line">	<span class="keyword">var</span> i <span class="keyword">int64</span> = <span class="number">0</span></div><div class="line"></div><div class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">		<span class="keyword">for</span> <span class="keyword">range</span> time.Tick(time.Second) &#123;</div><div class="line">			<span class="keyword">if</span> atomic.LoadInt64(&amp;i) &gt;= <span class="keyword">int64</span>(b.N) &#123;</div><div class="line">				cancel()</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	&#125;()</div><div class="line">	<span class="keyword">for</span> &#123;</div><div class="line">		<span class="comment">// Receive next message</span></div><div class="line">		msg, err := receiver.Receive(ctx)</div><div class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">			<span class="keyword">if</span> err == context.Canceled &#123;</div><div class="line">				log.Infof(<span class="string">"Reading message from AMQP:%s"</span>, err)</div><div class="line">				<span class="keyword">break</span></div><div class="line">			&#125;</div><div class="line">			log.Errorf(<span class="string">"Reading message from AMQP:%s"</span>, err)</div><div class="line">			<span class="keyword">break</span></div><div class="line">		&#125;</div><div class="line">		<span class="comment">//log.Infof("%s msg body:%s value:%T %s", clientID, msg.GetData(), msg.Value, msg.Value)</span></div><div class="line">		<span class="comment">// Accept message</span></div><div class="line">		msg.Accept()</div><div class="line">		atomic.AddInt64(&amp;i, <span class="number">1</span>)</div><div class="line">		<span class="keyword">if</span> atomic.LoadInt64(&amp;i) &gt; <span class="keyword">int64</span>(b.N) &#123;</div><div class="line">			<span class="comment">//log.Info("return")</span></div><div class="line">			<span class="keyword">return</span></div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkMqttSubscriber</span><span class="params">(b *testing.B)</span></span> &#123;</div><div class="line">	opt := mqtt.NewClientOptions().SetClientID(<span class="string">"subClient"</span>).SetCleanSession(<span class="literal">false</span>)</div><div class="line">	opt.AddBroker(<span class="string">"tcp://127.0.0.1:1883"</span>)</div><div class="line">	client := mqtt.NewClient(opt)</div><div class="line">	t := client.Connect()</div><div class="line">	<span class="keyword">if</span> t.Wait() &#123;</div><div class="line">		err := t.Error()</div><div class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">			log.Fatal(err)</div><div class="line">			<span class="keyword">return</span></div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">		client.Disconnect(<span class="number">1000</span>)</div><div class="line">	&#125;()</div><div class="line"></div><div class="line">	ctx, cancel := context.WithTimeout(context.Background(), <span class="number">100</span>*time.Second)</div><div class="line">	<span class="keyword">defer</span> cancel()</div><div class="line"></div><div class="line">	b.N = subMsgCount</div><div class="line">	b.ReportAllocs()</div><div class="line">	b.ResetTimer()</div><div class="line">	<span class="keyword">defer</span> b.StopTimer()</div><div class="line">	<span class="keyword">var</span> i <span class="keyword">int64</span> = <span class="number">0</span></div><div class="line"></div><div class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">		<span class="keyword">for</span> <span class="keyword">range</span> time.Tick(time.Second) &#123;</div><div class="line">			<span class="keyword">if</span> atomic.LoadInt64(&amp;i) &gt;= <span class="keyword">int64</span>(b.N) &#123;</div><div class="line">				cancel()</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	&#125;()</div><div class="line">	client.Subscribe(mqttDestination, <span class="number">2</span>, <span class="function"><span class="keyword">func</span><span class="params">(c mqtt.Client, m mqtt.Message)</span></span> &#123;</div><div class="line">		<span class="comment">//log.Infof("%s msg body:%s", "1", m.Payload())</span></div><div class="line">		m.Ack()</div><div class="line">		atomic.AddInt64(&amp;i, <span class="number">1</span>)</div><div class="line">		<span class="keyword">if</span> atomic.LoadInt64(&amp;i) &gt; <span class="keyword">int64</span>(b.N) &#123;</div><div class="line">			<span class="comment">//log.Info("return")</span></div><div class="line">			<span class="keyword">return</span></div><div class="line">		&#125;</div><div class="line">	&#125;)</div><div class="line">	<span class="keyword">select</span> &#123;</div><div class="line">	<span class="keyword">case</span> &lt;-ctx.Done():</div><div class="line">		<span class="keyword">break</span></div><div class="line">	&#125;</div><div class="line">	log.Info(<span class="string">"close sub"</span>)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="https://imhanjm.com/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/" data-id="cjrudmkfg002wm9stird8gq97" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+        <a href="https://imhanjm.com/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/">评论</a>
+    
+
+        </footer>
+    </div>
+    
+</article>
+
+
+
     <article id="post-macos docker container连接宿主机172.17.0.1的办法" class="article article-type-post" itemscope itemprop="blogPost">
     <div class="article-inner">
         
@@ -288,7 +468,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2018/12/16/macos docker container连接宿主机172.17.0.1的办法/" data-id="cjqi35zie001701st3q401xst" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2018/12/16/macos docker container连接宿主机172.17.0.1的办法/" data-id="cjrudmkei001vm9sttolc7cb9" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -366,150 +546,8 @@ ga('send', 'pageview');
 
 
 
-    <article id="post-Nginx with gRPC编译安装" class="article article-type-post" itemscope itemprop="blogPost">
-    <div class="article-inner">
-        
-        
-            <header class="article-header">
-                
-    
-        <h1 itemprop="name">
-            <a class="article-title" href="/2018/12/15/Nginx with gRPC编译安装/">Nginx With gRPC编译安装</a>
-        </h1>
-    
-
-                
-                    <div class="article-meta">
-                        
-    <div class="article-date">
-        <i class="fa fa-calendar"></i>
-        <a href="/2018/12/15/Nginx with gRPC编译安装/">
-            <time datetime="2018-12-14T16:00:00.000Z" itemprop="datePublished">2018-12-15</time>
-        </a>
-    </div>
-
-
-                        
-                        
-    <div class="article-tag">
-        <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/GRPC/">GRPC</a>, <a class="tag-link" href="/tags/HTTP2/">HTTP2</a>, <a class="tag-link" href="/tags/Nginx/">Nginx</a>
-    </div>
-
-                    </div>
-                
-            </header>
-        
-        
-        <div class="article-entry" itemprop="articleBody">
-        
-            
-            <p>之前写过nginx HTTP2编译安装的文章, 最近想探索下nginx with gRPC support, 所以更新一下.</p>
-<p>yum apt等包管理系统安装的软件有时候比较旧, 导致一些莫名其妙的问题. 最近在给Nginx加HTTP/2模块中, 编译时加上了<code>--with-http_v2_module</code>参数, 但Chrome请求发现还是不是http2, 后面发现是OpenSSL版本太低. 踩过这一坑后, 感觉Linux下部分软件最好还是自己编译安装比较妥, 如果编译过程出错, 搜下错误信息, 一般是基础依赖没有安装, 很好解决.</p>
-<p>官方的源码编译指南<br><a href="https://nginx.org/en/docs/configure.html" target="_blank" rel="external">https://nginx.org/en/docs/configure.html</a><br><a href="https://nginx.org/en/docs/http/ngx_http_v2_module.html" target="_blank" rel="external">https://nginx.org/en/docs/http/ngx_http_v2_module.html</a> (这里写了需要OpenSSL1.0.2以上版本), 很多选项都有合适的默认值, 比如–prefix=/usr/local/nginx, 所以只需要指定自己需要的字段</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">--user=www-data // 习惯将web相关的服务以www-data用户运行, 如没有此用户可以创建一个也可不加此项按默认nobody用户</div><div class="line">--group=www-data</div><div class="line">--with-http_v2_module // 默认选项不带http2</div><div class="line">--with-http_ssl_module // 默认选项不带ssl, 上http2必须要上ssl的</div><div class="line">--with-stream // https://nginx.org/en/docs/stream/ngx_stream_core_module.html</div><div class="line">--with-openssl // 指定OpenSSL</div><div class="line">--with-pcre=./pcre-8.40 // 需要(version 4.4 — 8.40)的pcre,注意Nginx不支持pcre2</div><div class="line">--with-pcre-jit // 打开pcre JIT支持</div><div class="line">--with-zlib=./zlib-1.2.11 // 需要(version 1.1.3 — 1.2.11)的zlib以支持gzip</div></pre></td></tr></table></figure>
-<p>1.<a href="https://nginx.org/en/download.html" target="_blank" rel="external">官网下载Nginx包</a></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">cd /usr/local</div><div class="line">wget https://nginx.org/download/nginx-1.14.2.tar.gz</div><div class="line">tar -zxf nginx-1.14.2.tar.gz</div><div class="line">cd nginx-1.14.2</div></pre></td></tr></table></figure>
-<p>2.[官网下载OpenSSL 1.0.2以上版本].<a href="https://github.com/openssl/openssl/releases" target="_blank" rel="external">https://github.com/openssl/openssl/releases</a></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">cd nginx-1.14.2</div><div class="line">wget https://github.com/openssl/openssl/archive/OpenSSL_1_1_0e.tar.gz</div><div class="line">tar -zxf OpenSSL_1_1_0e.tar.gz</div></pre></td></tr></table></figure>
-<p>2.<a href="https://ftp.pcre.org/pub/pcre/" target="_blank" rel="external">官网下载pcre</a></p>
-<p>注意Nginx不支持pcre2,下载pcre最新版即可. 解压到Nginx解压的目录</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">cd nginx-1.14.2</div><div class="line">wget https://ftp.pcre.org/pub/pcre/pcre-8.40.tar.gz</div><div class="line">tar -zxf pcre-8.40.tar.gz</div></pre></td></tr></table></figure>
-<p>4.<a href="http://zlib.net/" target="_blank" rel="external">官网下载zlib</a>(version 1.1.3 — 1.2.11)</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">cd nginx-1.14.2</div><div class="line">wget http://zlib.net/zlib-1.2.11.tar.gz</div><div class="line">tar -zxf zlib-1.2.11.tar.gz</div></pre></td></tr></table></figure>
-<p>5.编译并安装</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">./configure \</div><div class="line">--user=nginx \</div><div class="line">--group=nginx \</div><div class="line">--conf-path=/etc/nginx/nginx.conf \</div><div class="line">--with-http_v2_module \</div><div class="line">--with-http_ssl_module \</div><div class="line">--with-stream \</div><div class="line">--with-openssl=./openssl-OpenSSL_1_1_0e \</div><div class="line">--with-pcre=./pcre-8.40 --with-pcre-jit \</div><div class="line">--with-zlib=./zlib-1.2.11</div><div class="line">make &amp;&amp; make install</div></pre></td></tr></table></figure>
-<p>6.为了方便操作,软链/usr/local/nginx/sbin/nginx到/usr/local/bin</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><div class="line">ln -sf /usr/local/nginx/sbin/nginx /usr/local/bin</div></pre></td></tr></table></figure>
-        
-        </div>
-        <footer class="article-footer">
-            <div class="share-container">
-
-
-
-</div>
-
-    <a data-url="https://imhanjm.com/2018/12/15/Nginx with gRPC编译安装/" data-id="cjqi35zi6000z01str7zjj247" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
-<script>
-    (function ($) {
-        // Prevent duplicate binding
-        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
-            __SHARE_BUTTON_BINDED__ = true;
-        } else {
-            return;
-        }
-        $('body').on('click', function() {
-            $('.article-share-box.on').removeClass('on');
-        }).on('click', '.article-share-link', function(e) {
-            e.stopPropagation();
-
-            var $this = $(this),
-                url = $this.attr('data-url'),
-                encodedUrl = encodeURIComponent(url),
-                id = 'article-share-box-' + $this.attr('data-id'),
-                offset = $this.offset(),
-                box;
-
-            if ($('#' + id).length) {
-                box = $('#' + id);
-
-                if (box.hasClass('on')){
-                    box.removeClass('on');
-                    return;
-                }
-            } else {
-                var html = [
-                    '<div id="' + id + '" class="article-share-box">',
-                        '<input class="article-share-input" value="' + url + '">',
-                        '<div class="article-share-links">',
-                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
-                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
-                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
-                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
-                        '</div>',
-                    '</div>'
-                ].join('');
-
-              box = $(html);
-
-              $('body').append(box);
-            }
-
-            $('.article-share-box.on').hide();
-
-            box.css({
-                top: offset.top + 25,
-                left: offset.left
-            }).addClass('on');
-
-        }).on('click', '.article-share-box', function (e) {
-            e.stopPropagation();
-        }).on('click', '.article-share-box-input', function () {
-            $(this).select();
-        }).on('click', '.article-share-box-link', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
-        });
-    })(jQuery);
-</script>
-
-            
-    
-        <a href="https://imhanjm.com/2018/12/15/Nginx with gRPC编译安装/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2018/12/15/Nginx with gRPC编译安装/">评论</a>
-    
-
-        </footer>
-    </div>
-    
-</article>
-
-
-
     <nav id="page-nav">
-        <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/2/">下一页 &raquo;</a>
+        <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/12/">12</a><a class="extend next" rel="next" href="/page/2/">下一页 &raquo;</a>
     </nav>
 </section>
             
@@ -520,6 +558,25 @@ ga('send', 'pageview');
         <h3 class="widget-title">最新文章</h3>
         <div class="widget">
             <ul id="recent-post" class="">
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/" class="title">深入理解ActiveMQ消息队列协议STMOP AMQP MQTT</a></p>
+                            <p class="item-date"><time datetime="2019-02-06T16:00:00.000Z" itemprop="datePublished">2019-02-07</time></p>
+                        </div>
+                    </li>
                 
                     <li>
                         
@@ -597,25 +654,6 @@ ga('send', 'pageview');
                         </div>
                     </li>
                 
-                    <li>
-                        
-                        <div class="item-thumbnail">
-                            <a href="/2018/10/06/GRPC文档阅读心得/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"></p>
-                            <p class="item-title"><a href="/2018/10/06/GRPC文档阅读心得/" class="title">GRPC文档阅读心得</a></p>
-                            <p class="item-date"><time datetime="2018-10-05T16:00:00.000Z" itemprop="datePublished">2018-10-06</time></p>
-                        </div>
-                    </li>
-                
             </ul>
         </div>
     </div>
@@ -627,7 +665,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">归档</h3>
         <div class="widget">
-            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">1</span></li></ul>
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">二月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -636,7 +674,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签</h3>
         <div class="widget">
-            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/172-17-0-1/">172.17.0.1</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cool-tools/">Cool tools</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Error-handling/">Error handling</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRPC/">GRPC</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP2/">HTTP2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Macos/">Macos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS/">NATS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS-Streaming/">NATS Streaming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/">Nginx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bench/">bench</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/decimal/">decimal</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker-for-mac/">docker for mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grpc-go/">grpc-go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/influxdb/">influxdb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log/">log</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/时间处理/">时间处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/架构/">架构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/连接池/">连接池</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/错误处理/">错误处理</a><span class="tag-list-count">1</span></li></ul>
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/172-17-0-1/">172.17.0.1</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cool-tools/">Cool tools</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Error-handling/">Error handling</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRPC/">GRPC</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP2/">HTTP2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Macos/">Macos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS/">NATS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS-Streaming/">NATS Streaming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/">Nginx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/activemq/">activemq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bench/">bench</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/decimal/">decimal</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker-for-mac/">docker for mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grpc-go/">grpc-go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/influxdb/">influxdb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log/">log</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/messageQueue/">messageQueue</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mq/">mq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pubsub/">pubsub</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/时间处理/">时间处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/架构/">架构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/连接池/">连接池</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/错误处理/">错误处理</a><span class="tag-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -645,7 +683,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/172-17-0-1/" style="font-size: 10px;">172.17.0.1</a> <a href="/tags/Cool-tools/" style="font-size: 15px;">Cool tools</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/Error-handling/" style="font-size: 10px;">Error handling</a> <a href="/tags/GRPC/" style="font-size: 15px;">GRPC</a> <a href="/tags/Go/" style="font-size: 20px;">Go</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/HTTP2/" style="font-size: 10px;">HTTP2</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Macos/" style="font-size: 10px;">Macos</a> <a href="/tags/NATS/" style="font-size: 10px;">NATS</a> <a href="/tags/NATS-Streaming/" style="font-size: 10px;">NATS Streaming</a> <a href="/tags/Nginx/" style="font-size: 15px;">Nginx</a> <a href="/tags/bench/" style="font-size: 10px;">bench</a> <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a> <a href="/tags/decimal/" style="font-size: 10px;">decimal</a> <a href="/tags/docker-for-mac/" style="font-size: 10px;">docker for mac</a> <a href="/tags/grpc-go/" style="font-size: 10px;">grpc-go</a> <a href="/tags/influxdb/" style="font-size: 10px;">influxdb</a> <a href="/tags/log/" style="font-size: 10px;">log</a> <a href="/tags/mysql/" style="font-size: 15px;">mysql</a> <a href="/tags/时间处理/" style="font-size: 10px;">时间处理</a> <a href="/tags/架构/" style="font-size: 10px;">架构</a> <a href="/tags/消息队列/" style="font-size: 10px;">消息队列</a> <a href="/tags/连接池/" style="font-size: 10px;">连接池</a> <a href="/tags/错误处理/" style="font-size: 10px;">错误处理</a>
+            <a href="/tags/172-17-0-1/" style="font-size: 10px;">172.17.0.1</a> <a href="/tags/Cool-tools/" style="font-size: 15px;">Cool tools</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/Error-handling/" style="font-size: 10px;">Error handling</a> <a href="/tags/GRPC/" style="font-size: 15px;">GRPC</a> <a href="/tags/Go/" style="font-size: 20px;">Go</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/HTTP2/" style="font-size: 10px;">HTTP2</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Macos/" style="font-size: 10px;">Macos</a> <a href="/tags/NATS/" style="font-size: 10px;">NATS</a> <a href="/tags/NATS-Streaming/" style="font-size: 10px;">NATS Streaming</a> <a href="/tags/Nginx/" style="font-size: 15px;">Nginx</a> <a href="/tags/activemq/" style="font-size: 10px;">activemq</a> <a href="/tags/bench/" style="font-size: 10px;">bench</a> <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a> <a href="/tags/decimal/" style="font-size: 10px;">decimal</a> <a href="/tags/docker-for-mac/" style="font-size: 10px;">docker for mac</a> <a href="/tags/grpc-go/" style="font-size: 10px;">grpc-go</a> <a href="/tags/influxdb/" style="font-size: 10px;">influxdb</a> <a href="/tags/log/" style="font-size: 10px;">log</a> <a href="/tags/messageQueue/" style="font-size: 10px;">messageQueue</a> <a href="/tags/mq/" style="font-size: 10px;">mq</a> <a href="/tags/mysql/" style="font-size: 15px;">mysql</a> <a href="/tags/pubsub/" style="font-size: 10px;">pubsub</a> <a href="/tags/时间处理/" style="font-size: 10px;">时间处理</a> <a href="/tags/架构/" style="font-size: 10px;">架构</a> <a href="/tags/消息队列/" style="font-size: 10px;">消息队列</a> <a href="/tags/连接池/" style="font-size: 10px;">连接池</a> <a href="/tags/错误处理/" style="font-size: 10px;">错误处理</a>
         </div>
     </div>
 
