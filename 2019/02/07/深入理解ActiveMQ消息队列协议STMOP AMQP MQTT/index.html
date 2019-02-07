@@ -12,7 +12,7 @@
 <meta property="og:url" content="https://imhanjm.com/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/index.html">
 <meta property="og:site_name" content="hello">
 <meta property="og:description" content="前言AWS MQ是完全托管的 ActiveMQ 服务, 最近需要使用, 于是学习其文档, 实践其特性, 由于 ActiveMQ 支持非常丰富的协议, OpenWire amqp stomp mqtt, 所以也学习了各大协议的特性及其SDK. 安装本地开发最方便的方式当然是docker了, rmohr/activemq 文档比较好的且有5.16.5版本的tag. 需要注意的是, 首先要根据其dock">
-<meta property="og:updated_time" content="2019-02-07T13:07:18.990Z">
+<meta property="og:updated_time" content="2019-02-07T13:08:08.624Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入理解ActiveMQ消息队列协议STMOP AMQP MQTT">
 <meta name="twitter:description" content="前言AWS MQ是完全托管的 ActiveMQ 服务, 最近需要使用, 于是学习其文档, 实践其特性, 由于 ActiveMQ 支持非常丰富的协议, OpenWire amqp stomp mqtt, 所以也学习了各大协议的特性及其SDK. 安装本地开发最方便的方式当然是docker了, rmohr/activemq 文档比较好的且有5.16.5版本的tag. 需要注意的是, 首先要根据其dock">
@@ -319,7 +319,7 @@ ga('send', 'pageview');
 <h1 id="一些细节行为"><a href="#一些细节行为" class="headerlink" title="一些细节行为"></a>一些细节行为</h1><p><a href="http://activemq.apache.org/using-apache-activemq.html" target="_blank" rel="external">官方的FAQ</a>里面写了一些实现的细节</p>
 <ol>
 <li>如果producer比较快而consumer比较慢的话, ActiveMQ的流量控制功能使得producer阻塞. <a href="http://activemq.apache.org/what-happens-with-a-fast-producer-and-slow-consumer.html" target="_blank" rel="external">http://activemq.apache.org/what-happens-with-a-fast-producer-and-slow-consumer.html</a></li>
-<li></li>
+<li>不支持消费者拿到消息之后Requeue, 即不支持像NSQ那样的消费者出现业务逻辑错误后重试</li>
 </ol>
 
         
@@ -331,7 +331,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/" data-id="cjrumzq2l0030eestnf2uo8jt" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/" data-id="cjrun0r500034f4st24d8w4tl" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
