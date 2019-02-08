@@ -5,17 +5,17 @@
     
     <title>深入理解ActiveMQ消息队列协议STMOP AMQP MQTT | hello</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <meta name="description" content="前言AWS MQ是完全托管的 ActiveMQ 服务, 最近需要使用, 于是学习其文档, 实践其特性, 由于 ActiveMQ 支持非常丰富的协议, OpenWire amqp stomp mqtt, 所以也学习了各大协议的特性及其SDK. 安装本地开发最方便的方式当然是docker了, rmohr/activemq 文档比较好的且有5.16.5版本的tag. 需要注意的是, 首先要根据其dock">
+    <meta name="description" content="前言AWS MQ是完全托管的 ActiveMQ 服务, 最近需要使用, 于是学习其文档, 实践其特性, 由于 ActiveMQ 支持非常丰富的协议, OpenWire amqp stomp mqtt, 所以也学习了各大协议的特性及其SDK. 安装本地开发最方便的方式当然是docker了, rmohr/activemq 文档比较好的且有aws支持的5.15.6版本的tag. 需要注意的是, 首先要根">
 <meta name="keywords" content="activemq,mq,messageQueue,pubsub">
 <meta property="og:type" content="article">
 <meta property="og:title" content="深入理解ActiveMQ消息队列协议STMOP AMQP MQTT">
 <meta property="og:url" content="https://imhanjm.com/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/index.html">
 <meta property="og:site_name" content="hello">
-<meta property="og:description" content="前言AWS MQ是完全托管的 ActiveMQ 服务, 最近需要使用, 于是学习其文档, 实践其特性, 由于 ActiveMQ 支持非常丰富的协议, OpenWire amqp stomp mqtt, 所以也学习了各大协议的特性及其SDK. 安装本地开发最方便的方式当然是docker了, rmohr/activemq 文档比较好的且有5.16.5版本的tag. 需要注意的是, 首先要根据其dock">
-<meta property="og:updated_time" content="2019-02-07T13:08:08.624Z">
+<meta property="og:description" content="前言AWS MQ是完全托管的 ActiveMQ 服务, 最近需要使用, 于是学习其文档, 实践其特性, 由于 ActiveMQ 支持非常丰富的协议, OpenWire amqp stomp mqtt, 所以也学习了各大协议的特性及其SDK. 安装本地开发最方便的方式当然是docker了, rmohr/activemq 文档比较好的且有aws支持的5.15.6版本的tag. 需要注意的是, 首先要根">
+<meta property="og:updated_time" content="2019-02-08T09:22:37.056Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入理解ActiveMQ消息队列协议STMOP AMQP MQTT">
-<meta name="twitter:description" content="前言AWS MQ是完全托管的 ActiveMQ 服务, 最近需要使用, 于是学习其文档, 实践其特性, 由于 ActiveMQ 支持非常丰富的协议, OpenWire amqp stomp mqtt, 所以也学习了各大协议的特性及其SDK. 安装本地开发最方便的方式当然是docker了, rmohr/activemq 文档比较好的且有5.16.5版本的tag. 需要注意的是, 首先要根据其dock">
+<meta name="twitter:description" content="前言AWS MQ是完全托管的 ActiveMQ 服务, 最近需要使用, 于是学习其文档, 实践其特性, 由于 ActiveMQ 支持非常丰富的协议, OpenWire amqp stomp mqtt, 所以也学习了各大协议的特性及其SDK. 安装本地开发最方便的方式当然是docker了, rmohr/activemq 文档比较好的且有aws支持的5.15.6版本的tag. 需要注意的是, 首先要根">
     
 
     
@@ -262,7 +262,7 @@ ga('send', 'pageview');
         
             
             <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>AWS MQ是完全托管的 ActiveMQ 服务, 最近需要使用, 于是学习其文档, 实践其特性, 由于 ActiveMQ 支持非常丰富的协议, OpenWire amqp stomp mqtt, 所以也学习了各大协议的特性及其SDK.</p>
-<h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><p>本地开发最方便的方式当然是docker了, <a href="https://hub.docker.com/r/rmohr/activemq/" target="_blank" rel="external">rmohr/activemq</a> 文档比较好的且有5.16.5版本的tag.</p>
+<h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><p>本地开发最方便的方式当然是docker了, <a href="https://hub.docker.com/r/rmohr/activemq/" target="_blank" rel="external">rmohr/activemq</a> 文档比较好的且有aws支持的5.15.6版本的tag.</p>
 <p>需要注意的是, 首先要根据其docker hub镜像文档上的几步操作, 将镜像中的默认配置文件复制到自定义的本机conf目录下 <code>/usr/local/activemq/conf</code>, 然后就快速地启动了一个默认配置的 ActiveMQ server</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><div class="line"><span class="meta">#</span> active mq</div><div class="line">docker run -itd --name activemq \</div><div class="line">-p 61616:61616 -p 8161:8161 -p 5672:5672 -p 61613:61613 -p 1883:1883 -p 61614:61614 \</div><div class="line">-v /usr/local/activemq/conf:/opt/activemq/conf \</div><div class="line">-v /usr/local/activemq/data:/opt/activemq/data \</div><div class="line">rmohr/activemq:5.15.6</div></pre></td></tr></table></figure>
 <hr>
@@ -280,6 +280,42 @@ ga('send', 'pageview');
 </li>
 </ul>
 <figure class="highlight xml"><table><tr><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">destinationInterceptors</span>&gt;</span> </div><div class="line">            <span class="tag">&lt;<span class="name">virtualDestinationInterceptor</span>&gt;</span> </div><div class="line">                <span class="tag">&lt;<span class="name">virtualDestinations</span>&gt;</span> </div><div class="line">                    <span class="tag">&lt;<span class="name">virtualTopic</span> <span class="attr">name</span>=<span class="string">"&gt;"</span> <span class="attr">prefix</span>=<span class="string">"Consumer.*."</span> <span class="attr">selectorAware</span>=<span class="string">"false"</span>/&gt;</span>    </div><div class="line">                <span class="tag">&lt;/<span class="name">virtualDestinations</span>&gt;</span></div><div class="line">            <span class="tag">&lt;/<span class="name">virtualDestinationInterceptor</span>&gt;</span> </div><div class="line"><span class="tag">&lt;/<span class="name">destinationInterceptors</span>&gt;</span></div></pre></td></tr></table></figure>
+<h3 id="Delay-amp-Schedule"><a href="#Delay-amp-Schedule" class="headerlink" title="Delay &amp; Schedule"></a>Delay &amp; Schedule</h3><p>ActiveMQ支持延时消息及定时消息, 在message header中带上如下字段即可, 其中AMQ_SCHEDULED_PERIOD的最大值是long的最大值, 所以可以设置延时很长时间.</p>
+<table>
+<thead>
+<tr>
+<th>Property name</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AMQ_SCHEDULED_DELAY</td>
+<td>long</td>
+<td>The time in milliseconds that a message will wait before being scheduled to be delivered by the broker</td>
+</tr>
+<tr>
+<td>AMQ_SCHEDULED_PERIOD</td>
+<td>long</td>
+<td>The time in milliseconds to wait after the start time to wait before scheduling the message again</td>
+</tr>
+<tr>
+<td>AMQ_SCHEDULED_REPEAT</td>
+<td>int</td>
+<td>The number of times to repeat scheduling a message for delivery</td>
+</tr>
+<tr>
+<td>AMQ_SCHEDULED_CRON</td>
+<td>String</td>
+<td>Use a Cron entry to set the schedule</td>
+</tr>
+</tbody>
+</table>
+<h3 id="Dead-Letter-Queue"><a href="#Dead-Letter-Queue" class="headerlink" title="Dead Letter Queue"></a>Dead Letter Queue</h3><p>如果broker投递给消费者消息, 没有ACK或NACK, 则会触发重新投递, 投递超过一定次数则会进入死信队列, 默认只有一个公共的死信队列<strong>ActiveMQ.DLQ</strong>, 如果需要给topic分别设置死信队列, 则要在修改activemq.xml.</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">broker</span>&gt;</span></div><div class="line">   </div><div class="line">  <span class="tag">&lt;<span class="name">destinationPolicy</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">policyMap</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">policyEntries</span>&gt;</span></div><div class="line">        <span class="comment">&lt;!-- Set the following policy on all queues using the '&gt;' wildcard --&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">policyEntry</span> <span class="attr">queue</span>=<span class="string">"&gt;"</span>&gt;</span></div><div class="line">          <span class="tag">&lt;<span class="name">deadLetterStrategy</span>&gt;</span></div><div class="line">            <span class="comment">&lt;!--</span></div><div class="line">              Use the prefix 'DLQ.' for the destination name, and make</div><div class="line">              the DLQ a queue rather than a topic</div><div class="line">            --&gt;</div><div class="line">            <span class="tag">&lt;<span class="name">individualDeadLetterStrategy</span> <span class="attr">queuePrefix</span>=<span class="string">"DLQ."</span> <span class="attr">useQueueForQueueMessages</span>=<span class="string">"true"</span>/&gt;</span></div><div class="line">          <span class="tag">&lt;/<span class="name">deadLetterStrategy</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">policyEntry</span>&gt;</span></div><div class="line">      <span class="tag">&lt;/<span class="name">policyEntries</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">policyMap</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">destinationPolicy</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">broker</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>默认非持久化的topic不会进入到死信队列中, 如果需要, 则修改activemq.xml, 加入</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><div class="line"><span class="comment">&lt;!-- </span></div><div class="line">	Tell the dead letter strategy to also place non-persisted messages </div><div class="line">	onto the dead-letter queue if they can't be delivered.</div><div class="line">--&gt;</div><div class="line"><span class="tag">&lt;<span class="name">deadLetterStrategy</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">...</span>  <span class="attr">processNonPersistent</span>=<span class="string">"true"</span> /&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">deadLetterStrategy</span>&gt;</span></div></pre></td></tr></table></figure>
 <hr>
 <h1 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h1><h3 id="STOMP"><a href="#STOMP" class="headerlink" title="STOMP"></a>STOMP</h3><p>STOMP是Simple (or Streaming) Text Orientated Messaging Protocol 的缩写, 设计思路借鉴了HTTP, 有content-type, header, body, frame based, text based等类似HTTP的相关概念, 设计文档 &lt; <a href="https://stomp.github.io/stomp-specification-1.2.html&gt;" target="_blank" rel="external">https://stomp.github.io/stomp-specification-1.2.html&gt;</a>, 非常得简洁, 一页就讲完了.</p>
 <h4 id="协议细节及特点"><a href="#协议细节及特点" class="headerlink" title="协议细节及特点:"></a>协议细节及特点:</h4><ol>
@@ -306,7 +342,7 @@ ga('send', 'pageview');
 <h2 id="AMQP"><a href="#AMQP" class="headerlink" title="AMQP"></a>AMQP</h2><p>AMQP相比 stomp mqtt 就复杂得多.</p>
 <h4 id="ActiveMQ作为AMQP-server"><a href="#ActiveMQ作为AMQP-server" class="headerlink" title="ActiveMQ作为AMQP server"></a>ActiveMQ作为AMQP server</h4><ol>
 <li>使用1.0协议.</li>
-<li>默认最大消息长度 <code>maxDataLength</code> 为 <code>104857600</code>, <code>maxFrameSize</code> 为 <code>MAX_LONG</code>, consumer持有的未确认最大消息数量<code>prefetch</code>为1000, <code>producerCredit</code>为10000. 可通过连接的URI设定.</li>
+<li>默认最大消息长度 <code>maxDataLength</code> 为 <code>104857600</code>(100MB), <code>maxFrameSize</code> 为 <code>MAX_LONG</code>, consumer持有的未确认最大消息数量<code>prefetch</code>为1000, <code>producerCredit</code>为10000. 可通过连接的URI设定.</li>
 <li>支持SSL.</li>
 <li>通过 <code>destination</code> 名字前缀是<code>queue://</code> 还是 <code>topic://</code> 来区分是 <code>queue</code> (生产消费模型)还是 <code>topic</code>(发布订阅模型). 真正的名字是去掉包括两个<code>/</code>符号的前缀后的.</li>
 </ol>
@@ -331,7 +367,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/" data-id="cjrun0r500034f4st24d8w4tl" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/" data-id="cjrvuesu7003b0astebg8eq1l" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
