@@ -14,7 +14,7 @@
 <meta property="og:description" content="最近我对Prometheus刮目相看了, 服务加一行代码就能轻轻松松地监控起来服务的CPU使用率、内存、协程数、线程数、打开的文件描述符数量及软限制、重启次数等重要的基本指标, 配合Grafana建立了直观的图表, 对查问题很有帮助, 故想写写折腾Prometheus和Grafana后得到的值得一讲的实践与理解.  介绍Prometheus是CNCF 的项目之一(ps.CNCF的项目代码都值得研究">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://ws1.sinaimg.cn/large/cfe1407cly1g7ps6uqg9gj22t81echdt.jpg">
-<meta property="og:updated_time" content="2019-10-07T11:56:09.394Z">
+<meta property="og:updated_time" content="2019-10-07T12:01:07.951Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入理解Prometheus(GO SDK及Grafana基本面板)">
 <meta name="twitter:description" content="最近我对Prometheus刮目相看了, 服务加一行代码就能轻轻松松地监控起来服务的CPU使用率、内存、协程数、线程数、打开的文件描述符数量及软限制、重启次数等重要的基本指标, 配合Grafana建立了直观的图表, 对查问题很有帮助, 故想写写折腾Prometheus和Grafana后得到的值得一讲的实践与理解.  介绍Prometheus是CNCF 的项目之一(ps.CNCF的项目代码都值得研究">
@@ -239,7 +239,7 @@ ga('send', 'pageview');
 <h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>Prometheus是<a href="https://www.cncf.io/" target="_blank" rel="noopener">CNCF</a> 的项目之一(ps.CNCF的项目代码都值得研究), 而且还是Graduated Projects. 同时因为其主要是方便灵活的pull方式, 暴露出个http接口出来给prometheusd拉取就行了, 而push方式客户端要做更多的事情, 如果要改push的地址的话就很麻烦, 所以很多著名的项目都在用它, 比如k8s, tidb, etcd, 甚至是时序数据库influxdb都在用它.</p>
 <p>我体会到, 很多场景很适合使用Prometheus sdk去加一些指标, 比如logger包, Error级别的消息数是一个很有用的指标; 对于消息队列的SDK, 可以用Prometheus收集客户端侧的发送时延、消费时延、消费处理耗时、消费处理出错等指标; 封装DB操作的SDK, 连接池打开的DB连接数与最大连接数是个很重要的指标; 写个HTTP Middleware, http handler的调用次数、处理时间和responseCode是感兴趣的指标.</p>
 <h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><p>Prometheus是Go写的, 故部署方便且跨平台, 一个二进制文件加配置文件就能跑起来.</p>
-<p><a href="https://github.com/prometheus/prometheus/releases" target="_blank" rel="noopener">GitHub release页面</a>有各个平台的编译好的二进制文件,通常配合supervisor等守护进程来服务化, 也可以用docker.</p>
+<p><a href="https://github.com/prometheus/prometheus/releases" target="_blank" rel="noopener">GitHub release页面</a>有各个平台的编译好的二进制文件,通常配合supervisor等进程管理工具来服务化, 也可以用docker.</p>
 <p><a href="https://prometheus.io/docs/prometheus/latest/getting_started/" target="_blank" rel="noopener">文档</a>上有基础的配置文件示例, 复制为<code>prometheus.yml</code>即可.</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">./prometheus --config.file=prometheus.yml</span><br></pre></td></tr></table></figure>
 <p><code>prometheus.yml</code>主要是定义一些全局的抓取间隔等参数以及抓取的job, 抓取的job可以指定名字、抓取间隔、抓取目标的IP端口号列表, 目标的路由路径, 额外的label等参数.</p>
@@ -295,7 +295,7 @@ ga('send', 'pageview');
 <li><p>带label的每次会去计算label值的hash找到对应的向量, 然后去计数, 所以label数不要太多, label值的长度不要太长, label值是要可枚举的并且不能太多, 否则执行查询时慢, 面板加载慢, 存储也费空间.   label如果可以提前计算则尽量使用GetMetricWithLabelValues提前计算好得到一个普通的计数器, 减少每次计数的一次计算label的hash, 提升程序性能.</p>
 <figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="comment">// GetMetricWithLabelValues replaces the method of the same name in</span></span><br><span class="line"><span class="comment">// MetricVec. The difference is that this method returns a Counter and not a</span></span><br><span class="line"><span class="comment">// Metric so that no type conversion is required.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(m *CounterVec)</span> <span class="title">GetMetricWithLabelValues</span><span class="params">(lvs ...<span class="keyword">string</span>)</span> <span class="params">(Counter, error)</span></span> &#123;</span><br><span class="line">   metric, err := m.MetricVec.GetMetricWithLabelValues(lvs...)</span><br><span class="line">   <span class="keyword">if</span> metric != <span class="literal">nil</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> metric.(Counter), err</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>对于时长time.Duration数据类型的指标值收集, time.Since是优化过的, 直接走runtimeNano, 无需走系统调用取当前时间, 性能优于time.Now后相减, 另外, 频繁调用time.Now在性能要求高的程序也会变成不小的开销.</p>
+<li><p>对于时长time.Duration数据类型的指标值收集, time.Since是优化过的, 直接走runtimeNano, 无需走系统调用取当前时间, 性能优于time.Now后相减, 另外, 频繁调用time.Now在性能要求高的程序中也会变成不小的开销.</p>
 </li>
 </ol>
 <h1 id="查询语句promQL"><a href="#查询语句promQL" class="headerlink" title="查询语句promQL"></a>查询语句promQL</h1><p>Prometheus查询语句(PromQL)是一个相比SQL更简单也很有表达力的专用查询语言, 通过文档及例子学习.</p>
@@ -340,7 +340,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2019/10/06/深入理解Prometheus(GO SDK)/" data-id="ck1gd0bx7002chaxqggjbdf3k" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2019/10/06/深入理解Prometheus(GO SDK)/" data-id="ck1gd6sm2002kjhxq6tq0g295" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
