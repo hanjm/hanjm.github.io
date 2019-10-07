@@ -1,27 +1,28 @@
 <!DOCTYPE html>
-<html lang=zh>
-<head>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.9.0">
     <meta charset="utf-8">
     
     <title>hello</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="description" content="hanjm&apos;s blog">
 <meta property="og:type" content="website">
 <meta property="og:title" content="hello">
 <meta property="og:url" content="https://imhanjm.com/page/12/index.html">
 <meta property="og:site_name" content="hello">
 <meta property="og:description" content="hanjm&apos;s blog">
+<meta property="og:locale" content="zh-CN">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="hello">
 <meta name="twitter:description" content="hanjm&apos;s blog">
     
 
     
-        <link rel="alternate" href="https://hanjm.github.io/atom.xml" title="hello" type="application/atom+xml" />
+        <link rel="alternate" href="https://hanjm.github.io/atom.xml" title="hello" type="application/atom+xml">
     
 
     
-        <link rel="icon" href="/css/images/favicon.ico" />
+        <link rel="icon" href="/css/images/favicon.ico">
     
 
     <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
@@ -55,7 +56,7 @@ ga('send', 'pageview');
 
 
 </head>
-
+</html>
 <body>
     <div id="container">
         <header id="header">
@@ -157,11 +158,11 @@ ga('send', 'pageview');
         </div>
         <div class="article-info profile-block">
             <div class="article-info-block">
-                23
+                24
                 <span>文章</span>
             </div>
             <div class="article-info-block">
-                30
+                32
                 <span>标签</span>
             </div>
         </div>
@@ -192,6 +193,164 @@ ga('send', 'pageview');
 
             
             <section id="main">
+    <article id="post-Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 itemprop="name">
+            <a class="article-title" href="/2017/03/21/Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比/">Python(Tornado Tornado+uvloop Tornado+uvloop2 Flask Sanic Django) Go(http Httprouter Fasthttp) RPS性能对比</a>
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2017/03/21/Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比/">
+            <time datetime="2017-03-20T16:00:00.000Z" itemprop="datePublished">2017-03-21</time>
+        </a>
+    </div>
+
+
+                        
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/bench/">bench</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>在v2ex上发现了一个Python的新web框架, Sanic, 基于uvloop, 其在<a href="https://github.com/channelcat/sanic" target="_blank" rel="noopener">GitHub上的性能数据</a>十分耀眼, 于是想跟其他用过的web框架对比一下性能, 跑个分嘛.</p>
+<h3 id="测试环境"><a href="#测试环境" class="headerlink" title="测试环境:"></a>测试环境:</h3><p>Python:3.6.0 Go:1.8.0</p>
+<h3 id="测试脚本"><a href="#测试脚本" class="headerlink" title="测试脚本:"></a>测试脚本:</h3><p>app用tmux启动, 然后使用Apache bench测试, n=1000, c=100, 每个app测5次</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">for session in test_tornado test_tornadouv test_tornadouv2 test_flask test_sanic</span><br><span class="line">do</span><br><span class="line">tmux kill-session -t $session &gt; /dev/null 2&gt;&amp;1</span><br><span class="line">sleep 1</span><br><span class="line">tmux new -s $session -d "/root/.pyenv/versions/3.6.0/bin/python $session.py"</span><br><span class="line">done</span><br><span class="line"><span class="meta">#</span> django</span><br><span class="line">tmux kill-session -t test_django</span><br><span class="line">sleep 1</span><br><span class="line">tmux new -s test_django -d "/root/.pyenv/versions/3.6.0/bin/python test_django/manage.py runserver 127.0.0.1:8893"</span><br><span class="line"></span><br><span class="line">for session in test_go_http test_go_httprouter test_go_fasthttp</span><br><span class="line">do</span><br><span class="line">tmux kill-session -t $session</span><br><span class="line">sleep 1</span><br><span class="line">tmux new -s $session -d "go run $session.go"</span><br><span class="line">done</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">for ((i=0;i&lt;5;i++))</span><br><span class="line">do</span><br><span class="line">echo $i</span><br><span class="line">ab -n 1000 -c 100 http://127.0.0.1:8888/ 2&gt; /dev/null |grep "Requests per second" |awk '&#123;printf "tornado-epoll  :%s\n",$0&#125;'</span><br><span class="line">ab -n 1000 -c 100 http://127.0.0.1:8889/ 2&gt; /dev/null |grep "Requests per second" |awk '&#123;printf "tornado-uvloop :%s\n",$0&#125;'</span><br><span class="line">ab -n 1000 -c 100 http://127.0.0.1:8890/ 2&gt; /dev/null |grep "Requests per second" |awk '&#123;printf "tornado-uvloop2:%s\n",$0&#125;'</span><br><span class="line">ab -n 1000 -c 100 http://127.0.0.1:8891/ 2&gt; /dev/null |grep "Requests per second" |awk '&#123;printf "flask          :%s\n",$0&#125;'</span><br><span class="line">ab -n 1000 -c 100 http://127.0.0.1:8892/ 2&gt; /dev/null |grep "Requests per second" |awk '&#123;printf "sanic          :%s\n",$0&#125;'</span><br><span class="line">ab -n 1000 -c 10  http://127.0.0.1:8893/ 2&gt; /dev/null |grep "Requests per second" |awk '&#123;printf "django         :%s\n",$0&#125;' # django自带的wsgi server 无法处理concurrent 100</span><br><span class="line">ab -n 1000 -c 100 http://127.0.0.1:8894/ 2&gt; /dev/null |grep "Requests per second" |awk '&#123;printf "go_http        :%s\n",$0&#125;'</span><br><span class="line">ab -n 1000 -c 100 http://127.0.0.1:8895/ 2&gt; /dev/null |grep "Requests per second" |awk '&#123;printf "go_httprouter  :%s\n",$0&#125;'</span><br><span class="line">ab -n 1000 -c 100 http://127.0.0.1:8896/ 2&gt; /dev/null |grep "Requests per second" |awk '&#123;printf "go_fasthttp    :%s\n",$0&#125;'</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+<h3 id="测试结果"><a href="#测试结果" class="headerlink" title="测试结果:"></a>测试结果:</h3><p>本机 <a href="mailto:i5-6600k@3.5GHZ" target="_blank" rel="noopener">i5-6600k@3.5GHZ</a> 四核16GB</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">0</span><br><span class="line">tornado-epoll  :Requests per second:    1714.60 [#/sec] (mean)</span><br><span class="line">tornado-uvloop :Requests per second:    1988.30 [#/sec] (mean)</span><br><span class="line">tornado-uvloop2:Requests per second:    1977.77 [#/sec] (mean)</span><br><span class="line">flask          :Requests per second:    2167.29 [#/sec] (mean)</span><br><span class="line">sanic          :Requests per second:    14221.72 [#/sec] (mean)</span><br><span class="line">django         :Requests per second:    1157.64 [#/sec] (mean)</span><br><span class="line">go_http        :Requests per second:    13847.92 [#/sec] (mean)</span><br><span class="line">go_httprouter  :Requests per second:    14595.34 [#/sec] (mean)</span><br><span class="line">go_fasthttp    :Requests per second:    12730.74 [#/sec] (mean)</span><br><span class="line">1</span><br><span class="line">tornado-epoll  :Requests per second:    2011.02 [#/sec] (mean)</span><br><span class="line">tornado-uvloop :Requests per second:    1788.50 [#/sec] (mean)</span><br><span class="line">tornado-uvloop2:Requests per second:    1980.40 [#/sec] (mean)</span><br><span class="line">flask          :Requests per second:    2237.84 [#/sec] (mean)</span><br><span class="line">sanic          :Requests per second:    13614.70 [#/sec] (mean)</span><br><span class="line">django         :Requests per second:    1145.03 [#/sec] (mean)</span><br><span class="line">go_http        :Requests per second:    13811.01 [#/sec] (mean)</span><br><span class="line">go_httprouter  :Requests per second:    13441.94 [#/sec] (mean)</span><br><span class="line">go_fasthttp    :Requests per second:    12619.25 [#/sec] (mean)</span><br><span class="line">2</span><br><span class="line">tornado-epoll  :Requests per second:    2056.31 [#/sec] (mean)</span><br><span class="line">tornado-uvloop :Requests per second:    1831.49 [#/sec] (mean)</span><br><span class="line">tornado-uvloop2:Requests per second:    2015.39 [#/sec] (mean)</span><br><span class="line">flask          :Requests per second:    2124.87 [#/sec] (mean)</span><br><span class="line">sanic          :Requests per second:    12485.80 [#/sec] (mean)</span><br><span class="line">django         :Requests per second:    1160.55 [#/sec] (mean)</span><br><span class="line">go_http        :Requests per second:    14014.43 [#/sec] (mean)</span><br><span class="line">go_httprouter  :Requests per second:    13949.34 [#/sec] (mean)</span><br><span class="line">go_fasthttp    :Requests per second:    12419.12 [#/sec] (mean)</span><br><span class="line">3</span><br><span class="line">tornado-epoll  :Requests per second:    2017.32 [#/sec] (mean)</span><br><span class="line">tornado-uvloop :Requests per second:    1731.04 [#/sec] (mean)</span><br><span class="line">tornado-uvloop2:Requests per second:    2014.46 [#/sec] (mean)</span><br><span class="line">flask          :Requests per second:    2100.02 [#/sec] (mean)</span><br><span class="line">sanic          :Requests per second:    12459.04 [#/sec] (mean)</span><br><span class="line">django         :Requests per second:    1164.06 [#/sec] (mean)</span><br><span class="line">go_http        :Requests per second:    13239.77 [#/sec] (mean)</span><br><span class="line">go_httprouter  :Requests per second:    14127.49 [#/sec] (mean)</span><br><span class="line">go_fasthttp    :Requests per second:    12824.46 [#/sec] (mean)</span><br><span class="line">4</span><br><span class="line">tornado-epoll  :Requests per second:    1810.77 [#/sec] (mean)</span><br><span class="line">tornado-uvloop :Requests per second:    1975.12 [#/sec] (mean)</span><br><span class="line">tornado-uvloop2:Requests per second:    1962.81 [#/sec] (mean)</span><br><span class="line">flask          :Requests per second:    2234.08 [#/sec] (mean)</span><br><span class="line">sanic          :Requests per second:    13881.95 [#/sec] (mean)</span><br><span class="line">django         :Requests per second:    1154.90 [#/sec] (mean)</span><br><span class="line">go_http        :Requests per second:    14399.47 [#/sec] (mean)</span><br><span class="line">go_httprouter  :Requests per second:    13688.69 [#/sec] (mean)</span><br><span class="line">go_fasthttp    :Requests per second:    12672.99 [#/sec] (mean)</span><br></pre></td></tr></table></figure>
+<p>阿里云ECS 双核8GB</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">0</span><br><span class="line">tornado-epoll  :Requests per second:    542.60 [#/sec] (mean)</span><br><span class="line">tornado-uvloop :Requests per second:    930.95 [#/sec] (mean)</span><br><span class="line">tornado-uvloop2:Requests per second:    811.54 [#/sec] (mean)</span><br><span class="line">flask          :Requests per second:    897.00 [#/sec] (mean)</span><br><span class="line">sanic          :Requests per second:    5681.50 [#/sec] (mean)</span><br><span class="line">django         :Requests per second:    447.41 [#/sec] (mean)</span><br><span class="line">go_http        :Requests per second:    8551.98 [#/sec] (mean)</span><br><span class="line">go_httprouter  :Requests per second:    9655.31 [#/sec] (mean)</span><br><span class="line">go_fasthttp    :Requests per second:    11469.21 [#/sec] (mean)</span><br><span class="line">1</span><br><span class="line">tornado-epoll  :Requests per second:    969.97 [#/sec] (mean)</span><br><span class="line">tornado-uvloop :Requests per second:    970.14 [#/sec] (mean)</span><br><span class="line">tornado-uvloop2:Requests per second:    990.24 [#/sec] (mean)</span><br><span class="line">flask          :Requests per second:    900.50 [#/sec] (mean)</span><br><span class="line">sanic          :Requests per second:    5789.89 [#/sec] (mean)</span><br><span class="line">django         :Requests per second:    435.28 [#/sec] (mean)</span><br><span class="line">go_http        :Requests per second:    8076.63 [#/sec] (mean)</span><br><span class="line">go_httprouter  :Requests per second:    9340.99 [#/sec] (mean)</span><br><span class="line">go_fasthttp    :Requests per second:    6024.82 [#/sec] (mean)</span><br><span class="line">2</span><br><span class="line">tornado-epoll  :Requests per second:    946.98 [#/sec] (mean)</span><br><span class="line">tornado-uvloop :Requests per second:    975.64 [#/sec] (mean)</span><br><span class="line">tornado-uvloop2:Requests per second:    955.25 [#/sec] (mean)</span><br><span class="line">flask          :Requests per second:    1021.28 [#/sec] (mean)</span><br><span class="line">sanic          :Requests per second:    6361.36 [#/sec] (mean)</span><br><span class="line">django         :Requests per second:    440.23 [#/sec] (mean)</span><br><span class="line">go_http        :Requests per second:    7601.67 [#/sec] (mean)</span><br><span class="line">go_httprouter  :Requests per second:    8123.21 [#/sec] (mean)</span><br><span class="line">go_fasthttp    :Requests per second:    8500.00 [#/sec] (mean)</span><br><span class="line">3</span><br><span class="line">tornado-epoll  :Requests per second:    944.39 [#/sec] (mean)</span><br><span class="line">tornado-uvloop :Requests per second:    921.12 [#/sec] (mean)</span><br><span class="line">tornado-uvloop2:Requests per second:    980.30 [#/sec] (mean)</span><br><span class="line">flask          :Requests per second:    946.53 [#/sec] (mean)</span><br><span class="line">sanic          :Requests per second:    5686.99 [#/sec] (mean)</span><br><span class="line">django         :Requests per second:    498.31 [#/sec] (mean)</span><br><span class="line">go_http        :Requests per second:    6297.78 [#/sec] (mean)</span><br><span class="line">go_httprouter  :Requests per second:    8078.91 [#/sec] (mean)</span><br><span class="line">go_fasthttp    :Requests per second:    6523.84 [#/sec] (mean)</span><br><span class="line">4</span><br><span class="line">tornado-epoll  :Requests per second:    953.86 [#/sec] (mean)</span><br><span class="line">tornado-uvloop :Requests per second:    983.97 [#/sec] (mean)</span><br><span class="line">tornado-uvloop2:Requests per second:    955.04 [#/sec] (mean)</span><br><span class="line">flask          :Requests per second:    994.77 [#/sec] (mean)</span><br><span class="line">sanic          :Requests per second:    6877.11 [#/sec] (mean)</span><br><span class="line">django         :Requests per second:    510.76 [#/sec] (mean)</span><br><span class="line">go_http        :Requests per second:    8243.14 [#/sec] (mean)</span><br><span class="line">go_httprouter  :Requests per second:    7055.97 [#/sec] (mean)</span><br><span class="line">go_fasthttp    :Requests per second:    6183.83 [#/sec] (mean)</span><br></pre></td></tr></table></figure>
+<p>###结论:</p>
+<ol>
+<li>Sanic确实叼, 拉出Flask一大截. 由于这个测试只是简单返回”Hello, world”, Tornado的优势要在使用了aio,AsyncHTTPClient的时候才能发挥出来. 如果拿tornado当纯同步使用的话, 性能会比flask弱一点点.</li>
+<li>Django自带的wsgi server无法完成此任务.</li>
+<li>fasthttp表现的很奇怪, 可能是handler太简单的情况下sync/pool的代价超过了gc的影响, httprouter比http快一点.</li>
+</ol>
+<p>###测试代码:</p>
+<p>1.test_tornado.py Tornado 4.4.2</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> tornado.ioloop</span><br><span class="line"><span class="keyword">import</span> tornado.web</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MainHandler</span><span class="params">(tornado.web.RequestHandler)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.write(<span class="string">"Hello, world"</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">make_app</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">return</span> tornado.web.Application([</span><br><span class="line">        (<span class="string">r"/"</span>, MainHandler),</span><br><span class="line">    ])</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    app = make_app()</span><br><span class="line">    app.listen(<span class="number">8888</span>)</span><br><span class="line">    tornado.ioloop.IOLoop.current().start()</span><br></pre></td></tr></table></figure>
+<p>2.test_tornadouv.py Tornado+uvloop(pip install tornadouvloop)</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> tornado.ioloop</span><br><span class="line"><span class="keyword">import</span> tornado.web</span><br><span class="line"><span class="keyword">from</span> tornadouvloop <span class="keyword">import</span> TornadoUvloop</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MainHandler</span><span class="params">(tornado.web.RequestHandler)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.write(<span class="string">"Hello, world"</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">make_app</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">return</span> tornado.web.Application([</span><br><span class="line">        (<span class="string">r"/"</span>, MainHandler),</span><br><span class="line">    ])</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    app = make_app()</span><br><span class="line">    app.listen(<span class="number">8889</span>)</span><br><span class="line">    tornado.ioloop.IOLoop.configure(TornadoUvloop)</span><br><span class="line">    tornado.ioloop.IOLoop.current().start()</span><br></pre></td></tr></table></figure>
+<p>3.test_tornadouv2.py Tornado+uvloop2(pip install tornaduv)</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> tornado.ioloop</span><br><span class="line"><span class="keyword">import</span> tornado.web</span><br><span class="line"><span class="keyword">from</span> tornaduv <span class="keyword">import</span> UVLoop</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MainHandler</span><span class="params">(tornado.web.RequestHandler)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.write(<span class="string">"Hello, world"</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">make_app</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">return</span> tornado.web.Application([</span><br><span class="line">        (<span class="string">r"/"</span>, MainHandler),</span><br><span class="line">    ])</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    app = make_app()</span><br><span class="line">    app.listen(<span class="number">8890</span>)</span><br><span class="line">    tornado.ioloop.IOLoop.configure(UVLoop)</span><br><span class="line">    tornado.ioloop.IOLoop.current().start()</span><br></pre></td></tr></table></figure>
+<p>4.test_flask.py Flask 0.12</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line"></span><br><span class="line">app = Flask(__name__)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route("/")</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">hello</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">"Hello, world"</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    app.run(port=<span class="number">8891</span>)</span><br></pre></td></tr></table></figure>
+<p>5.test_sanic.py Sanic 0.4.1</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sanic <span class="keyword">import</span> Sanic</span><br><span class="line"><span class="keyword">from</span> sanic.response <span class="keyword">import</span> HTTPResponse</span><br><span class="line"></span><br><span class="line">app = Sanic()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route("/")</span></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">(request)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> HTTPResponse(<span class="string">"Hello, world"</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    app.run(port=<span class="number">8892</span>)</span><br></pre></td></tr></table></figure>
+<p>6.test_django.py Django</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># views.py</span></span><br><span class="line"><span class="keyword">from</span> django.http <span class="keyword">import</span> HttpResponse</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">hello</span><span class="params">(request)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> HttpResponse(<span class="string">"Hello, world"</span>)</span><br></pre></td></tr></table></figure>
+<p>7.test_go_http.go Go http</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"net/http"</span></span><br><span class="line">	<span class="string">"runtime"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	runtime.GOMAXPROCS(runtime.NumCPU())</span><br><span class="line">	http.HandleFunc(<span class="string">"/"</span>, <span class="function"><span class="keyword">func</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">		w.Write([]<span class="keyword">byte</span>(<span class="string">"Hello, world"</span>))</span><br><span class="line">	&#125;)</span><br><span class="line">	http.ListenAndServe(<span class="string">"127.0.0.1:8894"</span>, <span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>8.test_go_httprouter.go GO httprouter</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"net/http"</span></span><br><span class="line">	<span class="string">"github.com/julienschmidt/httprouter"</span></span><br><span class="line">	<span class="string">"runtime"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	runtime.GOMAXPROCS(runtime.NumCPU())</span><br><span class="line">	router := httprouter.New()</span><br><span class="line">	router.HandlerFunc(<span class="string">"GET"</span>, <span class="string">"/"</span>, <span class="function"><span class="keyword">func</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">		w.Write([]<span class="keyword">byte</span>(<span class="string">"Hello, world"</span>))</span><br><span class="line">	&#125;)</span><br><span class="line">	http.ListenAndServe(<span class="string">"127.0.0.1:8895"</span>, router)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>9.test_go_fasthttp.go Go fasthttp</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"github.com/valyala/fasthttp"</span></span><br><span class="line">	<span class="string">"runtime"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	runtime.GOMAXPROCS(runtime.NumCPU())</span><br><span class="line">	requestHandler := <span class="function"><span class="keyword">func</span><span class="params">(ctx *fasthttp.RequestCtx)</span></span> &#123;</span><br><span class="line">		ctx.Write([]<span class="keyword">byte</span>(<span class="string">"Hello, world"</span>))</span><br><span class="line">	&#125;</span><br><span class="line">	fasthttp.ListenAndServe(<span class="string">"127.0.0.1:8896"</span>, requestHandler)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="https://imhanjm.com/2017/03/21/Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比/" data-id="ck1g6vprg002svrxqv0uo9mze" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+        <a href="https://imhanjm.com/2017/03/21/Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2017/03/21/Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比/">评论</a>
+    
+
+        </footer>
+    </div>
+    
+</article>
+
+
+
     <article id="post-Go快速笔记" class="article article-type-post" itemscope itemprop="blogPost">
     <div class="article-inner">
         
@@ -241,8 +400,8 @@ ga('send', 'pageview');
 <li>本次声明与已声明的 v 处于同一作用域中,（若 v 已在外层作用域中声明过，则此次声明会创建一个新的变量v）</li>
 <li>在初始化中与其类型相应的值才能赋予 v，且在此次声明中至少另有一个变量是新声明的。</li>
 </ol>
-<h3 id="2-基本数据类型"><a href="#2-基本数据类型" class="headerlink" title="2. 基本数据类型"></a>2. 基本数据类型</h3><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">bool</div><div class="line">string</div><div class="line">int  int8  int16  int32  int64</div><div class="line">uint uint8 uint16 uint32 uint64 uintptr</div><div class="line">byte // uint8 的别名</div><div class="line">rune // int32 的别名</div><div class="line">     // 代表一个Unicode码</div><div class="line">float32 float64</div><div class="line">complex64 complex128</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">单引号字符常量表示 Unicode Code Point，⽀支持 \uFFFF、\U7FFFFFFF、\xFF 格式。 对应 rune 类型，UCS-4。</div><div class="line">var c1, c2 rune = &apos;\u6211&apos;, &apos;们&apos;</div></pre></td></tr></table></figure>
+<h3 id="2-基本数据类型"><a href="#2-基本数据类型" class="headerlink" title="2. 基本数据类型"></a>2. 基本数据类型</h3><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">bool</span><br><span class="line">string</span><br><span class="line">int  int8  int16  int32  int64</span><br><span class="line">uint uint8 uint16 uint32 uint64 uintptr</span><br><span class="line">byte // uint8 的别名</span><br><span class="line">rune // int32 的别名</span><br><span class="line">     // 代表一个Unicode码</span><br><span class="line">float32 float64</span><br><span class="line">complex64 complex128</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">单引号字符常量表示 Unicode Code Point，⽀支持 \uFFFF、\U7FFFFFFF、\xFF 格式。 对应 rune 类型，UCS-4。</span><br><span class="line">var c1, c2 rune = &apos;\u6211&apos;, &apos;们&apos;</span><br></pre></td></tr></table></figure>
 <h3 id="3-Channel"><a href="#3-Channel" class="headerlink" title="3.Channel"></a>3.Channel</h3><p> channel 操作符 &lt;- ,操作符只有这一个,这样就不会搞错位置了</p>
 <p>发送者可以 close 一个 channel 来表示再没有值会被发送了。接收者可以通过赋值语句的第二参数来测试 channel 是否被关闭：当没有值可以接收并且 channel 已经被关闭，那么经过</p>
 <p>v, ok := &lt;-ch<br>之后 ok 会被设置为 <code>false</code>。</p>
@@ -253,16 +412,16 @@ ga('send', 'pageview');
 <p><code>select</code> 会阻塞，直到条件分支中的某个可以继续执行，这时就会执行那个条件分支。当多个都准备好的时候，会随机选择一个。</p>
 <p>当 <code>select</code> 中的其他条件分支都没有准备好的时候，<code>default</code> 分支会被执行。</p>
 <p>为了非阻塞的发送或者接收，可使用 default 分支：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">select &#123;</div><div class="line">case i := &lt;-c:</div><div class="line">    // 使用 i</div><div class="line">default:</div><div class="line">    // 从 c 读取会阻塞</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h3 id="5-for-range-遍历-range-会复制对象"><a href="#5-for-range-遍历-range-会复制对象" class="headerlink" title="5.for range 遍历 range 会复制对象"></a>5.for range 遍历 <em>range 会复制对象</em></h3><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">for key, value := range oldMap &#123;</div><div class="line">	newMap[key] = value</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">select &#123;</span><br><span class="line">case i := &lt;-c:</span><br><span class="line">    // 使用 i</span><br><span class="line">default:</span><br><span class="line">    // 从 c 读取会阻塞</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="5-for-range-遍历-range-会复制对象"><a href="#5-for-range-遍历-range-会复制对象" class="headerlink" title="5.for range 遍历 range 会复制对象"></a>5.for range 遍历 <em>range 会复制对象</em></h3><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">for key, value := range oldMap &#123;</span><br><span class="line">	newMap[key] = value</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>//若你只需要该遍历中的第一个项（键或下标），去掉第二个就行了：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">for key := range m &#123;</div><div class="line">	if key.expired() &#123;</div><div class="line">		delete(m, key)</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">for key := range m &#123;</span><br><span class="line">	if key.expired() &#123;</span><br><span class="line">		delete(m, key)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h3 id="6-Switch"><a href="#6-Switch" class="headerlink" title="6.Switch"></a>6.Switch</h3><p>switch 可以什么都不写 当多级if else使用   还可以当做判断类型使用 t.(type) 只能在switch使用</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">switch t := t.(type)</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">switch t := t.(type)</span><br></pre></td></tr></table></figure>
 <h3 id="7-Map"><a href="#7-Map" class="headerlink" title="7.Map"></a>7.Map</h3><p>key不存在不会报错，会返回与map的value的类型对应的零值.  用<code>if _,ok:=someMap[key];ok {}</code> 来判断有没有值 </p>
 <h3 id="8-Print"><a href="#8-Print" class="headerlink" title="8.Print"></a>8.Print</h3><ol>
 <li>字符串函数（Sprintf 等）会返回一个字符串，而非填充给定的缓冲区。</li>
-<li>fmt.Fprint 一类的格式化打印函数可接受任何实现了<code>io.Writer</code>接口的对象作为第一个实参:如<code>os.Stdout``os.Stderr</code></li>
+<li>fmt.Fprint 一类的格式化打印函数可接受任何实现了<code>io.Writer</code>接口的对象作为第一个实参:如<code>os.Stdout`</code>os.Stderr`</li>
 <li>fmt.Printf<ul>
 <li>%v（对应“值”）map中的键可能按任意顺序输出。</li>
 <li>当打印结构体时，改进的格式 %+v 会为结构体的每个字段添上字段名，而另一种格式 %#v 将完全按照Go的语法打印值。</li>
@@ -272,24 +431,24 @@ ga('send', 'pageview');
 </ul>
 </li>
 </ol>
-<h3 id="9-append-中extend"><a href="#9-append-中extend" class="headerlink" title="9.append 中extend"></a>9.append 中extend</h3><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">x := []int&#123;1,2,3&#125;</div><div class="line">y := []int&#123;4,5,6&#125;</div><div class="line">x = append(x, y...)</div><div class="line">fmt.Println(x)</div></pre></td></tr></table></figure>
+<h3 id="9-append-中extend"><a href="#9-append-中extend" class="headerlink" title="9.append 中extend"></a>9.append 中extend</h3><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">x := []int&#123;1,2,3&#125;</span><br><span class="line">y := []int&#123;4,5,6&#125;</span><br><span class="line">x = append(x, y...)</span><br><span class="line">fmt.Println(x)</span><br></pre></td></tr></table></figure>
 <h3 id="10-类型转换"><a href="#10-类型转换" class="headerlink" title="10.类型转换"></a>10.类型转换</h3><p>要提取我们知道在该值中的字符串，可以这样：</p>
-<p><code>str := value.(string)</code><br>但若它所转换的值中不包含字符串，该程序就会以运行时错误崩溃。为避免这种情况， 需使用“逗号, ok”惯用测试它能安全地判断该值是否为字符串：<br><figure class="highlight golang"><table><tr><td class="code"><pre><div class="line">str, ok := value.(<span class="keyword">string</span>) </div><div class="line"><span class="keyword">if</span> ok &#123; </div><div class="line">	fmt.Printf(<span class="string">"字符串值为 %q\n"</span>, str)</div><div class="line"> &#125; <span class="keyword">else</span> &#123; </div><div class="line"> 	fmt.Printf(<span class="string">"该值非字符串\n"</span>) </div><div class="line"> &#125;</div></pre></td></tr></table></figure></p>
+<p><code>str := value.(string)</code><br>但若它所转换的值中不包含字符串，该程序就会以运行时错误崩溃。为避免这种情况， 需使用“逗号, ok”惯用测试它能安全地判断该值是否为字符串：<br><figure class="highlight golang"><table><tr><td class="code"><pre><span class="line">str, ok := value.(<span class="keyword">string</span>) </span><br><span class="line"><span class="keyword">if</span> ok &#123; </span><br><span class="line">	fmt.Printf(<span class="string">"字符串值为 %q\n"</span>, str)</span><br><span class="line"> &#125; <span class="keyword">else</span> &#123; </span><br><span class="line"> 	fmt.Printf(<span class="string">"该值非字符串\n"</span>) </span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure></p>
 <p>若类型断言失败，str 将继续存在且为字符串类型，但它将拥有零值，即空字符串。</p>
 <h3 id="11-x-x"><a href="#11-x-x" class="headerlink" title="11. x:=x"></a>11. x:=x</h3><p>req := req<br>但在Go中这样做是合法且惯用的。你用相同的名字获得了该变量的一个新的版本， 以此来局部地刻意屏蔽循环变量，使它对每个Go程保持唯一。<br>比如gorm中</p>
 <h3 id="12-函数"><a href="#12-函数" class="headerlink" title="12.函数"></a>12.函数</h3><p>变参   变参本质上就是 slice。只能有⼀一个，且必须是最后⼀一个。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">func test(s string, n ...int) string &#123;</div><div class="line"> var x int</div><div class="line"> for _, i := range n &#123;</div><div class="line"> 	x += i </div><div class="line"> &#125;</div><div class="line">return fmt.Sprintf(s, x)</div><div class="line">&#125;</div><div class="line">func main() &#123; </div><div class="line">println(test(&quot;sum: %d&quot;, 1, 2, 3)) </div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>使⽤用 slice 对象做变参时，必须展开。<br><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">func main() &#123; </div><div class="line">	s := []int&#123;1, 2, 3</div><div class="line">&#125;</div><div class="line">println(test(&quot;sum: %d&quot;, s...)) &#125;</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">func test(s string, n ...int) string &#123;</span><br><span class="line"> var x int</span><br><span class="line"> for _, i := range n &#123;</span><br><span class="line"> 	x += i </span><br><span class="line"> &#125;</span><br><span class="line">return fmt.Sprintf(s, x)</span><br><span class="line">&#125;</span><br><span class="line">func main() &#123; </span><br><span class="line">println(test(&quot;sum: %d&quot;, 1, 2, 3)) </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使⽤用 slice 对象做变参时，必须展开。<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">func main() &#123; </span><br><span class="line">	s := []int&#123;1, 2, 3</span><br><span class="line">&#125;</span><br><span class="line">println(test(&quot;sum: %d&quot;, s...)) &#125;</span><br></pre></td></tr></table></figure></p>
 <p>匿名函数可赋值给变量，做为结构字段，<strong><em>或者在 channel ⾥里传送</em></strong>。</p>
-<h3 id="13-Defer"><a href="#13-Defer" class="headerlink" title="13.Defer"></a>13.Defer</h3><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">func add(x, y int) (z int) &#123;</div><div class="line">	defer func() &#123; </div><div class="line">		println(z) // 输出: 203 </div><div class="line">	&#125;()</div><div class="line">	z = x + y return z + 200</div><div class="line">	// 执⾏行顺序: (z = z + 200) -&gt; (call defer) -&gt; (ret)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="13-Defer"><a href="#13-Defer" class="headerlink" title="13.Defer"></a>13.Defer</h3><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">func add(x, y int) (z int) &#123;</span><br><span class="line">	defer func() &#123; </span><br><span class="line">		println(z) // 输出: 203 </span><br><span class="line">	&#125;()</span><br><span class="line">	z = x + y return z + 200</span><br><span class="line">	// 执⾏行顺序: (z = z + 200) -&gt; (call defer) -&gt; (ret)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>多个 defer 注册，按 FILO 次序执⾏行。哪怕函数或某个延迟调⽤用发⽣生错误，这些调⽤用依旧 会被执⾏行。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">func test(x int) &#123;</div><div class="line">	defer println(&quot;a&quot;) defer println(&quot;b&quot;)</div><div class="line">	defer func() &#123; println(100 / x) &#125;()</div><div class="line">	defer println(&quot;c&quot;)</div><div class="line">	// div0 异常未被捕获，逐步往外传递，最终终⽌止进程。</div><div class="line">&#125;</div><div class="line">func main() &#123; test(0) &#125;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">func test(x int) &#123;</span><br><span class="line">	defer println(&quot;a&quot;) defer println(&quot;b&quot;)</span><br><span class="line">	defer func() &#123; println(100 / x) &#125;()</span><br><span class="line">	defer println(&quot;c&quot;)</span><br><span class="line">	// div0 异常未被捕获，逐步往外传递，最终终⽌止进程。</span><br><span class="line">&#125;</span><br><span class="line">func main() &#123; test(0) &#125;</span><br></pre></td></tr></table></figure>
 <p>输出：<br><code>c b a panic: runtime error: integer divide by zero</code></p>
 <h3 id="14-error"><a href="#14-error" class="headerlink" title="14. error"></a>14. error</h3><p>捕获函数 recover 只有在延迟调⽤用内直接调⽤用才会终⽌止错误，否则总是返回 nil。任何未捕获的错误都会沿调⽤用堆栈向外传递。</p>
 <p>导致关键流程出现不可修复性错误的 使⽤用 panic，其他使⽤用 error。</p>
-<h3 id="15-数组"><a href="#15-数组" class="headerlink" title="15. 数组"></a>15. 数组</h3><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">a := [3]int&#123;1, 2&#125;// 未初始化元素值为 0。 </div><div class="line">b := [...]int&#123;1, 2, 3, 4&#125;// 通过初始化值确定数组⻓长度。</div><div class="line">c := [5]int&#123;2: 100, 4:200&#125; // 使⽤用索引号初始化元素。</div><div class="line">d := [...]struct &#123; name string age uint8 &#125;&#123; &#123;&quot;user1&quot;, 10&#125;, &#123;&quot;user2&quot;, 20&#125;, &#125; // 可省略元素类型。 // 别忘了最后⼀一⾏行的逗号。</div><div class="line">⽀支持多维数组。</div><div class="line">a := [2][3]int&#123;&#123;1, 2, 3&#125;, &#123;4, 5, 6&#125;&#125; </div><div class="line">b := [...][2]int&#123;&#123;1, 1&#125;, &#123;2, 2&#125;, &#123;3, 3&#125;&#125;  // 第 2 纬度不能⽤用 &quot;...&quot;。</div></pre></td></tr></table></figure>
+<h3 id="15-数组"><a href="#15-数组" class="headerlink" title="15. 数组"></a>15. 数组</h3><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">a := [3]int&#123;1, 2&#125;// 未初始化元素值为 0。 </span><br><span class="line">b := [...]int&#123;1, 2, 3, 4&#125;// 通过初始化值确定数组⻓长度。</span><br><span class="line">c := [5]int&#123;2: 100, 4:200&#125; // 使⽤用索引号初始化元素。</span><br><span class="line">d := [...]struct &#123; name string age uint8 &#125;&#123; &#123;&quot;user1&quot;, 10&#125;, &#123;&quot;user2&quot;, 20&#125;, &#125; // 可省略元素类型。 // 别忘了最后⼀一⾏行的逗号。</span><br><span class="line">⽀支持多维数组。</span><br><span class="line">a := [2][3]int&#123;&#123;1, 2, 3&#125;, &#123;4, 5, 6&#125;&#125; </span><br><span class="line">b := [...][2]int&#123;&#123;1, 1&#125;, &#123;2, 2&#125;, &#123;3, 3&#125;&#125;  // 第 2 纬度不能⽤用 &quot;...&quot;。</span><br></pre></td></tr></table></figure>
 <h3 id="16-slice"><a href="#16-slice" class="headerlink" title="16. slice"></a>16. slice</h3><p><code>array</code>和<code>slice</code>是不同的类型,不同长度的array类型不同   <code>slice是[]int</code>    <code>array是[n]int</code></p>
-<p>官方文档中说<br><figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">In Go, array is a fixed length of continuous memory with specified type, while slice is just a reference which points to an underlying array. Since they are different types, they can&apos;t assign value each other directly.</div></pre></td></tr></table></figure></p>
+<p>官方文档中说<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">In Go, array is a fixed length of continuous memory with specified type, while slice is just a reference which points to an underlying array. Since they are different types, they can&apos;t assign value each other directly.</span><br></pre></td></tr></table></figure></p>
 
         
         </div>
@@ -300,7 +459,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2016/12/31/Go快速笔记/" data-id="cjwok624900084jrwd53qsff0" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2016/12/31/Go快速笔记/" data-id="ck1g6vppm000uvrxql9g2eunn" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -394,6 +553,25 @@ ga('send', 'pageview');
                     <li>
                         
                         <div class="item-thumbnail">
+                            <a href="/2019/10/06/深入理解Prometheus(GO SDK)/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2019/10/06/深入理解Prometheus(GO SDK)/" class="title">深入理解Prometheus(GO SDK及Grafana基本面板)</a></p>
+                            <p class="item-date"><time datetime="2019-10-05T16:00:00.000Z" itemprop="datePublished">2019-10-06</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
                             <a href="/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/" class="thumbnail">
     
     
@@ -467,25 +645,6 @@ ga('send', 'pageview');
                         </div>
                     </li>
                 
-                    <li>
-                        
-                        <div class="item-thumbnail">
-                            <a href="/2018/11/18/学习influxdb/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"></p>
-                            <p class="item-title"><a href="/2018/11/18/学习influxdb/" class="title">学习Influxdb</a></p>
-                            <p class="item-date"><time datetime="2018-11-17T16:00:00.000Z" itemprop="datePublished">2018-11-18</time></p>
-                        </div>
-                    </li>
-                
             </ul>
         </div>
     </div>
@@ -497,7 +656,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">归档</h3>
         <div class="widget">
-            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">二月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">1</span></li></ul>
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">十月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">二月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -506,7 +665,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签</h3>
         <div class="widget">
-            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/172-17-0-1/">172.17.0.1</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cool-tools/">Cool tools</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Error-handling/">Error handling</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRPC/">GRPC</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP2/">HTTP2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Macos/">Macos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS/">NATS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS-Streaming/">NATS Streaming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/">Nginx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/activemq/">activemq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bench/">bench</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/decimal/">decimal</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker-for-mac/">docker for mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grpc-go/">grpc-go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/influxdb/">influxdb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log/">log</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/messageQueue/">messageQueue</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mq/">mq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pubsub/">pubsub</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/时间处理/">时间处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/架构/">架构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/连接池/">连接池</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/错误处理/">错误处理</a><span class="tag-list-count">1</span></li></ul>
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/172-17-0-1/">172.17.0.1</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cool-tools/">Cool tools</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Error-handling/">Error handling</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRPC/">GRPC</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP2/">HTTP2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Macos/">Macos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS/">NATS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS-Streaming/">NATS Streaming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/">Nginx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/activemq/">activemq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bench/">bench</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/decimal/">decimal</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker-for-mac/">docker for mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grpc-go/">grpc-go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/influxdb/">influxdb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log/">log</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/messageQueue/">messageQueue</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mq/">mq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prometheus/">prometheus</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pubsub/">pubsub</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/时间处理/">时间处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/架构/">架构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/监控/">监控</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/连接池/">连接池</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/错误处理/">错误处理</a><span class="tag-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -515,7 +674,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/172-17-0-1/" style="font-size: 10px;">172.17.0.1</a> <a href="/tags/Cool-tools/" style="font-size: 15px;">Cool tools</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/Error-handling/" style="font-size: 10px;">Error handling</a> <a href="/tags/GRPC/" style="font-size: 15px;">GRPC</a> <a href="/tags/Go/" style="font-size: 20px;">Go</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/HTTP2/" style="font-size: 10px;">HTTP2</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Macos/" style="font-size: 10px;">Macos</a> <a href="/tags/NATS/" style="font-size: 10px;">NATS</a> <a href="/tags/NATS-Streaming/" style="font-size: 10px;">NATS Streaming</a> <a href="/tags/Nginx/" style="font-size: 15px;">Nginx</a> <a href="/tags/activemq/" style="font-size: 10px;">activemq</a> <a href="/tags/bench/" style="font-size: 10px;">bench</a> <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a> <a href="/tags/decimal/" style="font-size: 10px;">decimal</a> <a href="/tags/docker-for-mac/" style="font-size: 10px;">docker for mac</a> <a href="/tags/grpc-go/" style="font-size: 10px;">grpc-go</a> <a href="/tags/influxdb/" style="font-size: 10px;">influxdb</a> <a href="/tags/log/" style="font-size: 10px;">log</a> <a href="/tags/messageQueue/" style="font-size: 10px;">messageQueue</a> <a href="/tags/mq/" style="font-size: 10px;">mq</a> <a href="/tags/mysql/" style="font-size: 15px;">mysql</a> <a href="/tags/pubsub/" style="font-size: 10px;">pubsub</a> <a href="/tags/时间处理/" style="font-size: 10px;">时间处理</a> <a href="/tags/架构/" style="font-size: 10px;">架构</a> <a href="/tags/消息队列/" style="font-size: 10px;">消息队列</a> <a href="/tags/连接池/" style="font-size: 10px;">连接池</a> <a href="/tags/错误处理/" style="font-size: 10px;">错误处理</a>
+            <a href="/tags/172-17-0-1/" style="font-size: 10px;">172.17.0.1</a> <a href="/tags/Cool-tools/" style="font-size: 15px;">Cool tools</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/Error-handling/" style="font-size: 10px;">Error handling</a> <a href="/tags/GRPC/" style="font-size: 15px;">GRPC</a> <a href="/tags/Go/" style="font-size: 20px;">Go</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/HTTP2/" style="font-size: 10px;">HTTP2</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Macos/" style="font-size: 10px;">Macos</a> <a href="/tags/NATS/" style="font-size: 10px;">NATS</a> <a href="/tags/NATS-Streaming/" style="font-size: 10px;">NATS Streaming</a> <a href="/tags/Nginx/" style="font-size: 15px;">Nginx</a> <a href="/tags/activemq/" style="font-size: 10px;">activemq</a> <a href="/tags/bench/" style="font-size: 10px;">bench</a> <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a> <a href="/tags/decimal/" style="font-size: 10px;">decimal</a> <a href="/tags/docker-for-mac/" style="font-size: 10px;">docker for mac</a> <a href="/tags/grpc-go/" style="font-size: 10px;">grpc-go</a> <a href="/tags/influxdb/" style="font-size: 10px;">influxdb</a> <a href="/tags/log/" style="font-size: 10px;">log</a> <a href="/tags/messageQueue/" style="font-size: 10px;">messageQueue</a> <a href="/tags/mq/" style="font-size: 10px;">mq</a> <a href="/tags/mysql/" style="font-size: 15px;">mysql</a> <a href="/tags/prometheus/" style="font-size: 10px;">prometheus</a> <a href="/tags/pubsub/" style="font-size: 10px;">pubsub</a> <a href="/tags/时间处理/" style="font-size: 10px;">时间处理</a> <a href="/tags/架构/" style="font-size: 10px;">架构</a> <a href="/tags/消息队列/" style="font-size: 10px;">消息队列</a> <a href="/tags/监控/" style="font-size: 10px;">监控</a> <a href="/tags/连接池/" style="font-size: 10px;">连接池</a> <a href="/tags/错误处理/" style="font-size: 10px;">错误处理</a>
         </div>
     </div>
 

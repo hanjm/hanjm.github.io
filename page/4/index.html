@@ -1,27 +1,28 @@
 <!DOCTYPE html>
-<html lang=zh>
-<head>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.9.0">
     <meta charset="utf-8">
     
     <title>hello</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="description" content="hanjm&apos;s blog">
 <meta property="og:type" content="website">
 <meta property="og:title" content="hello">
 <meta property="og:url" content="https://imhanjm.com/page/4/index.html">
 <meta property="og:site_name" content="hello">
 <meta property="og:description" content="hanjm&apos;s blog">
+<meta property="og:locale" content="zh-CN">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="hello">
 <meta name="twitter:description" content="hanjm&apos;s blog">
     
 
     
-        <link rel="alternate" href="https://hanjm.github.io/atom.xml" title="hello" type="application/atom+xml" />
+        <link rel="alternate" href="https://hanjm.github.io/atom.xml" title="hello" type="application/atom+xml">
     
 
     
-        <link rel="icon" href="/css/images/favicon.ico" />
+        <link rel="icon" href="/css/images/favicon.ico">
     
 
     <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
@@ -55,7 +56,7 @@ ga('send', 'pageview');
 
 
 </head>
-
+</html>
 <body>
     <div id="container">
         <header id="header">
@@ -157,11 +158,11 @@ ga('send', 'pageview');
         </div>
         <div class="article-info profile-block">
             <div class="article-info-block">
-                23
+                24
                 <span>文章</span>
             </div>
             <div class="article-info-block">
-                30
+                32
                 <span>标签</span>
             </div>
         </div>
@@ -192,6 +193,162 @@ ga('send', 'pageview');
 
             
             <section id="main">
+    <article id="post-GRPC文档阅读心得" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 itemprop="name">
+            <a class="article-title" href="/2018/10/06/GRPC文档阅读心得/">GRPC文档阅读心得</a>
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/10/06/GRPC文档阅读心得/">
+            <time datetime="2018-10-05T16:00:00.000Z" itemprop="datePublished">2018-10-06</time>
+        </a>
+    </div>
+
+
+                        
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/GRPC/">GRPC</a>, <a class="tag-link" href="/tags/Go/">Go</a>, <a class="tag-link" href="/tags/grpc-go/">grpc-go</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>主要是两个文档, grpc repo的文档 <a href="https://github.com/grpc/grpc/tree/master/doc" target="_blank" rel="noopener">https://github.com/grpc/grpc/tree/master/doc</a> , grpc-go repo的文档 <a href="https://github.com/grpc/grpc-go/tree/master/Documentation" target="_blank" rel="noopener">https://github.com/grpc/grpc-go/tree/master/Documentation</a>.</p>
+<h1 id="grpc-go-文档"><a href="#grpc-go-文档" class="headerlink" title="grpc-go 文档"></a>grpc-go 文档</h1><hr>
+<h3 id="gRPC-Server-Reflection-Tutorial"><a href="#gRPC-Server-Reflection-Tutorial" class="headerlink" title="gRPC Server Reflection Tutorial"></a><a href="https://github.com/grpc/grpc-go/blob/master/Documentation/server-reflection-tutorial.md" target="_blank" rel="noopener">gRPC Server Reflection Tutorial</a></h3><p>在代码中<code>import &quot;google.golang.org/grpc/reflection&quot;</code>包, 然后加一行代码<code>reflection.Register(s)</code>, 就可以启用 server reflection. 就可以用grpc_cli去进行获得服务列表, 方法列表, message结构体定义了. reflection.Register(s)实际上是注册了一个特殊的service, 它能列出server中已注册的服务和方法等信息.</p>
+<h2 id="Compression"><a href="#Compression" class="headerlink" title="Compression"></a><a href="https://github.com/grpc/grpc-go/blob/master/Documentation/compression.md" target="_blank" rel="noopener">Compression</a></h2><p>用 <code>encoding.RegisterCompressor</code>方法取注册一个压缩器, 启用了压缩的话, 服务端和客户端双方都要进行同样的处理, 服务端在newServer时要带上compressor的serverOption, 客户端在dail的时候要带上WithDefaultCallOptions的DialOption, DialOption加上压缩解压的处理, 不然会得到一个 <code>Internal error</code>, 和HTTP方式一样, 压缩类型体现在content-type的header上.</p>
+<h2 id="Concurrency"><a href="#Concurrency" class="headerlink" title="Concurrency"></a><a href="https://github.com/grpc/grpc-go/blob/master/Documentation/concurrency.md" target="_blank" rel="noopener">Concurrency</a></h2><p>Dial得到的ClientConn是并发安全.<br>stream的读写不是并发安全的, sendMsg或RecvMsg不能在多个goroutine中并发地调用,但可以分别在两个goroutine中处理send和Recv.</p>
+<h2 id="Encoding"><a href="#Encoding" class="headerlink" title="Encoding"></a><a href="https://github.com/grpc/grpc-go/blob/master/Documentation/encoding.md" target="_blank" rel="noopener">Encoding</a></h2><h3 id="序列化反序列化"><a href="#序列化反序列化" class="headerlink" title="序列化反序列化"></a>序列化反序列化</h3><p>自定义消息编码解码, 注册一个实现 <code>Codec</code> 接口的对象即可, 然后在Dial或Call时带上<code>grpc.CallContentSubtype</code>这个CallOption, 这样就可以自动处理这个带这个content-type的请求. 默认为 proto</p>
+<h3 id="压缩解压缩"><a href="#压缩解压缩" class="headerlink" title="压缩解压缩"></a>压缩解压缩</h3><p>自定义压缩解压缩, 注册一个实现 <code>Compressor</code>接口的对象即可, 然后在Dial或Call时带上<code>grpc.UseCompressor</code>这个CallOption.</p>
+<h2 id="Mocking-Service-for-gRPC"><a href="#Mocking-Service-for-gRPC" class="headerlink" title="[Mocking Service for gRPC"></a>[Mocking Service for gRPC</h2><p>](<a href="https://github.com/grpc/grpc-go/blob/master/Documentation/gomock-example.md" target="_blank" rel="noopener">https://github.com/grpc/grpc-go/blob/master/Documentation/gomock-example.md</a>)</p>
+<p>主要讲如何在单元测试中mock, 用gomock命令行生成实现xx接口的代码, 没什么特别的</p>
+<h2 id="Authentication"><a href="#Authentication" class="headerlink" title="[Authentication"></a>[Authentication</h2><p>](<a href="https://github.com/grpc/grpc-go/blob/master/Documentation/grpc-auth-support.md" target="_blank" rel="noopener">https://github.com/grpc/grpc-go/blob/master/Documentation/grpc-auth-support.md</a>)</p>
+<p>主要讲如何进行身份验证, 没什么特别的</p>
+<h2 id="Metadata"><a href="#Metadata" class="headerlink" title="Metadata"></a><a href="https://github.com/grpc/grpc-go/blob/master/Documentation/grpc-metadata.md" target="_blank" rel="noopener">Metadata</a></h2><p>metadata类似HTTP1中的header, 数据结构都是一样的<code>type MD map[string][]string</code>,<br>key都是大小写不敏感的, 但实现规范和HTTP1不一样, HTTP1是按单词之间用连字符”-“分隔, 每个单词第一个字母大写这样的规范来的, 处理起来消耗更大, 而metadata是全转为小写, 实际使用过程中, 提前规范化key能提高不必要的<code>strings.ToLower</code>调用.<br>用-bin结尾的来传递二进制数据.</p>
+<p>服务端handler用<code>metadata.FromIncomingContext(ctx)</code>拿到metadata, 客户端用<code>metadata.AppendToOutgoingContext</code>来附加kv到ctx中.</p>
+<p>如果服务端handler又想附加一些信息返回client, 那么就要通过header和trailer传递, 类似responseHeader.<br><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *server)</span> <span class="title">SomeRPC</span><span class="params">(ctx context.Context, in *pb.someRequest)</span> <span class="params">(*pb.someResponse, error)</span></span> &#123;</span><br><span class="line">    <span class="comment">// create and send header</span></span><br><span class="line">    header := metadata.Pairs(<span class="string">"header-key"</span>, <span class="string">"val"</span>)</span><br><span class="line">    grpc.SendHeader(ctx, header)</span><br><span class="line">    <span class="comment">// create and set trailer</span></span><br><span class="line">    trailer := metadata.Pairs(<span class="string">"trailer-key"</span>, <span class="string">"val"</span>)</span><br><span class="line">    grpc.SetTrailer(ctx, trailer)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后客户端在调用的时候传要保存的header和trailler的指针到CallOption中, 调用完后指针指向的metadata map就有数据了, 坦率地讲, 我觉得这样处理很麻烦.<br><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> header, trailer metadata.MD <span class="comment">// variable to store header and trailer</span></span><br><span class="line">r, err := client.SomeRPC(</span><br><span class="line">    ctx,</span><br><span class="line">    someRequest,</span><br><span class="line">    grpc.Header(&amp;header),    <span class="comment">// will retrieve header</span></span><br><span class="line">    grpc.Trailer(&amp;trailer),  <span class="comment">// will retrieve trailer</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// do something with header and trailer</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="Keepalive"><a href="#Keepalive" class="headerlink" title="Keepalive"></a><a href="https://github.com/grpc/grpc-go/blob/master/Documentation/keepalive.md" target="_blank" rel="noopener">Keepalive</a></h2><p>gRPC会定时发http2 ping帧来判断连接是否挂掉, 如果ping没有在一定时期内ack, 那么连接会被close.</p>
+<h2 id="Log-Levels"><a href="#Log-Levels" class="headerlink" title="Log Levels"></a><a href="https://github.com/grpc/grpc-go/blob/master/Documentation/log_levels.md" target="_blank" rel="noopener">Log Levels</a></h2><p>grpc-go包默认用gpclog包打日志, grpclog包默认是用多个*log.Logger来实现日志级别, 默认输出到stderr, 对于生产环境, 肯定要集成到自己的日志流里去, 接口是个好东西, grpclog包允许setLog, 实现grpclog.LoggerV2接口即可.</p>
+<h3 id="info日志包括"><a href="#info日志包括" class="headerlink" title="info日志包括:"></a>info日志包括:</h3><p>grpclog里的info是为了debug</p>
+<ul>
+<li>DNS 收到了更新</li>
+<li>负载均衡器 更新了选择的目标</li>
+<li>重要的grpc 状态变更<h3 id="warn日志包括"><a href="#warn日志包括" class="headerlink" title="warn日志包括:"></a>warn日志包括:</h3>warning日志是出现了一些错误, 但还不至于panic.</li>
+<li>DNS无法解析给定的target</li>
+<li>连接server时出错</li>
+<li>连接丢失或中断<h3 id="error日志包括"><a href="#error日志包括" class="headerlink" title="error日志包括:"></a>error日志包括:</h3>grpc内部有些error不是用户发起的函数调用, 所以无法返回error给调用者, 只能内部自己打error日志</li>
+<li>函数签名没有error, 但调用方传了个错误的参数过来.  </li>
+<li>内部错误.<h3 id="Fatal日志"><a href="#Fatal日志" class="headerlink" title="Fatal日志:"></a>Fatal日志:</h3>fatal日志是出现了不可恢复的内部错误, 要panic.</li>
+</ul>
+<h1 id="grpc-文档"><a href="#grpc-文档" class="headerlink" title="grpc 文档"></a>grpc 文档</h1><hr>
+<p>之前一直有个误区, 多个连接比单个连接要快, 看了 <a href="https://github.com/grpc/grpc-go/issues/1512" target="_blank" rel="noopener">grpc-go issues1</a>、<a href="https://github.com/grpc/grpc-go/issues/682" target="_blank" rel="noopener">grpc-go issues2</a> 以及 <a href="https://developers.google.com/web/fundamentals/performance/http2/?hl=zh-cn" target="_blank" rel="noopener">HTTP2文档</a> 才发现, 由于HTTP2有多路复用的特性, 对于同一个sever, 只需要维护一个连接就好了, 没有必要用多个连接去并行复用数据流. 连接数量减少对提升 HTTPS 部署的性能来说是一项特别重要的功能：可以减少开销较大的 TLS 连接数、提升会话重用率，以及从整体上减少所需的客户端和服务器资源。</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="https://imhanjm.com/2018/10/06/GRPC文档阅读心得/" data-id="ck1g6vpq6001lvrxqtr0h02fm" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+        <a href="https://imhanjm.com/2018/10/06/GRPC文档阅读心得/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2018/10/06/GRPC文档阅读心得/">评论</a>
+    
+
+        </footer>
+    </div>
+    
+</article>
+
+
+
     <article id="post-Go如何优雅地错误处理(Error handling and Go 1)" class="article article-type-post" itemscope itemprop="blogPost">
     <div class="article-inner">
         
@@ -230,7 +387,7 @@ ga('send', 'pageview');
         <div class="article-entry" itemprop="articleBody">
         
             
-            <p>Go的错误处理一直被吐槽太繁琐, 作为主要用GO的攻城狮, 经常写 <code>if err!=nil</code>, 但是如果想偷懒, 少带了上下文信息, 直接写 <code>if err!=nil { return err}</code> 或者 <code>fmt.Errorf</code> 携带的上下文信息太少了的话, 看到错误日志也会一脸懵逼, 难以定位问题.<br>官方在 2011 年就发过一篇博客教大家如何在Go中处理error <a href="https://blog.golang.org/error-handling-and-go" target="_blank" rel="external">https://blog.golang.org/error-handling-and-go</a> , error 是一个内建的 interface, 鼓励大家用好自定义错误类型, 常用的范式有三种:</p>
+            <p>Go的错误处理一直被吐槽太繁琐, 作为主要用GO的攻城狮, 经常写 <code>if err!=nil</code>, 但是如果想偷懒, 少带了上下文信息, 直接写 <code>if err!=nil { return err}</code> 或者 <code>fmt.Errorf</code> 携带的上下文信息太少了的话, 看到错误日志也会一脸懵逼, 难以定位问题.<br>官方在 2011 年就发过一篇博客教大家如何在Go中处理error <a href="https://blog.golang.org/error-handling-and-go" target="_blank" rel="noopener">https://blog.golang.org/error-handling-and-go</a> , error 是一个内建的 interface, 鼓励大家用好自定义错误类型, 常用的范式有三种:</p>
 <ul>
 <li>一是用 <code>errors.New(str string)</code> 定义错误常量, 让调用方去判断返回的 <code>err</code> 是否等于这个常量, 来进行区分处理;</li>
 <li>二是用 <code>fmt.Errorf(fmt string, args... interface{})</code> 增加一些上下文信息, 用文字的方式告诉调用方哪里出错了, 让调用方打错误日志出来;</li>
@@ -240,17 +397,17 @@ ga('send', 'pageview');
 <ul>
 <li><code>pkg/errors</code> 解决了一些问题, 核心函数是 Wrapf 和 Cause: Wrapf包装错误附加上下文信息并带上调用栈, 但是每次去包装错误的时候都去取一次调用栈, 完全没有必要啊, 因为最早出错的函数里就能拿到完整的调用栈的, 并且调用栈打出来的信息也不好看, 而且通常HTTP服务会用框架, 用了框架的话调用栈就会肿起来, 这些框架的固定调用栈信息打印出来毫无帮助. Cause 去递归拿到最里层的 error, 用于和error常量比较或类型断言成自定义 struct type.</li>
 </ul>
-<figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="comment">// Wrapf returns an error annotating err with a stack trace</span></div><div class="line"><span class="comment">// at the point Wrapf is call, and the format specifier.</span></div><div class="line"><span class="comment">// If err is nil, Wrapf returns nil.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">Wrapf</span><span class="params">(err error, format <span class="keyword">string</span>, args ...<span class="keyword">interface</span>&#123;&#125;)</span> <span class="title">error</span></span> &#123;</div><div class="line">	<span class="keyword">if</span> err == <span class="literal">nil</span> &#123;</div><div class="line">		<span class="keyword">return</span> <span class="literal">nil</span></div><div class="line">	&#125;</div><div class="line">	err = &amp;withMessage&#123;</div><div class="line">		cause: err,</div><div class="line">		msg:   fmt.Sprintf(format, args...),</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span> &amp;withStack&#123;</div><div class="line">		err,</div><div class="line">		callers(),</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Cause returns the underlying cause of the error, if possible.</span></div><div class="line"><span class="comment">// An error value has a cause if it implements the following</span></div><div class="line"><span class="comment">// interface:</span></div><div class="line"><span class="comment">//</span></div><div class="line"><span class="comment">//     type causer interface &#123;</span></div><div class="line"><span class="comment">//            Cause() error</span></div><div class="line"><span class="comment">//     &#125;</span></div><div class="line"><span class="comment">//</span></div><div class="line"><span class="comment">// If the error does not implement Cause, the original error will</span></div><div class="line"><span class="comment">// be returned. If the error is nil, nil will be returned without further</span></div><div class="line"><span class="comment">// investigation.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">Cause</span><span class="params">(err error)</span> <span class="title">error</span></span> &#123;</div><div class="line">	<span class="keyword">type</span> causer <span class="keyword">interface</span> &#123;</div><div class="line">		Cause() error</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="keyword">for</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		cause, ok := err.(causer)</div><div class="line">		<span class="keyword">if</span> !ok &#123;</div><div class="line">			<span class="keyword">break</span></div><div class="line">		&#125;</div><div class="line">		err = cause.Cause()</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span> err</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Wrapf returns an error annotating err with a stack trace</span></span><br><span class="line"><span class="comment">// at the point Wrapf is call, and the format specifier.</span></span><br><span class="line"><span class="comment">// If err is nil, Wrapf returns nil.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Wrapf</span><span class="params">(err error, format <span class="keyword">string</span>, args ...<span class="keyword">interface</span>&#123;&#125;)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> err == <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">	&#125;</span><br><span class="line">	err = &amp;withMessage&#123;</span><br><span class="line">		cause: err,</span><br><span class="line">		msg:   fmt.Sprintf(format, args...),</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> &amp;withStack&#123;</span><br><span class="line">		err,</span><br><span class="line">		callers(),</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Cause returns the underlying cause of the error, if possible.</span></span><br><span class="line"><span class="comment">// An error value has a cause if it implements the following</span></span><br><span class="line"><span class="comment">// interface:</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//     type causer interface &#123;</span></span><br><span class="line"><span class="comment">//            Cause() error</span></span><br><span class="line"><span class="comment">//     &#125;</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// If the error does not implement Cause, the original error will</span></span><br><span class="line"><span class="comment">// be returned. If the error is nil, nil will be returned without further</span></span><br><span class="line"><span class="comment">// investigation.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Cause</span><span class="params">(err error)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	<span class="keyword">type</span> causer <span class="keyword">interface</span> &#123;</span><br><span class="line">		Cause() error</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		cause, ok := err.(causer)</span><br><span class="line">		<span class="keyword">if</span> !ok &#123;</span><br><span class="line">			<span class="keyword">break</span></span><br><span class="line">		&#125;</span><br><span class="line">		err = cause.Cause()</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> err</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <ul>
 <li><code>juju/errors</code> API非常复杂, 包装的error的函数就有三个 <code>func Annotatef(other error, format string, args ...interface{}) error</code> 、<code>func Maskf(other error, format string, args ...interface{}) error</code> 、 <code>func Wrapf(other, newDescriptive error, format string, args ...interface{}) error</code> … , 每次包装时都会SetLocation, 消耗更大, 即时有时不需要打印error string 只需要判断, 它也去用runtime.Caller去拿文件名, 行号; 调用栈打出来的信息也不好看.</li>
 </ul>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">// SetLocation records the source location of the error at callDepth stack</div><div class="line">// frames above the call.</div><div class="line">func (e *Err) SetLocation(callDepth int) &#123;</div><div class="line">	_, file, line, _ := runtime.Caller(callDepth + 1)</div><div class="line">	e.file = trimGoPath(file)</div><div class="line">	e.line = line</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>以上包不满足要求, 只能造轮子了. 两个思想. API要设计的简单, 调用栈要好看 <a href="https://github.com/hanjm/errors" target="_blank" rel="external">https://github.com/hanjm/errors</a></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">// SetLocation records the source location of the error at callDepth stack</span><br><span class="line">// frames above the call.</span><br><span class="line">func (e *Err) SetLocation(callDepth int) &#123;</span><br><span class="line">	_, file, line, _ := runtime.Caller(callDepth + 1)</span><br><span class="line">	e.file = trimGoPath(file)</span><br><span class="line">	e.line = line</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上包不满足要求, 只能造轮子了. 两个思想. API要设计的简单, 调用栈要好看 <a href="https://github.com/hanjm/errors" target="_blank" rel="noopener">https://github.com/hanjm/errors</a></p>
 <ul>
 <li>API简单: 定义error常量只有 <code>errors.New</code> 函数, 兼容标准库的函数, 兼容很重要; 包装error的只有 <code>errors.Errorf</code> 函数, 只在最早出错的时候取调用栈, 调用方再包装时无需取调用栈, 此时只需要pc, 不需要这时就把文件名行号取出来; 取最里层的 error 只有 <code>errors.GetInnerMost</code>, 用于和 error 常量比较或类型断言成自定义 struct type分类处理.</li>
 <li>调用栈好看: 去掉标准包的调用栈, 去掉框架固定的调用栈信息(通常是github.com的包), 只保留业务逻辑的调用栈. 按[ 文件名:行号 函数名:message]分行格式化输出, 把调用栈和附加的message对应起来. (第一版格式是[文件名:行号 函数名:message], 没有空格, 后面有个同事说在Goland IDE里看panic信息时可以点击定位到源码, 你的包能不能加这个功能, 所以去研究了下, 写了几个print的demo试了下发现如果输出中的文件名前后带空格的话, intellij IDE会自动识别输出中的文件名变成超链接, 所以给 “文件名:行号” 前后加了空格, 就能在IDE中直接点击定位到源码对应的行, 非常地方便, 感谢这位同事)</li>
 </ul>
-<p>在IDE中加个live template, 写errf回车就补全到<br><figure class="highlight go"><table><tr><td class="code"><pre><div class="line"><span class="keyword">if</span> err!=<span class="literal">nil</span> &#123;</div><div class="line">	err = errors.Errorf(err,<span class="string">"&#123;&#123;光标&#125;&#125;"</span>)</div><div class="line">	<span class="keyword">return</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>在IDE中加个live template, 写errf回车就补全到<br><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> err!=<span class="literal">nil</span> &#123;</span><br><span class="line">	err = errors.Errorf(err,<span class="string">"&#123;&#123;光标&#125;&#125;"</span>)</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>然后补充必要的注释和参数就行了, 在本地环境调试时看到错误日志点击就可以定位到源码, 在非本地环境跑看到错误日志相比之前也能更好地知道发生了什么, 复制文件名:行号到IDE中就能定位到源码, 大大减轻了错误处理的繁琐.</p>
 
         
@@ -262,7 +419,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2018/07/08/Go如何优雅地错误处理(Error handling and Go 1)/" data-id="cjwok624n000p4jrwe6zsg95n" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2018/07/08/Go如何优雅地错误处理(Error handling and Go 1)/" data-id="ck1g6vpq4001jvrxq07z2osyf" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -340,183 +497,6 @@ ga('send', 'pageview');
 
 
 
-    <article id="post-深入理解NATS &amp; NATS Streaming" class="article article-type-post" itemscope itemprop="blogPost">
-    <div class="article-inner">
-        
-        
-            <header class="article-header">
-                
-    
-        <h1 itemprop="name">
-            <a class="article-title" href="/2018/02/17/深入理解NATS & NATS Streaming/">深入理解NATS &amp; NATS Streaming (踩坑记)</a>
-        </h1>
-    
-
-                
-                    <div class="article-meta">
-                        
-    <div class="article-date">
-        <i class="fa fa-calendar"></i>
-        <a href="/2018/02/17/深入理解NATS & NATS Streaming/">
-            <time datetime="2018-02-16T16:00:00.000Z" itemprop="datePublished">2018-02-17</time>
-        </a>
-    </div>
-
-
-                        
-                        
-    <div class="article-tag">
-        <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/Go/">Go</a>, <a class="tag-link" href="/tags/NATS/">NATS</a>, <a class="tag-link" href="/tags/NATS-Streaming/">NATS Streaming</a>, <a class="tag-link" href="/tags/消息队列/">消息队列</a>
-    </div>
-
-                    </div>
-                
-            </header>
-        
-        
-        <div class="article-entry" itemprop="articleBody">
-        
-            
-            <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>NATS Server是一个高性能的, cloud native的, 基于发布订阅机制的消息系统, 没有消息持久化功能.<br>NATS Streaming Server是基于NATS Server的, 增加消息持久化功能的消息系统.</p>
-<h2 id="NATS-Streaming-持久化特性踩坑记"><a href="#NATS-Streaming-持久化特性踩坑记" class="headerlink" title="NATS Streaming 持久化特性踩坑记"></a>NATS Streaming 持久化特性踩坑记</h2><p>官网的文档并不详细, 很多重要的技术细节没说, 看了官网的文档之后发现用法很简单, 然后直接去写代码, 写publisher代码没什么问题, 写subscriber代码也能正常工作. 但是subscriber一重启, 重启后重启期间publisher发的消息不会继续收到, 说好的持久化呢? 我把官网的文档翻了遍也没找到答案. 最后在项目的readme.md中找到了答案: 要让subscriber重启后能继续收到重启期间发过来的消息且不重复消息, 必须在调用<code>Subscribe(subject string, cb MsgHandler, opts ...SubscriptionOption) (Subscription, error)</code>订阅时设置一样的durableName, 且重启后连接时<code>Connect(stanClusterID, clientID string, options ...Option) (Conn, error)</code>ClusterID、clientID不能变.</p>
-<p>要想理解NATS和NATS Streaming的特性, server和client的readme文档都需要仔细阅读, 特别是nats-streaming服务端的readme. 代码也值得阅读研究.</p>
-<ul>
-<li>gnatsd服务端 <a href="https://github.com/nats-io/gnatsd" target="_blank" rel="external">https://github.com/nats-io/gnatsd</a></li>
-<li>gnatsd客户端 <a href="https://github.com/nats-io/go-nats" target="_blank" rel="external">https://github.com/nats-io/go-nats</a></li>
-<li>nats-streaming服务端 <a href="https://github.com/nats-io/nats-streaming-server" target="_blank" rel="external">https://github.com/nats-io/nats-streaming-server</a></li>
-<li>nats-streaming客户端 <a href="https://github.com/nats-io/go-nats-streaming" target="_blank" rel="external">https://github.com/nats-io/go-nats-streaming</a></li>
-</ul>
-<h2 id="重要特性说明"><a href="#重要特性说明" class="headerlink" title="重要特性说明"></a>重要特性说明</h2><ol>
-<li>当subject没有被订阅时, 消息会被直接丢弃, 所以重启订阅者会丢消息, 解决办法: 要么开2个以上客户端实例, 组成队列订阅QueueSubscribe, 要么换NATS Streaming.</li>
-<li>clientID和durableName对于NATS Streaming非常重要. 要让subscriber重启后能继续收到重启期间发过来的消息且不重复消息, 必须在调用<code>Subscribe(subject string, cb MsgHandler, opts ...SubscriptionOption) (Subscription, error)</code>订阅时设置一样的durableName, 调用<code>Connect(stanClusterID, clientID string, options ...Option) (Conn, error)</code>连接时ClusterID、clientID不能变. 程序关闭时应该使用Close而不是Unsubscribe, Unsubscribe()会删除在server端删除该持久化订阅.<blockquote>
-<p>This client ID links a given connection to its published messages, subscriptions, especially durable subscriptions. Indeed, durable subscriptions are stored as a combination of the client ID and durable name.<br>If an application wishes to resume message consumption from where it previously stopped, it needs to create a durable subscription. It does so by providing a durable name, which is combined with the client ID provided when the client created its connection. The server then maintain the state for this subscription even after the client connection is closed.<br> Note: The starting position given by the client when restarting a durable subscription is ignored.<br> When the application wants to stop receiving messages on a durable subscription, it should close - but <em>not unsubscribe</em>- this subscription. If a given client library does not have the option to close a subscription, the application should close the connection instead.<br> When the application wants to delete the subscription, it must unsubscribe it. Once unsubscribed, the state is removed and it is then possible to re-use the durable name, but it will be considered a brand new durable subscription, with the start position being the one given by the client when creating the durable subscription.</p>
-</blockquote>
-</li>
-</ol>
-<h4 id=""><a href="#" class="headerlink" title=""></a><a href="https://github.com/nats-io/nats-streaming-server#queue-group" target="_blank" rel="external"></a></h4><ol>
-<li><p>NATS连接时可以设置客户端的名字, 这样在monitor界面中的/connz就能方便地看到各个客户端的统计数据.</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">// Options that can be passed to Connect.   // Name is an Option to set the client name. func Name(name string) Option &#123;</div><div class="line">   return func(o *Options) error &#123;</div><div class="line">      o.Name = name</div><div class="line">      return nil</div><div class="line">   &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">type ConnInfo struct &#123;</div><div class="line">	Cid            uint64    `json:&quot;cid&quot;`</div><div class="line">	IP             string    `json:&quot;ip&quot;`</div><div class="line">	Port           int       `json:&quot;port&quot;`</div><div class="line">	Start          time.Time `json:&quot;start&quot;`</div><div class="line">	LastActivity   time.Time `json:&quot;last_activity&quot;`</div><div class="line">	Uptime         string    `json:&quot;uptime&quot;`</div><div class="line">	Idle           string    `json:&quot;idle&quot;`</div><div class="line">	Pending        int       `json:&quot;pending_bytes&quot;`</div><div class="line">	InMsgs         int64     `json:&quot;in_msgs&quot;`</div><div class="line">	OutMsgs        int64     `json:&quot;out_msgs&quot;`</div><div class="line">	InBytes        int64     `json:&quot;in_bytes&quot;`</div><div class="line">	OutBytes       int64     `json:&quot;out_bytes&quot;`</div><div class="line">	NumSubs        uint32    `json:&quot;subscriptions&quot;`</div><div class="line">	Name           string    `json:&quot;name,omitempty&quot;`</div><div class="line">	Lang           string    `json:&quot;lang,omitempty&quot;`</div><div class="line">	Version        string    `json:&quot;version,omitempty&quot;`</div><div class="line">	TLSVersion     string    `json:&quot;tls_version,omitempty&quot;`</div><div class="line">	TLSCipher      string    `json:&quot;tls_cipher_suite,omitempty&quot;`</div><div class="line">	AuthorizedUser string    `json:&quot;authorized_user,omitempty&quot;`</div><div class="line">	Subs           []string  `json:&quot;subscriptions_list,omitempty&quot;`</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-</li>
-<li><p>使用.来分隔subject的级别. NATS允许subject包含斜杠/符号, 但NATS Streaming不允许, 因为NATS Streaming持久化时会使用subject名字来作为文件夹名, </p>
-<ul>
-<li>NATS的subject可以为任意不为空的字符串, 具体的subject不能包含通配符’*’和’&gt;’.</li>
-<li>NATS Streaming的subject不能为空, 首尾不能为点’.’, 不能包含两个连续的点’.’, 由于暂时不支持通配符订阅功能, 所以不能包含’*’和’&gt;’.</li>
-</ul>
-</li>
-<li>NATS Streaming Server实际上是内嵌了一个NATS Server, 自己作为NATS的客户端. NATS Streaming的客户端实际上没有和NATS Streaming Server直接连接, 而是连接内嵌的NATS Server, NATS Streaming Server通过订阅客户端的心跳来知道NATS Streaming客户端连接有没有断开. 所以它强烈建议客户端退出程序时主动Close.</li>
-<li>NATS可以热重新加载配置, 发送SIGHUP信号或<code>gnatsd -sl reload</code>即可.</li>
-<li>开发环境可以加<code>-V</code>参数了解NATS, 生产环境就没必要了, 否则会把发过来的消息全打在日志里.</li>
-<li>你甚至可以用NATS的client包publish消息到NATS Streaming, NATS的client可以subscribe, 但NATS Streaming的client无法subscribe, 因为内部的subject变了. 最好不用混用, 容易出问题.</li>
-<li><p>NATS Streaming客户端连接时提供的ClusterID和服务端启动配置的ClusterID不一致时会报, 有人表示费解吐槽过, <a href="https://github.com/nats-io/nats-streaming-server/issues/309" target="_blank" rel="external">https://github.com/nats-io/nats-streaming-server/issues/309</a>, 但官方解释说没有问题, Timeout也说的通.</p>
-<blockquote>
-<p>If you provide a cluster ID not used by any of the servers in the network, no server will respond to the client, hence the timeout error message from the client library. If anything, this is an error message that needs to be updated in the client libraries, not in the server.</p>
-</blockquote>
-</li>
-<li><p>ChanSubscribe方式的客户端优雅关闭, 等待消息处理完成.</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">package main</div><div class="line"></div><div class="line">import (</div><div class="line">   &quot;fmt&quot;</div><div class="line"> &quot;os&quot; &quot;syscall&quot; &quot;os/signal&quot; &quot;github.com/nats-io/go-nats&quot; &quot;sync&quot; )</div><div class="line"></div><div class="line">func main() &#123;</div><div class="line">   n, err := nats.Connect(&quot;nats://127.0.0.1:7222&quot;,</div><div class="line">  nats.Name(&quot;test_client&quot;),</div><div class="line">  nats.UserInfo(&quot;&quot;, &quot;&quot;))</div><div class="line">   if err != nil &#123;</div><div class="line">      panic(err)</div><div class="line">   &#125;</div><div class="line">   subject := &quot;test&quot;</div><div class="line">  msgCh := make(chan *nats.Msg, nats.DefaultMaxChanLen)</div><div class="line">   _, err = n.ChanSubscribe(subject, msgCh)</div><div class="line">   if err != nil &#123;</div><div class="line">      panic(err)</div><div class="line">   &#125;</div><div class="line">   wg := sync.WaitGroup&#123;&#125;</div><div class="line">   for i := 0; i &lt; 2; i++ &#123;</div><div class="line">      wg.Add(1)</div><div class="line">      go func() &#123;</div><div class="line">         defer wg.Done()</div><div class="line">         // msg handler</div><div class="line">  for msg := range msgCh &#123;</div><div class="line">            fmt.Printf(&quot;%s\n&quot;, msg.Data)</div><div class="line">         &#125;</div><div class="line">      &#125;()</div><div class="line">   &#125;</div><div class="line">   quit := make(chan os.Signal)</div><div class="line">   signal.Notify(quit, syscall.SIGQUIT,</div><div class="line">  syscall.SIGTERM,</div><div class="line">  syscall.SIGINT,</div><div class="line">  syscall.SIGUSR1,</div><div class="line">  syscall.SIGUSR2)</div><div class="line">   select &#123;</div><div class="line">   case &lt;-quit:</div><div class="line">      defer wg.Wait()</div><div class="line">      // close msgCh and wait process ok</div><div class="line">      close(msgCh)</div><div class="line">      n.Flush()</div><div class="line">      n.Close()</div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-</li>
-</ol>
-<h2 id="NATS代码中的技巧"><a href="#NATS代码中的技巧" class="headerlink" title="NATS代码中的技巧"></a>NATS代码中的技巧</h2><ol>
-<li><p>很有用的Go风格的可选参数设计模式, 很多地方见过.</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">// Option is a function on the options for a connection. </div><div class="line">type Option func(*Options) error</div><div class="line"></div><div class="line">// Options can be used to create a customized connection. </div><div class="line">type Options struct &#123; </div><div class="line">  Url string   </div><div class="line"> ... </div><div class="line">  User string</div><div class="line">  Password string</div><div class="line">&#125;</div><div class="line">var DefaultOptions = Options&#123;</div><div class="line">   AllowReconnect:   true,</div><div class="line">  MaxReconnect:     DefaultMaxReconnect,</div><div class="line">  ReconnectWait:    DefaultReconnectWait,</div><div class="line">  Timeout:          DefaultTimeout,</div><div class="line">  PingInterval:     DefaultPingInterval,</div><div class="line">  MaxPingsOut:      DefaultMaxPingOut,</div><div class="line">  SubChanLen:       DefaultMaxChanLen,</div><div class="line">  ReconnectBufSize: DefaultReconnectBufSize,</div><div class="line">  Dialer: &amp;net.Dialer&#123;</div><div class="line">      Timeout: DefaultTimeout,</div><div class="line">  &#125;, &#125;</div><div class="line"></div><div class="line">// Connect will attempt to connect to the NATS system. </div><div class="line">// The url can contain username/password semantics. e.g. nats://derek:pass@localhost:4222 </div><div class="line">// Comma separated arrays are also supported, e.g. urlA, urlB. </div><div class="line">// Options start with the defaults but can be overridden. </div><div class="line">func Connect(url string, options ...Option) (*Conn, error) &#123;</div><div class="line">   opts := DefaultOptions</div><div class="line">   opts.Servers = processUrlString(url)</div><div class="line">   for _, opt := range options &#123;</div><div class="line">      if err := opt(&amp;opts); err != nil &#123;</div><div class="line">         return nil, err</div><div class="line">      &#125;</div><div class="line">   &#125;</div><div class="line">   return opts.Connect()</div><div class="line">&#125;</div><div class="line"></div><div class="line">// Options that can be passed to Connect.   // Name is an Option to set the client name. func Name(name string) Option &#123;</div><div class="line">   return func(o *Options) error &#123;</div><div class="line">      o.Name = name</div><div class="line">      return nil</div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-</li>
-<li><p>使用ringBuffer限制消息数量</p>
-<blockquote>
-<pre><code>You can view a message log as a ring buffer. Messages are appended to the end of the log. If a limit is set globally for all channels, or specifically for this channel, when the limit is reached, older messages are removed to make room for the new ones.
-</code></pre></blockquote>
-</li>
-<li><p>用reflect来绑定任意类型的chan</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">chVal := reflect.ValueOf(channel)</div><div class="line">if chVal.Kind() != reflect.Chan &#123;</div><div class="line">   return ErrChanArg</div><div class="line">&#125;</div><div class="line">val, ok := chVal.Recv()</div><div class="line">if !ok &#123;</div><div class="line">   // Channel has most likely been closed.</div><div class="line">  return </div><div class="line">&#125;</div></pre></td></tr></table></figure></li>
-</ol>
-
-        
-        </div>
-        <footer class="article-footer">
-            <div class="share-container">
-
-
-
-</div>
-
-    <a data-url="https://imhanjm.com/2018/02/17/深入理解NATS & NATS Streaming/" data-id="cjwok625x002m4jrwvk9u0z4h" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
-<script>
-    (function ($) {
-        // Prevent duplicate binding
-        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
-            __SHARE_BUTTON_BINDED__ = true;
-        } else {
-            return;
-        }
-        $('body').on('click', function() {
-            $('.article-share-box.on').removeClass('on');
-        }).on('click', '.article-share-link', function(e) {
-            e.stopPropagation();
-
-            var $this = $(this),
-                url = $this.attr('data-url'),
-                encodedUrl = encodeURIComponent(url),
-                id = 'article-share-box-' + $this.attr('data-id'),
-                offset = $this.offset(),
-                box;
-
-            if ($('#' + id).length) {
-                box = $('#' + id);
-
-                if (box.hasClass('on')){
-                    box.removeClass('on');
-                    return;
-                }
-            } else {
-                var html = [
-                    '<div id="' + id + '" class="article-share-box">',
-                        '<input class="article-share-input" value="' + url + '">',
-                        '<div class="article-share-links">',
-                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
-                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
-                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
-                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
-                        '</div>',
-                    '</div>'
-                ].join('');
-
-              box = $(html);
-
-              $('body').append(box);
-            }
-
-            $('.article-share-box.on').hide();
-
-            box.css({
-                top: offset.top + 25,
-                left: offset.left
-            }).addClass('on');
-
-        }).on('click', '.article-share-box', function (e) {
-            e.stopPropagation();
-        }).on('click', '.article-share-box-input', function () {
-            $(this).select();
-        }).on('click', '.article-share-box-link', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
-        });
-    })(jQuery);
-</script>
-
-            
-    
-        <a href="https://imhanjm.com/2018/02/17/深入理解NATS & NATS Streaming/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2018/02/17/深入理解NATS &amp; NATS Streaming/">评论</a>
-    
-
-        </footer>
-    </div>
-    
-</article>
-
-
-
     <nav id="page-nav">
         <a class="extend prev" rel="prev" href="/page/3/">&laquo; 上一页</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/12/">12</a><a class="extend next" rel="next" href="/page/5/">下一页 &raquo;</a>
     </nav>
@@ -529,6 +509,25 @@ ga('send', 'pageview');
         <h3 class="widget-title">最新文章</h3>
         <div class="widget">
             <ul id="recent-post" class="">
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2019/10/06/深入理解Prometheus(GO SDK)/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2019/10/06/深入理解Prometheus(GO SDK)/" class="title">深入理解Prometheus(GO SDK及Grafana基本面板)</a></p>
+                            <p class="item-date"><time datetime="2019-10-05T16:00:00.000Z" itemprop="datePublished">2019-10-06</time></p>
+                        </div>
+                    </li>
                 
                     <li>
                         
@@ -606,25 +605,6 @@ ga('send', 'pageview');
                         </div>
                     </li>
                 
-                    <li>
-                        
-                        <div class="item-thumbnail">
-                            <a href="/2018/11/18/学习influxdb/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"></p>
-                            <p class="item-title"><a href="/2018/11/18/学习influxdb/" class="title">学习Influxdb</a></p>
-                            <p class="item-date"><time datetime="2018-11-17T16:00:00.000Z" itemprop="datePublished">2018-11-18</time></p>
-                        </div>
-                    </li>
-                
             </ul>
         </div>
     </div>
@@ -636,7 +616,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">归档</h3>
         <div class="widget">
-            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">二月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">1</span></li></ul>
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">十月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">二月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">十二月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">二月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -645,7 +625,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签</h3>
         <div class="widget">
-            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/172-17-0-1/">172.17.0.1</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cool-tools/">Cool tools</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Error-handling/">Error handling</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRPC/">GRPC</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP2/">HTTP2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Macos/">Macos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS/">NATS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS-Streaming/">NATS Streaming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/">Nginx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/activemq/">activemq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bench/">bench</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/decimal/">decimal</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker-for-mac/">docker for mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grpc-go/">grpc-go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/influxdb/">influxdb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log/">log</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/messageQueue/">messageQueue</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mq/">mq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pubsub/">pubsub</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/时间处理/">时间处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/架构/">架构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/连接池/">连接池</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/错误处理/">错误处理</a><span class="tag-list-count">1</span></li></ul>
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/172-17-0-1/">172.17.0.1</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cool-tools/">Cool tools</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Error-handling/">Error handling</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRPC/">GRPC</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Go/">Go</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP2/">HTTP2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Macos/">Macos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS/">NATS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NATS-Streaming/">NATS Streaming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/">Nginx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/activemq/">activemq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bench/">bench</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/">benchmark</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/decimal/">decimal</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker-for-mac/">docker for mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grpc-go/">grpc-go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/influxdb/">influxdb</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log/">log</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/messageQueue/">messageQueue</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mq/">mq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prometheus/">prometheus</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pubsub/">pubsub</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/时间处理/">时间处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/架构/">架构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/监控/">监控</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/连接池/">连接池</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/错误处理/">错误处理</a><span class="tag-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -654,7 +634,7 @@ ga('send', 'pageview');
     <div class="widget-wrap">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/172-17-0-1/" style="font-size: 10px;">172.17.0.1</a> <a href="/tags/Cool-tools/" style="font-size: 15px;">Cool tools</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/Error-handling/" style="font-size: 10px;">Error handling</a> <a href="/tags/GRPC/" style="font-size: 15px;">GRPC</a> <a href="/tags/Go/" style="font-size: 20px;">Go</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/HTTP2/" style="font-size: 10px;">HTTP2</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Macos/" style="font-size: 10px;">Macos</a> <a href="/tags/NATS/" style="font-size: 10px;">NATS</a> <a href="/tags/NATS-Streaming/" style="font-size: 10px;">NATS Streaming</a> <a href="/tags/Nginx/" style="font-size: 15px;">Nginx</a> <a href="/tags/activemq/" style="font-size: 10px;">activemq</a> <a href="/tags/bench/" style="font-size: 10px;">bench</a> <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a> <a href="/tags/decimal/" style="font-size: 10px;">decimal</a> <a href="/tags/docker-for-mac/" style="font-size: 10px;">docker for mac</a> <a href="/tags/grpc-go/" style="font-size: 10px;">grpc-go</a> <a href="/tags/influxdb/" style="font-size: 10px;">influxdb</a> <a href="/tags/log/" style="font-size: 10px;">log</a> <a href="/tags/messageQueue/" style="font-size: 10px;">messageQueue</a> <a href="/tags/mq/" style="font-size: 10px;">mq</a> <a href="/tags/mysql/" style="font-size: 15px;">mysql</a> <a href="/tags/pubsub/" style="font-size: 10px;">pubsub</a> <a href="/tags/时间处理/" style="font-size: 10px;">时间处理</a> <a href="/tags/架构/" style="font-size: 10px;">架构</a> <a href="/tags/消息队列/" style="font-size: 10px;">消息队列</a> <a href="/tags/连接池/" style="font-size: 10px;">连接池</a> <a href="/tags/错误处理/" style="font-size: 10px;">错误处理</a>
+            <a href="/tags/172-17-0-1/" style="font-size: 10px;">172.17.0.1</a> <a href="/tags/Cool-tools/" style="font-size: 15px;">Cool tools</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/Error-handling/" style="font-size: 10px;">Error handling</a> <a href="/tags/GRPC/" style="font-size: 15px;">GRPC</a> <a href="/tags/Go/" style="font-size: 20px;">Go</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/HTTP2/" style="font-size: 10px;">HTTP2</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Macos/" style="font-size: 10px;">Macos</a> <a href="/tags/NATS/" style="font-size: 10px;">NATS</a> <a href="/tags/NATS-Streaming/" style="font-size: 10px;">NATS Streaming</a> <a href="/tags/Nginx/" style="font-size: 15px;">Nginx</a> <a href="/tags/activemq/" style="font-size: 10px;">activemq</a> <a href="/tags/bench/" style="font-size: 10px;">bench</a> <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a> <a href="/tags/decimal/" style="font-size: 10px;">decimal</a> <a href="/tags/docker-for-mac/" style="font-size: 10px;">docker for mac</a> <a href="/tags/grpc-go/" style="font-size: 10px;">grpc-go</a> <a href="/tags/influxdb/" style="font-size: 10px;">influxdb</a> <a href="/tags/log/" style="font-size: 10px;">log</a> <a href="/tags/messageQueue/" style="font-size: 10px;">messageQueue</a> <a href="/tags/mq/" style="font-size: 10px;">mq</a> <a href="/tags/mysql/" style="font-size: 15px;">mysql</a> <a href="/tags/prometheus/" style="font-size: 10px;">prometheus</a> <a href="/tags/pubsub/" style="font-size: 10px;">pubsub</a> <a href="/tags/时间处理/" style="font-size: 10px;">时间处理</a> <a href="/tags/架构/" style="font-size: 10px;">架构</a> <a href="/tags/消息队列/" style="font-size: 10px;">消息队列</a> <a href="/tags/监控/" style="font-size: 10px;">监控</a> <a href="/tags/连接池/" style="font-size: 10px;">连接池</a> <a href="/tags/错误处理/" style="font-size: 10px;">错误处理</a>
         </div>
     </div>
 
