@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="hello">
 <meta property="og:description" content="最近我对Prometheus刮目相看了, 服务加一行代码就能轻轻松松地监控起来服务的CPU使用率、内存、协程数、线程数、打开的文件描述符数量及软限制、重启次数等重要的基本指标, 配合Grafana建立了直观的图表, 对查问题很有帮助, 故想写写折腾Prometheus和Grafana后得到的值得一讲的实践与理解. 介绍Prometheus是CNCF 的项目之一(ps.CNCF的项目代码都值得研究)">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-10-07T09:24:09.455Z">
+<meta property="og:updated_time" content="2019-10-07T09:25:19.470Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入理解Prometheus(GO SDK及Grafana基本面板)">
 <meta name="twitter:description" content="最近我对Prometheus刮目相看了, 服务加一行代码就能轻轻松松地监控起来服务的CPU使用率、内存、协程数、线程数、打开的文件描述符数量及软限制、重启次数等重要的基本指标, 配合Grafana建立了直观的图表, 对查问题很有帮助, 故想写写折腾Prometheus和Grafana后得到的值得一讲的实践与理解. 介绍Prometheus是CNCF 的项目之一(ps.CNCF的项目代码都值得研究)">
@@ -240,7 +240,7 @@ ga('send', 'pageview');
 <p><a href="https://prometheus.io/docs/prometheus/latest/getting_started/" target="_blank" rel="noopener">文档</a>上有基础的配置文件示例, 复制为<code>prometheus.yml</code>即可.</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">./prometheus --config.file=prometheus.yml</span><br></pre></td></tr></table></figure>
 <p><code>prometheus.yml</code>主要是定义一些全局的抓取间隔等参数以及抓取的job, 抓取的job可以指定名字、抓取间隔、抓取目标的IP端口号列表, 目标的路由路径, 额外的label等参数.</p>
-<p>抓取指标时会自动加上<code>job=&quot;job_name&quot;</code>和<code>instance=&quot;target ip port&quot;</code>两个label, 如果想给job添加额外的固定label, 则可以在配置文件中按如下语法添加.</p>
+<p>抓取指标时会自动加上<code>job=&quot;&lt;job_name&gt;&quot;</code>和<code>instance=&quot;&lt;target ip port&gt;&quot;</code>两个label, 如果想给job添加额外的固定label, 则可以在配置文件中按如下语法添加.</p>
 <figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">scrape_configs:</span></span><br><span class="line"><span class="attr">  - job_name:</span> <span class="string">foo</span></span><br><span class="line"><span class="attr">    metrics_path:</span> <span class="string">"/prometheus/metrics"</span></span><br><span class="line"><span class="attr">    static_configs:</span></span><br><span class="line"><span class="attr">      - targets:</span> <span class="string">['localhost:10056']</span></span><br><span class="line"><span class="attr">        labels:</span></span><br><span class="line"><span class="attr">          service_name:</span> <span class="string">"bar"</span></span><br></pre></td></tr></table></figure>
 <h1 id="服务发现"><a href="#服务发现" class="headerlink" title="服务发现"></a>服务发现</h1><p>前面说到, Prometheus的配置文件主要就是定义要抓取的job配置, 显然新加服务要改配置文件是比较麻烦的, Prometheus的一大重要的功能点就是原生支持多种服务发现方式, 支持consul etcd等服务发现组件, 还支持非常通用的基于文件的服务发现, 即你可以定义一个写好target的IP端口号等配置的配置文件路径, 由外部程序定期去更新这个文件, prometheus会定期加载它, 更新抓取的目标, 非常灵活.</p>
 <h1 id="数据描述"><a href="#数据描述" class="headerlink" title="数据描述"></a>数据描述</h1><p>Prometheus的时序指标数据由timestamp、metric name、label、value组成:</p>
@@ -338,7 +338,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2019/10/06/深入理解Prometheus(GO SDK)/" data-id="ck1g6vpsd0038vrxqap0db37h" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2019/10/06/深入理解Prometheus(GO SDK)/" data-id="ck1g7md3e002i86xqvoxdabqo" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
