@@ -292,7 +292,7 @@ ga('send', 'pageview');
 <li><p>带label的每次会去计算label值的hash找到对应的向量, 然后去计数, 所以label数不要太多, label值的长度不要太长, label值是要可枚举的并且不能太多, 否则执行查询时慢, 面板加载慢, 存储也费空间.   label如果可以提前计算则尽量使用GetMetricWithLabelValues提前计算好得到一个普通的计数器, 减少每次计数的一次计算label的hash, 提升程序性能.</p>
 <figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="comment">// GetMetricWithLabelValues replaces the method of the same name in</span></span><br><span class="line"><span class="comment">// MetricVec. The difference is that this method returns a Counter and not a</span></span><br><span class="line"><span class="comment">// Metric so that no type conversion is required.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(m *CounterVec)</span> <span class="title">GetMetricWithLabelValues</span><span class="params">(lvs ...<span class="keyword">string</span>)</span> <span class="params">(Counter, error)</span></span> &#123;</span><br><span class="line">   metric, err := m.MetricVec.GetMetricWithLabelValues(lvs...)</span><br><span class="line">   <span class="keyword">if</span> metric != <span class="literal">nil</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> metric.(Counter), err</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>对于时长time.Duration数据类型的指标值收集, time.Since是优化过的, 直接走runtimeNano, 无需走系统调用取当前时间, 性能优于time.Now后相减, 另外, 频繁调用time.Now在性能要求高的程序也会变成起眼的开销.</p>
+<li><p>对于时长time.Duration数据类型的指标值收集, time.Since是优化过的, 直接走runtimeNano, 无需走系统调用取当前时间, 性能优于time.Now后相减, 另外, 频繁调用time.Now在性能要求高的程序也会变成不小的开销.</p>
 </li>
 </ol>
 <h1 id="查询语句promQL"><a href="#查询语句promQL" class="headerlink" title="查询语句promQL"></a>查询语句promQL</h1><p>Prometheus查询语句(PromQL)是一个相比SQL更简单也很有表达力的专用查询语言, 通过文档及例子学习.</p>
@@ -337,7 +337,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2019/10/06/深入理解Prometheus(GO SDK)/" data-id="ck1gczvtg002cgnxqc332eh8o" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2019/10/06/深入理解Prometheus(GO SDK)/" data-id="ck1gd0bx7002chaxqggjbdf3k" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -581,7 +581,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/" data-id="ck1gczvtg002agnxq4p205jc5" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/" data-id="ck1gd0bx6002ahaxqwa0fbgx1" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
