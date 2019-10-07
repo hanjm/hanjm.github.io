@@ -232,6 +232,7 @@ ga('send', 'pageview');
         
             
             <p>最近我对Prometheus刮目相看了, 服务加一行代码就能轻轻松松地监控起来服务的CPU使用率、内存、协程数、线程数、打开的文件描述符数量及软限制、重启次数等重要的基本指标, 配合Grafana建立了直观的图表, 对查问题很有帮助, 故想写写折腾Prometheus和Grafana后得到的值得一讲的实践与理解.</p>
+<p><img src="https://ws1.sinaimg.cn/large/cfe1407cly1g7ps6uqg9gj22t81echdt.jpg" alt="GO服务基本而重要的指标"></p>
 <h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>Prometheus是<a href="https://www.cncf.io/" target="_blank" rel="noopener">CNCF</a> 的项目之一(ps.CNCF的项目代码都值得研究), 而且还是Graduated Projects. 同时因为其主要是方便灵活的pull方式, 暴露出个http接口出来给prometheusd拉取就行了, 而push方式客户端要做更多的事情, 如果要改push的地址的话就很麻烦, 所以很多著名的项目都在用它, 比如k8s, tidb, etcd, 甚至是时序数据库influxdb都在用它.</p>
 <p>我体会到, 很多场景很适合使用Prometheus sdk去加一些指标, 比如logger包, Error级别的消息数是一个很有用的指标; 对于消息队列的SDK, 可以用Prometheus收集客户端侧的发送时延、消费时延、消费处理耗时、消费处理出错等指标; 封装DB操作的SDK, 连接池打开的DB连接数与最大连接数是个很重要的指标; 写个HTTP Middleware, http handler的调用次数、处理时间和responseCode是感兴趣的指标.</p>
 <h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><p>Prometheus是Go写的, 故部署方便且跨平台, 一个二进制文件加配置文件就能跑起来.</p>
@@ -336,7 +337,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2019/10/06/深入理解Prometheus(GO SDK)/" data-id="ck1g7tm8o002cblxq3lbvnvyv" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2019/10/06/深入理解Prometheus(GO SDK)/" data-id="ck1g8eget002el8xqn6mx8cct" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -455,7 +456,7 @@ ga('send', 'pageview');
             <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>AWS MQ是完全托管的 ActiveMQ 服务, 最近需要使用, 于是学习其文档, 实践其特性, 由于 ActiveMQ 支持非常丰富的协议, OpenWire amqp stomp mqtt, 所以也学习了各大协议的特性及其SDK.</p>
 <h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><p>本地开发最方便的方式当然是docker了, <a href="https://hub.docker.com/r/rmohr/activemq/" target="_blank" rel="noopener">rmohr/activemq</a> 文档比较好的且有aws支持的5.15.6版本的tag.</p>
 <p>需要注意的是, 首先要根据其docker hub镜像文档上的几步操作, 将镜像中的默认配置文件复制到自定义的本机conf目录下 <code>/usr/local/activemq/conf</code>, 然后就快速地启动了一个默认配置的 ActiveMQ server</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span> active mq</span><br><span class="line">docker run -itd --name activemq \</span><br><span class="line">-p 61616:61616 -p 8161:8161 -p 5672:5672 -p 61613:61613 -p 1883:1883 -p 61614:61614 \</span><br><span class="line">-v /usr/local/activemq/conf:/opt/activemq/conf \</span><br><span class="line">-v /usr/local/activemq/data:/opt/activemq/data \</span><br><span class="line">rmohr/activemq:5.15.6</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> active mq</span></span><br><span class="line">docker run -itd --name activemq \</span><br><span class="line">-p 61616:61616 -p 8161:8161 -p 5672:5672 -p 61613:61613 -p 1883:1883 -p 61614:61614 \</span><br><span class="line">-v /usr/local/activemq/conf:/opt/activemq/conf \</span><br><span class="line">-v /usr/local/activemq/data:/opt/activemq/data \</span><br><span class="line">rmohr/activemq:5.15.6</span><br></pre></td></tr></table></figure>
 <hr>
 <h1 id="特性"><a href="#特性" class="headerlink" title="特性"></a>特性</h1><h3 id="Advisory"><a href="#Advisory" class="headerlink" title="Advisory"></a>Advisory</h3><p>ActiveMQ可以将本身的一些事件投递到系统的消息队列, 如 queue/topic的创建, 没有消费者的queue/topic等. <a href="http://activemq.apache.org/advisory-message.html" target="_blank" rel="noopener">http://activemq.apache.org/advisory-message.html</a></p>
 <p>这个特性对于监控MQ非常有用, 默认配置时关闭的, 需要在配置文件activemq.xml中打开.</p>
@@ -580,7 +581,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/" data-id="ck1g7tm8o002ablxqn9ejozl4" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/" data-id="ck1g8egeu002gl8xqw520vhzq" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
