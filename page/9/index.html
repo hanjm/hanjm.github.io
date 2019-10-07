@@ -193,7 +193,7 @@ ga('send', 'pageview');
 
             
             <section id="main">
-    <article id="post-MacOS下酷工具收集(持续)" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Linux cli下酷工具收集(持续)" class="article article-type-post" itemscope itemprop="blogPost">
     <div class="article-inner">
         
         
@@ -201,7 +201,7 @@ ga('send', 'pageview');
                 
     
         <h1 itemprop="name">
-            <a class="article-title" href="/2017/05/06/MacOS下酷工具收集(持续)/">MacOS下酷工具收集(持续)</a>
+            <a class="article-title" href="/2017/05/06/Linux cli下酷工具收集(持续)/">Linux Cli下酷工具收集(持续)</a>
         </h1>
     
 
@@ -210,7 +210,7 @@ ga('send', 'pageview');
                         
     <div class="article-date">
         <i class="fa fa-calendar"></i>
-        <a href="/2017/05/06/MacOS下酷工具收集(持续)/">
+        <a href="/2017/05/06/Linux cli下酷工具收集(持续)/">
             <time datetime="2017-05-05T16:00:00.000Z" itemprop="datePublished">2017-05-06</time>
         </a>
     </div>
@@ -220,7 +220,7 @@ ga('send', 'pageview');
                         
     <div class="article-tag">
         <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/Cool-tools/">Cool tools</a>, <a class="tag-link" href="/tags/Macos/">Macos</a>
+        <a class="tag-link" href="/tags/Cool-tools/">Cool tools</a>, <a class="tag-link" href="/tags/Linux/">Linux</a>
     </div>
 
                     </div>
@@ -232,29 +232,16 @@ ga('send', 'pageview');
         
             
             <ol>
-<li>LaunchRocket. 系统偏好设置中的用户与群组可以添加登录项脚本, 但对于需要root权限启动的应用无解, 脚本会卡在输入密码. LaunchRocket能优雅解决.(当然, 还有一种魔法方法: 用docker加<code>--restart always</code>的container或docker swarm service 跑, docker启动时会自动启动这些container/service) GitHub地址<a href="https://github.com/jimbojsb/launchrocket" target="_blank" rel="noopener">https://github.com/jimbojsb/launchrocket</a> <img src="https://raw.githubusercontent.com/jimbojsb/launchrocket/master/screenshots/LaunchRocket.png" alt="LaunchRocket"></li>
-<li>Snip. Windows下有Winsnap、FastStone、Snipaste等此等优秀的截图软件, 相比之下, Mac上的截图软件要逊色不少. Winsnap有个很方便的特性是截图可以默认复制到剪切板, 很容易粘贴到其他软件去, Mac上snip也有这个特性, snip是一款腾讯开发的截图软件, 官网<a href="http://snip.qq.com/" target="_blank" rel="noopener">http://snip.qq.com/</a> </li>
-<li>jietu. 还是腾讯开发的截图软件, 比snip更好用, 也是默认复制到剪切板, 而且提供编辑功能. 官网<a href="http://jietu.qq.com" target="_blank" rel="noopener">http://jietu.qq.com</a></li>
-<li>Macdown. 好用优雅免费的Markdown书写工具. GitHub地址<a href="https://github.com/MacDownApp/macdown" target="_blank" rel="noopener">https://github.com/MacDownApp/macdown</a> 2018.12.15发现了更棒的Markdown软件Typora, 胜在颜值和文件夹模式.</li>
-<li>Homebrew. yum/dnf之于centOS, apt之于Ubuntu, pacman之于ArchLinux, brew之于macOS, <code>brew install</code>简直不能太爽. 官网<a href="https://brew.sh/" target="_blank" rel="noopener">https://brew.sh/</a></li>
-<li>Homebrew-Cask. <code>brew install</code>不能安装chrome Macdown这样的GUI app, Homebrew-Cask扩展了brew, GitHub地址<a href="https://github.com/caskroom/homebrew-cask" target="_blank" rel="noopener">https://github.com/caskroom/homebrew-cask</a> <img src="https://camo.githubusercontent.com/672f09c820c53a876e044e158cfd477791f4e249/68747470733a2f2f692e696d6775722e636f6d2f575961323535372e676966" alt="Homebrew-Cask"></li>
+<li>mycli. ipython之于Python, mycli之于mysql. 当然还有pgcli. Python写的工具. <img src="https://raw.githubusercontent.com/dbcli/mycli/master/screenshots/tables.png" alt="mycli"> Github地址:<a href="https://github.com/dbcli/mycli" target="_blank" rel="noopener">https://github.com/dbcli/mycli</a></li>
+<li>youtube-dl. youtube下载器, 能直接下载youtube视频列表. Python写的工具. </li>
+<li>oh-my-zsh的z命令. 手动输入一个很长的路径名不停地tab很麻烦, 配置了oh-my-zsh的话可以启用z命令(<code>edit: ~/.zshrc line: plugins=(git python z tmux)</code>), <code>z 文件夹名</code> 就可以跳转到常用目录中最符合输入文件夹名的文件夹中, 非常方便, GitHub地址<a href="https://github.com/robbyrussell/oh-my-zsh" target="_blank" rel="noopener">https://github.com/robbyrussell/oh-my-zsh</a></li>
 <li><p>privoxy. <code>brew pip npm install、docker pull</code>总是慢如蜗牛?  privoxy能将shadowsocks的socks代理(127.0.0.1:1080)转换为http/https代理, 有个奇特的地方是把它把文档写在配置文件的注释里, config文件有2271行, 初让人以为配置起来会巨复杂, 实际上基本的功能两行配置即可. <code>listen-address配置为0.0.0.0:8118</code>, 局域网内其他设备也可以走此代理<ip>:8118. 官网<a href="https://www.privoxy.org/" target="_blank" rel="noopener">https://www.privoxy.org/</a></ip></p>
  <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">listen-address  0.0.0.0:8118</span><br><span class="line">forward-socks5 / localhost:1080 .</span><br></pre></td></tr></table></figure>
 <p> 然后在.zshrc或.bashrc中加入一下命令就可以通过<code>proxy</code> <code>dproxy</code>来切换是否在本终端下使用代理了.</p>
- <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">function proxy()&#123;</span><br><span class="line">    export http_proxy=http://127.0.0.1:8118</span><br><span class="line">    export https_proxy=https://127.0.0.1:8118</span><br><span class="line">    export HTTP_PROXY=http://127.0.0.1:8118</span><br><span class="line">    export HTTPS_PROXY=https://127.0.0.1:8118</span><br><span class="line">&#125;</span><br><span class="line">function dproxy()&#123;</span><br><span class="line">    unset http_proxy</span><br><span class="line">    unset https_proxy</span><br><span class="line">    unset HTTP_PROXY</span><br><span class="line">    unset HTTPS_PROXY</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+ <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">function proxy()&#123;</span><br><span class="line">    export http_proxy=http://127.0.0.1:8118</span><br><span class="line">    export https_proxy=https://127.0.0.1:8118</span><br><span class="line">&#125;</span><br><span class="line">function dproxy()&#123;</span><br><span class="line">    unset http_proxy</span><br><span class="line">    unset https_proxy</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>proxier 可以按进程名指定哪些进程走ss代理, 比如ssh</p>
+<li><p>kcptun. bandwagon上的shadowsocks越来越慢, 不用kcptun加速没法正常使用, 只能不太厚道地超量发包了. GitHub地址<a href="https://github.com/xtaci/kcptun" target="_blank" rel="noopener">https://github.com/xtaci/kcptun</a></p>
 </li>
-<li>kcptun. bandwagon上的shadowsocks越来越慢, 不用kcptun加速没法正常使用, 只能不太厚道地超量发包了. GitHub地址<a href="https://github.com/xtaci/kcptun" target="_blank" rel="noopener">https://github.com/xtaci/kcptun</a></li>
-<li>oh-my-zsh的z命令. 手动输入一个很长的路径名不停地tab很麻烦, 配置了oh-my-zsh的话可以启用z命令(<code>edit: ~/.zshrc line: plugins=(git python z tmux)</code>), <code>z 文件夹名</code> 就可以跳转到常用目录中最符合输入文件夹名的文件夹中, 非常方便, GitHub地址<a href="https://github.com/robbyrussell/oh-my-zsh" target="_blank" rel="noopener">https://github.com/robbyrussell/oh-my-zsh</a></li>
-<li>aria2. 非常厉害的下载器, <code>brew install aria2</code>即可. GitHub地址:<a href="https://github.com/aria2/aria2" target="_blank" rel="noopener">https://github.com/aria2/aria2</a> GUI Client:<a href="https://github.com/yangshun1029/aria2gui" target="_blank" rel="noopener">https://github.com/yangshun1029/aria2gui</a></li>
-<li>BaiduExporter. 百度网盘文件导出到aria2下载, GitHub地址<a href="https://github.com/acgotaku/BaiduExporter" target="_blank" rel="noopener">https://github.com/acgotaku/BaiduExporter</a></li>
-<li>Chrome插件加白描述文件. 有时需要安装一些在商店下架了的扩展, 比如BaiduExporter, 在扩展页面安装后重启chrome会提示此扩展程序并非来自chrome商店,启用开关灰色无法启用, 可以下载此描述文件将特定扩展id加入白名单. <a href="https://hencolle.com/2016/10/16/baidu_exporter/" target="_blank" rel="noopener">https://hencolle.com/2016/10/16/baidu_exporter/</a></li>
-<li>坚果云.同步配置文件,pdf书非常方便.</li>
-<li>Monaco字体. 非常舒服的等宽代码字体 <a href="https://github.com/hanjm/codeFont" target="_blank" rel="noopener">https://github.com/hanjm/codeFont</a></li>
-<li>Scroll Reverser. 外接鼠标神器, 让触摸板是自然方向, 鼠标是习惯的Windows滚动方向.</li>
-<li>Karabiner-Elements. 外接键盘神器, 我就想禁用capsLock键, 让右边的option键变成control键, 能把外接键盘的Windows键映射为command键.</li>
-<li>ssh tunnel. ssh隧道管理器, 本地连接远程服务器的kibana nsqAdmin mysql简直不要太爽</li>
 </ol>
 
         
@@ -266,7 +253,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2017/05/06/MacOS下酷工具收集(持续)/" data-id="ck1g8egcq000ml8xqlmj9swul" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2017/05/06/Linux cli下酷工具收集(持续)/" data-id="ck1g8tbf50006rfxqlzg601fa" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -334,7 +321,7 @@ ga('send', 'pageview');
 
             
     
-        <a href="https://imhanjm.com/2017/05/06/MacOS下酷工具收集(持续)/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2017/05/06/MacOS下酷工具收集(持续)/">评论</a>
+        <a href="https://imhanjm.com/2017/05/06/Linux cli下酷工具收集(持续)/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://imhanjm.com/2017/05/06/Linux cli下酷工具收集(持续)/">评论</a>
     
 
         </footer>
@@ -419,7 +406,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2017/05/04/知名公司后端架构学习(持续)/" data-id="ck1g8egcn000gl8xqoksorj8s" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2017/05/04/知名公司后端架构学习(持续)/" data-id="ck1g8tbf40005rfxqzpy5q8l4" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
