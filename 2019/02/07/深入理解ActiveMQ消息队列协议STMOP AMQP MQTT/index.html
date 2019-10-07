@@ -235,7 +235,7 @@ ga('send', 'pageview');
             <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>AWS MQ是完全托管的 ActiveMQ 服务, 最近需要使用, 于是学习其文档, 实践其特性, 由于 ActiveMQ 支持非常丰富的协议, OpenWire amqp stomp mqtt, 所以也学习了各大协议的特性及其SDK.</p>
 <h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><p>本地开发最方便的方式当然是docker了, <a href="https://hub.docker.com/r/rmohr/activemq/" target="_blank" rel="noopener">rmohr/activemq</a> 文档比较好的且有aws支持的5.15.6版本的tag.</p>
 <p>需要注意的是, 首先要根据其docker hub镜像文档上的几步操作, 将镜像中的默认配置文件复制到自定义的本机conf目录下 <code>/usr/local/activemq/conf</code>, 然后就快速地启动了一个默认配置的 ActiveMQ server</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> active mq</span></span><br><span class="line">docker run -itd --name activemq \</span><br><span class="line">-p 61616:61616 -p 8161:8161 -p 5672:5672 -p 61613:61613 -p 1883:1883 -p 61614:61614 \</span><br><span class="line">-v /usr/local/activemq/conf:/opt/activemq/conf \</span><br><span class="line">-v /usr/local/activemq/data:/opt/activemq/data \</span><br><span class="line">rmohr/activemq:5.15.6</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span> active mq</span><br><span class="line">docker run -itd --name activemq \</span><br><span class="line">-p 61616:61616 -p 8161:8161 -p 5672:5672 -p 61613:61613 -p 1883:1883 -p 61614:61614 \</span><br><span class="line">-v /usr/local/activemq/conf:/opt/activemq/conf \</span><br><span class="line">-v /usr/local/activemq/data:/opt/activemq/data \</span><br><span class="line">rmohr/activemq:5.15.6</span><br></pre></td></tr></table></figure>
 <hr>
 <h1 id="特性"><a href="#特性" class="headerlink" title="特性"></a>特性</h1><h3 id="Advisory"><a href="#Advisory" class="headerlink" title="Advisory"></a>Advisory</h3><p>ActiveMQ可以将本身的一些事件投递到系统的消息队列, 如 queue/topic的创建, 没有消费者的queue/topic等. <a href="http://activemq.apache.org/advisory-message.html" target="_blank" rel="noopener">http://activemq.apache.org/advisory-message.html</a></p>
 <p>这个特性对于监控MQ非常有用, 默认配置时关闭的, 需要在配置文件activemq.xml中打开.</p>
@@ -360,7 +360,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/" data-id="ck1gcw22k002cedxql6wf8akj" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/" data-id="ck1gczvtg002agnxq4p205jc5" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
