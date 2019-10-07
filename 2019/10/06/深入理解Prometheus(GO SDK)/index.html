@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="hello">
 <meta property="og:description" content="最近我对Prometheus刮目相看了, 服务加一行代码就能轻轻松松地监控起来服务的CPU使用率、内存、协程数、线程数、打开的文件描述符数量及软限制、重启次数等重要的基本指标, 配合Grafana建立了直观的图表, 对查问题很有帮助, 故想写写折腾Prometheus和Grafana后得到的值得一讲的实践与理解. 介绍Prometheus是CNCF 的项目之一(ps.CNCF的项目代码都值得研究)">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-10-07T09:25:19.470Z">
+<meta property="og:updated_time" content="2019-10-07T09:30:57.771Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入理解Prometheus(GO SDK及Grafana基本面板)">
 <meta name="twitter:description" content="最近我对Prometheus刮目相看了, 服务加一行代码就能轻轻松松地监控起来服务的CPU使用率、内存、协程数、线程数、打开的文件描述符数量及软限制、重启次数等重要的基本指标, 配合Grafana建立了直观的图表, 对查问题很有帮助, 故想写写折腾Prometheus和Grafana后得到的值得一讲的实践与理解. 介绍Prometheus是CNCF 的项目之一(ps.CNCF的项目代码都值得研究)">
@@ -311,8 +311,7 @@ ga('send', 'pageview');
 <li><code>rate</code> - 平均QPS</li>
 <li><code>irate</code> - 即时QPS, 如果原始数据变化快, 可以使用更敏感的irate</li>
 </ol>
-<p>##Snippet</p>
-<p>这里列举一些我通过搜索及自行摸索出来的对于Prometheus GO SDK默认收集的指标的PromQL Snippet.</p>
+<h2 id="Snippet"><a href="#Snippet" class="headerlink" title="Snippet"></a>Snippet</h2><p>这里列举一些我通过搜索及自行摸索出来的对于Prometheus GO SDK默认收集的指标的PromQL Snippet.</p>
 <ol>
 <li><p>CPU使用率: <code>rate(process_cpu_seconds_total[1m])* 100</code></p>
 </li>
@@ -338,7 +337,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2019/10/06/深入理解Prometheus(GO SDK)/" data-id="ck1g7md3e002i86xqvoxdabqo" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2019/10/06/深入理解Prometheus(GO SDK)/" data-id="ck1g7tm8o002cblxq3lbvnvyv" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
