@@ -233,7 +233,7 @@ ga('send', 'pageview');
         
             
             <p>最近我对Prometheus刮目相看了, 服务加一行代码就能轻轻松松地监控起来服务的CPU使用率、内存、协程数、线程数、打开的文件描述符数量及软限制、重启次数等重要的基本指标, 配合Grafana建立了直观的图表, 对查问题很有帮助, 故想写写折腾Prometheus和Grafana后得到的值得一讲的实践与理解.</p>
-<p><img src="https://ws1.sinaimg.cn/large/cfe1407cly1g7ps6uqg9gj22t81echdt.jpg" alt="GO服务几个重要的基本指标Dashboard"></p>
+<p><img src="https://raw.githubusercontent.com/hanjm/oss/master/20191013165216-i51pMV.png" alt="GO服务几个重要的基本指标Dashboard"></p>
 <h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>Prometheus是<a href="https://www.cncf.io/" target="_blank" rel="noopener">CNCF</a> 的项目之一(ps.CNCF的项目代码都值得研究), 而且还是Graduated Projects. 同时因为其主要是方便灵活的pull方式, 暴露出个http接口出来给prometheusd拉取就行了, 而push方式客户端要做更多的事情, 如果要改push的地址的话就很麻烦, 所以很多著名的项目都在用它, 比如k8s, tidb, etcd, 甚至是时序数据库influxdb都在用它.</p>
 <p>我体会到, 很多场景很适合使用Prometheus sdk去加一些指标, 比如logger包, Error级别的消息数是一个很有用的指标; 对于消息队列的SDK, 可以用Prometheus收集客户端侧的发送时延、消费时延、消费处理耗时、消费处理出错等指标; 封装DB操作的SDK, 连接池打开的DB连接数与最大连接数是个很重要的指标; 写个HTTP Middleware, http handler的调用次数、处理时间和responseCode是感兴趣的指标.</p>
 <h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><p>Prometheus是Go写的, 故部署方便且跨平台, 一个二进制文件加配置文件就能跑起来.</p>
@@ -338,7 +338,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2019/10/06/深入理解Prometheus(GO SDK)/" data-id="ck1olxlc4002a1nxq3szrvrgx" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2019/10/06/深入理解Prometheus(GO SDK)/" data-id="ck1or82cp0021l7xqun88pxac" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -582,7 +582,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="https://imhanjm.com/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/" data-id="ck1olxlc9002c1nxq8aloyy6l" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="https://imhanjm.com/2019/02/07/深入理解ActiveMQ消息队列协议STMOP AMQP MQTT/" data-id="ck1or82cr0025l7xqoq8pdqyh" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
