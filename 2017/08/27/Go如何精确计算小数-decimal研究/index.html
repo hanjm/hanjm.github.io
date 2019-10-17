@@ -83,18 +83,18 @@
 
 
 
-<meta name="description" content="##1 浮点数为什么不精确先看两个case // case1: 135.90*100 ====// float32var f1 float32 = 135.90fmt.Println(f1 * 100) // output:13589.999// float64var f2 float64 = 135.90fmt.Println(f2 * 100) // output:13590 浮点数在单精度下">
+<meta name="description" content="1 浮点数为什么不精确先看两个case // case1: 135.90*100 ====// float32var f1 float32 = 135.90fmt.Println(f1 * 100) // output:13589.999// float64var f2 float64 = 135.90fmt.Println(f2 * 100) // output:13590 浮点数在单精度下,">
 <meta name="keywords" content="Go,decimal">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Go如何精确计算小数-Decimal研究-Tidb MyDecimal问题">
 <meta property="og:url" content="https://imhanjm.com/2017/08/27/Go如何精确计算小数-decimal研究/index.html">
 <meta property="og:site_name" content="hanjm&#39;s blog">
-<meta property="og:description" content="##1 浮点数为什么不精确先看两个case // case1: 135.90*100 ====// float32var f1 float32 = 135.90fmt.Println(f1 * 100) // output:13589.999// float64var f2 float64 = 135.90fmt.Println(f2 * 100) // output:13590 浮点数在单精度下">
+<meta property="og:description" content="1 浮点数为什么不精确先看两个case // case1: 135.90*100 ====// float32var f1 float32 = 135.90fmt.Println(f1 * 100) // output:13589.999// float64var f2 float64 = 135.90fmt.Println(f2 * 100) // output:13590 浮点数在单精度下,">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2017-11-05T06:16:53.000Z">
+<meta property="og:updated_time" content="2019-10-17T15:30:24.048Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Go如何精确计算小数-Decimal研究-Tidb MyDecimal问题">
-<meta name="twitter:description" content="##1 浮点数为什么不精确先看两个case // case1: 135.90*100 ====// float32var f1 float32 = 135.90fmt.Println(f1 * 100) // output:13589.999// float64var f2 float64 = 135.90fmt.Println(f2 * 100) // output:13590 浮点数在单精度下">
+<meta name="twitter:description" content="1 浮点数为什么不精确先看两个case // case1: 135.90*100 ====// float32var f1 float32 = 135.90fmt.Println(f1 * 100) // output:13589.999// float64var f2 float64 = 135.90fmt.Println(f2 * 100) // output:13590 浮点数在单精度下,">
 
 
 
@@ -335,7 +335,7 @@
       
 
       
-        <p>##1 浮点数为什么不精确<br>先看两个case</p>
+        <h2 id="1-浮点数为什么不精确"><a href="#1-浮点数为什么不精确" class="headerlink" title="1 浮点数为什么不精确"></a>1 浮点数为什么不精确</h2><p>先看两个case</p>
 <figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="comment">// case1: 135.90*100 ====</span></span><br><span class="line"><span class="comment">// float32</span></span><br><span class="line"><span class="keyword">var</span> f1 <span class="keyword">float32</span> = <span class="number">135.90</span></span><br><span class="line">fmt.Println(f1 * <span class="number">100</span>) <span class="comment">// output:13589.999</span></span><br><span class="line"><span class="comment">// float64</span></span><br><span class="line"><span class="keyword">var</span> f2 <span class="keyword">float64</span> = <span class="number">135.90</span></span><br><span class="line">fmt.Println(f2 * <span class="number">100</span>) <span class="comment">// output:13590</span></span><br></pre></td></tr></table></figure>
 <p>浮点数在单精度下, 135.9*100即出现了偏差, 双精度下结果正确.</p>
 <figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="comment">// case2: 0.1 add 10 times ===</span></span><br><span class="line"><span class="comment">// float32</span></span><br><span class="line"><span class="keyword">var</span> f3 <span class="keyword">float32</span> = <span class="number">0</span></span><br><span class="line"><span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">10</span>; i++ &#123;</span><br><span class="line">	f3 += <span class="number">0.1</span></span><br><span class="line">&#125;</span><br><span class="line">fmt.Println(f3) <span class="comment">//output:1.0000001</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// float64</span></span><br><span class="line"><span class="keyword">var</span> f4 <span class="keyword">float64</span> = <span class="number">0</span></span><br><span class="line"><span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">10</span>; i++ &#123;</span><br><span class="line">	f4 += <span class="number">0.1</span></span><br><span class="line">&#125;</span><br><span class="line">fmt.Println(f4) <span class="comment">//output:0.9999999999999999</span></span><br></pre></td></tr></table></figure>
@@ -498,8 +498,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -527,7 +536,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">40</span>
+                  <span class="site-state-item-count">44</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -711,6 +720,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-浮点数为什么不精确"><span class="nav-number">1.</span> <span class="nav-text">1 浮点数为什么不精确</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
