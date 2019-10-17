@@ -134,9 +134,9 @@
     
       <category term="Nginx" scheme="https://imhanjm.com/tags/Nginx/"/>
     
-      <category term="GRPC" scheme="https://imhanjm.com/tags/GRPC/"/>
-    
       <category term="HTTP2" scheme="https://imhanjm.com/tags/HTTP2/"/>
+    
+      <category term="GRPC" scheme="https://imhanjm.com/tags/GRPC/"/>
     
   </entry>
   
