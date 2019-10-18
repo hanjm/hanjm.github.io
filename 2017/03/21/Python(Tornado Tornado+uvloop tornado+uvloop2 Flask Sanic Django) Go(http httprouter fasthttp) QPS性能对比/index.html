@@ -122,13 +122,6 @@
   };
 </script>
 
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- normal -->
-<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4299650249402142" data-ad-slot="4037719683" data-ad-format="auto" data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-
 
 
   <link rel="canonical" href="https://imhanjm.com/2017/03/21/Python(Tornado Tornado+uvloop tornado+uvloop2 Flask Sanic Django) Go(http httprouter fasthttp) QPS性能对比/">
@@ -375,6 +368,12 @@
 <figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"github.com/valyala/fasthttp"</span></span><br><span class="line">	<span class="string">"runtime"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	runtime.GOMAXPROCS(runtime.NumCPU())</span><br><span class="line">	requestHandler := <span class="function"><span class="keyword">func</span><span class="params">(ctx *fasthttp.RequestCtx)</span></span> &#123;</span><br><span class="line">		ctx.Write([]<span class="keyword">byte</span>(<span class="string">"Hello, world"</span>))</span><br><span class="line">	&#125;</span><br><span class="line">	fasthttp.ListenAndServe(<span class="string">"127.0.0.1:8896"</span>, requestHandler)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
       
     </div>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- normal -->
+<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4299650249402142" data-ad-slot="4037719683" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
     
     
     
