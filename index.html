@@ -683,7 +683,18 @@
 <h1 id="一些细节行为"><a href="#一些细节行为" class="headerlink" title="一些细节行为"></a>一些细节行为</h1><p><a href="http://activemq.apache.org/using-apache-activemq.html" target="_blank" rel="noopener">官方的FAQ</a>里面写了一些实现的细节</p>
 <ol>
 <li>如果producer比较快而consumer比较慢的话, ActiveMQ的流量控制功能使得producer阻塞. <a href="http://activemq.apache.org/what-happens-with-a-fast-producer-and-slow-consumer.html" target="_blank" rel="noopener">http://activemq.apache.org/what-happens-with-a-fast-producer-and-slow-consumer.html</a></li>
-<li>不支持消费者拿到消息之后Requeue, 即不支持像NSQ那样的消费者出现业务逻辑错误后重试.<a href="http://activemq.apache.org/how-do-i-unack-the-message-with-stomp.html" target="_blank" rel="noopener">http://activemq.apache.org/how-do-i-unack-the-message-with-stomp.html</a>.</li>
+<li>不支持消费者拿到消息之后Requeue, 即不支持像NSQ那样的消费者出现业务逻辑错误后重试.<a href="http://activemq.apache.org/how-do-i-unack-the-message-with-stomp.html" target="_blank" rel="noopener">http://activemq.apache.org/how-do-i-unack-the-message-with-stomp.html</a>. 但是可以利用延时消息实现类似的功能.</li>
+</ol>
+<h1 id="性能调优"><a href="#性能调优" class="headerlink" title="性能调优"></a>性能调优</h1><ol>
+<li><p>如果使用了virtualTopic, 那么默认配置下, virtualTopic对应的Queue越多, 发送越慢, 因为默认virtualTopic转发到queue是串行的, 需要调整<code>concurrentSend=true</code>启用并发发送到queue.</p>
+<p><a href="https://activemq.apache.org/virtual-destinations" target="_blank" rel="noopener">https://activemq.apache.org/virtual-destinations</a><br><a href="https://issues.jboss.org/browse/ENTMQ-1093" target="_blank" rel="noopener">https://issues.jboss.org/browse/ENTMQ-1093</a><br><a href="https://github.com/apache/activemq/blob/9abe2c6f97c92fc99c5a2ef02846f62002a671cf/activemq-broker/src/main/java/org/apache/activemq/broker/region/virtual/VirtualTopicInterceptor.java#L87" target="_blank" rel="noopener">https://github.com/apache/activemq/blob/9abe2c6f97c92fc99c5a2ef02846f62002a671cf/activemq-broker/src/main/java/org/apache/activemq/broker/region/virtual/VirtualTopicInterceptor.java#L87</a></p>
+</li>
+<li><p><code>concurrentStoreAndDispatchQueues</code>设置为false.  默认配置下, 这个值是true, 根据文档所说在快速消费者情况下, 此值设置为true可以加快持久化消息的性能, 因为被快速消费了消息可以不用落盘, 但实测发现此值为true则10个producer并发发送和1个producer并发发送的性能是一样的没有提高. 设置为false之后提高producer并发则可获得性能倍速提高, 并且单个producer的发送性能并没有下降.</p>
+</li>
+<li><p>启用<code>mKahaDB</code>, ActiveMQ为了减少打开的文件描述符数量, 默认是用一个KahaDB实例来持久化消息, 但是在磁盘性能比较好的情况下, 一个kahaDB实例发挥不出磁盘的潜力, 启用多个kahaDB后性能可以获得倍速增长. 可以按queue名字的pattern来设置多个kahaDB实例, 也可以使用<code>perDestination=&quot;true&quot;</code>设置每个queue一个kahaDB实例, 但这个参数也有坑, 如果destination名字超过了42个字符串, 则会被截断, 发送会报不可恢复的错. 可解决的办法是手动分好destination使用的kahadb, 但是这个配置后续不能动态改了, 只能新开Broker然后迁移. 否则会重启后如果分配规则改变导致分配到了不同的kahadb, 则之前的数据不会被消费.</p>
+<p><a href="http://sigreen.github.io/2016/02/10/amq-tuning.html" target="_blank" rel="noopener">http://sigreen.github.io/2016/02/10/amq-tuning.html</a></p>
+<p><a href="https://activemq.apache.org/kahadb#multim-kahadb-persistence-adapter" target="_blank" rel="noopener">https://activemq.apache.org/kahadb#multim-kahadb-persistence-adapter</a></p>
+</li>
 </ol>
 
           
